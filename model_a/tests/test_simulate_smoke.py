@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from model_a import jax_port
@@ -35,8 +36,8 @@ def test_simulate_is_deterministic_for_same_key():
     b_rt, b_cat = jax_port.simulate(
         key, ter=200.0, st=50.0, cr=50.0, crsd=10.0, si=4.0, sig=5.0, av=20.0, sv=0.7, nsim=32
     )
-    assert jnp.array_equal(a_rt, b_rt)
-    assert jnp.array_equal(a_cat, b_cat)
+    np.testing.assert_array_equal(a_rt, b_rt)
+    np.testing.assert_array_equal(a_cat, b_cat)
 
 
 def test_simulate_differs_for_different_keys():
