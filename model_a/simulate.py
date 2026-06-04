@@ -44,6 +44,16 @@ def _simulate_chunk(key, ter, st, cr, crsd, L, v, chunk_size):
     """
     Simulate `chunk_size` trials in one fused XLA program.
 
+    Equivalence to Fortran's per-step accumulator-demean: because the
+    accumulator starts at zero with mean zero, demeaning the increment
+    each step and cumsumming is exactly equivalent to demeaning the
+    accumulator each step (proof by induction on the step index).
+
+    Precondition: the caller is expected to pass a positive `cr` and a
+    `crsd` small enough that crr = cr + crsd*(u-0.5) stays positive across
+    typical trials. The clamp() function in jax_port.fofs enforces cr >= 1.0
+    so this holds in production use.
+
     Returns (rt, cat) each of shape (chunk_size,).
     """
     ku, kz = jax.random.split(key)
@@ -58,7 +68,7 @@ def _simulate_chunk(key, ter, st, cr, crsd, L, v, chunk_size):
     noise = z @ L.T                                     # (chunk_size, NSTEP, N) correlated normals
 
     # Build demeaned per-step increments
-    incr = v[None, None, :] + 5.0 * noise               # broadcast drift bump + scaled noise
+    incr = v[None, None, :] + 5.0 * noise               # 5.0 = Fortran noise scale (gpgsq5deg3twod24.f, see reference/)
     incr = incr - incr.mean(axis=-1, keepdims=True)     # demean per (trial, step)
 
     # Accumulator paths
@@ -71,8 +81,12 @@ def _simulate_chunk(key, ter, st, cr, crsd, L, v, chunk_size):
     # argmax of bool returns the first True; if none, returns 0, hence the where
     jstop = jnp.where(any_crossed, jnp.argmax(crossed, axis=1) + 1, NSTEP)
 
-    # Position at crossing (or at NSTEP if never crossed)
-    pos = jnp.argmax(a[jnp.arange(chunk_size), jstop - 1, :], axis=-1) + 1
+    # Position at crossing. For non-crossing trials, match jax_port.one_trial's
+    # behavior of keeping pos=1 (the scan-carry init value). The Fortran instead
+    # uses argmax(a) at NSTEP for non-crossers; that divergence is documented
+    # in the Stage 2.5 plan as a known jax_port-vs-Fortran difference.
+    pos_at_crossing = jnp.argmax(a[jnp.arange(chunk_size), jstop - 1, :], axis=-1) + 1
+    pos = jnp.where(any_crossed, pos_at_crossing, 1)
 
     # RT in ms; categorize by position band (mirrors jax_port.one_trial)
     rt = (jstop + ndt) * E

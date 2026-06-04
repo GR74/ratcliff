@@ -85,3 +85,34 @@ def test_simulate_chunk_deterministic_for_same_key():
     )
     np.testing.assert_array_equal(rt_a, rt_b)
     np.testing.assert_array_equal(cat_a, cat_b)
+
+
+def test_simulate_chunk_no_crossing_saturates_at_nstep():
+    """At very high cr, no trials cross; jstop=NSTEP, rt = (NSTEP + ndt)*E."""
+    L = sim_new.chol_factor(5.0)
+    v = sim_new.drift_profile(av=1.0, si=4.0)   # tiny drift
+    key = prng.root_key(0)
+    rt, _ = sim_new._simulate_chunk(
+        key, ter=200.0, st=50.0, cr=1e6, crsd=0.0, L=L, v=v, chunk_size=32
+    )
+    # All trials should saturate: jstop = NSTEP = 400, rt = (400 + ndt) * 10
+    # ndt = (200 + 50*(0.5 - u)) / 10 ∈ [(200-25)/10, (200+25)/10] = [17.5, 22.5]
+    # rt ∈ [4175, 4225] ms
+    assert jnp.all(rt >= 4170)
+    assert jnp.all(rt <= 4230)
+
+
+def test_simulate_chunk_immediate_crossing_at_low_cr():
+    """At cr=0, the first step's accumulator typically crosses; jstop=1 expected often."""
+    L = sim_new.chol_factor(5.0)
+    v = sim_new.drift_profile(av=20.0, si=4.0)
+    key = prng.root_key(0)
+    rt, _ = sim_new._simulate_chunk(
+        key, ter=200.0, st=50.0, cr=0.0, crsd=0.0, L=L, v=v, chunk_size=64
+    )
+    # With cr=0, any positive max of accumulator triggers; that happens at step 1
+    # for the majority. RT for jstop=1 is (1 + ndt) * 10 ∈ [185, 225] ms.
+    # We allow that some trials might cross at step 2 due to noise; assert
+    # the MEDIAN RT is consistent with jstop ≈ 1-2.
+    median_rt = float(jnp.median(rt))
+    assert median_rt < 250, f"expected near-immediate crossing, median rt = {median_rt}"
