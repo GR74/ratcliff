@@ -74,3 +74,24 @@ def calc_LAM(n: int = DEFAULT_N, m: int = DEFAULT_M, s1: float = 15.0, s2: float
         )
 
     return jnp.sqrt(jnp.maximum(spectral, 0.0))
+
+
+def circulant_grf(LAM, g1, g2):
+    """
+    Generate two independent GRF samples via one 2D FFT.
+
+    LAM    : (2n-1, 2m-1) — spectral sqrt from calc_LAM.
+    g1, g2 : (2n-1, 2m-1) — iid N(0,1) arrays.
+
+    Returns (F1, F2), each shape (n, m), both samples from the GRF.
+
+    The trick: the FFT of a complex Gaussian array has independent real
+    and imaginary parts, both with the desired covariance. So one FFT
+    yields two samples.
+    """
+    n_pad, m_pad = LAM.shape
+    n = (n_pad + 1) // 2
+    m = (m_pad + 1) // 2
+    X = LAM * (g1 + 1j * g2)
+    F = jnp.fft.fft2(X)
+    return F[:n, :m].real, F[:n, :m].imag
