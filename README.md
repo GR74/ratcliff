@@ -11,6 +11,8 @@ See `docs/plans/2026-06-03-ratcliff-speedup-design.md` for the full design and r
 
 ## Quick start
 
+Requires Python 3.11+.
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -18,18 +20,18 @@ pip install -e ".[dev]"
 .\scripts\smoke.ps1
 ```
 
-First smoke run takes 30–90 seconds (JAX JIT compile); subsequent runs are 9–14 seconds on a warm cache.
-
 If PowerShell blocks `.ps1` scripts, run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\smoke.ps1
 ```
 
+First smoke run takes 30–90 seconds (JAX JIT compile); subsequent runs are 9–14 seconds on a warm cache. A successful run ends with a `N passed` summary line (currently `25 passed`).
+
 On the Linux workstation:
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 ./scripts/smoke.sh
