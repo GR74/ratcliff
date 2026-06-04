@@ -51,3 +51,13 @@ def test_aggregate_match_combines_both():
     assert result["passed"]
     assert result["prop_passed"]
     assert result["quant_passed"]
+
+
+def test_proportions_match_raises_on_shape_mismatch():
+    with pytest.raises(ValueError, match="proportions_match shape mismatch"):
+        validation.proportions_match(np.array([0.3, 0.5, 0.2]), np.array([0.3, 0.5]))
+
+
+def test_quantiles_match_raises_on_shape_mismatch():
+    with pytest.raises(ValueError, match="quantiles_match shape mismatch"):
+        validation.quantiles_match(np.array([300.0, 400.0]), np.array([300.0, 400.0, 500.0]))
