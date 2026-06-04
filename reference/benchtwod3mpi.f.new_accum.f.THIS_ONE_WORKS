@@ -1,0 +1,1065 @@
+      include 'mkl_vsl.fi'
+      implicit double precision (a-h,o-z)
+      INCLUDE 'mpif.h'
+      double precision X(39),S(39),acc(6),rry(10,6)
+      double precision DUMMY(138)
+      double precision terL,stL,crL,crsdL,sisL
+      double precision sigL,av1L,av2L,av3L,svL
+      double precision pxyL(6),qcL(10,6),rtmL(6),rryL(10,6)
+      integer mn(6),i
+      INTEGER IRANK,IPROC,IERR,IFINISH,RES,REMRANK
+
+      CALL MPI_INIT (IERR)
+      CALL MPI_COMM_RANK (MPI_COMM_WORLD,IRANK,IERR)
+      CALL MPI_COMM_SIZE (MPI_COMM_WORLD,IPROC,IERR)
+      print*,'MAIN: I am IRANK',IRANK,'of',IPROC
+
+C Slaves send the master a dummy message to 'prime the pump'
+C then call accum, where slaves wait for parameters from the 
+C master. The master receives the dummy message then continues.
+
+      IF (IRANK .GT. 0) THEN
+        CALL MPI_SEND(DUMMY, 138, MPI_DOUBLE_PRECISION, 0,
+     +                0, MPI_COMM_WORLD, IERR)
+        call accum(terL,stL,crL,crsdL,sisL,sigL,av1L,av2L,av3L,svL,
+     +             pxyL,qcL,rtmL,rryL)
+      ELSE
+        do REMRANK=1,IPROC-1
+          CALL MPI_RECV(DUMMY, 138, MPI_DOUBLE_PRECISION, REMRANK,
+     +                  0, MPI_COMM_WORLD, STATUS, IERR)
+        enddo
+      ENDIF
+
+      OPEN(1,FILE='twod3datanew')
+      OPEN(2,FILE='parinp')
+      OPEN(3,STATUS='SCRATCH')
+
+      nsim=1
+      ns=4500
+      mc=5
+      nc=2
+      nq=5
+      do 1 is=1,nsim
+      do 10 i1=1,nc
+      read(1,*)acc(1),mn(1),(rry(j,1),j=1,nq),x1,x2,
+     *acc(2),mn(2),(rry(j,2),j=1,nq),x1,x2
+     *,acc(3),mn(3),(rry(j,3),j=1,nq),x1,x2,
+     *acc(4),mn(4),(rry(j,4),j=1,nq),x1,x2,
+     *acc(5),mn(5),(rry(j,5),j=1,nq),x1,x2
+      write(*,"(5(f6.3,i5,5f8.0/))")
+     *(acc(i),mn(i),(rry(j,i),j=1,nq),i=1,mc)
+      do 31 i=1,mc
+   31 write(3,*)acc(i),mn(i),(rry(j,i),j=1,nq)
+   10 continue
+      rewind (3)
+C Ter, st, a, sa
+      x(1)=200.
+      X(2)=43.
+      x(3)=22.
+      x(4)=7.
+C (s=1), si, sig (gp smooth), range in drift rates (mult by av)
+      x(5)=11.
+      x(6)=8.6
+      x(7)=0.5
+C drift 1, drift 2, drift 1 drift 2 second cond.
+      x(8)=15.1
+      x(9)=10.1
+      x(10)=8.
+      x(11)=14.
+      x(12)=11.
+      x(13)=9.5
+      
+      NV=13
+      sss=20.
+C     do 9 i3=1,5
+C     if(i3.gt.4)sss=10.
+      CRIT=.0E-7
+      ITMAX=40
+      ITRACE=10
+      IOPT=100
+      DO 5 I=1,NV
+      S(I)=X(I)/sss
+C     if(i.gt.8)s(i)=4.
+C     if(i3.lt.3)s(6)=2.
+    5 continue
+C     s(8)=3.
+C     s(11)=3.
+C     s(14)=3.
+C     if(i3.eq.2)x(2)=x(2)/2.
+C     s(1)=s(1)/25.
+C     s(2)=s(2)/25.
+C     if(i3.lt.2)s(1)=0.
+C     if(i3.lt.2)s(2)=0.
+      read(2,*)(X(I),I=1,NV),dum
+      WRITE(*,47)(X(I),I=1,NV)
+C     CALL SIMPLX (X,S,CRIT,ITMAX,ITRACE,IOPT,NV)
+      yy=fofs(nv,x)
+    9 continue
+      CRIT=1.0E-7
+      itmax=80
+      iopt=400
+      DO 6 I=1,NV
+      S(I)=X(I)/10.0
+      if(i.gt.8)s(i)=4.
+    6 continue
+C     CALL SIMPLX (X,S,CRIT,ITMAX,ITRACE,IOPT,NV)
+
+      WRITE(*,47)(X(I),I=1,NV)
+   47 FORMAT(32F8.3)
+
+    1 continue
+
+C Master signals to slaves (waiting in accum) that they should 
+C exit, by sending a ter=-1
+
+      terL=-1
+      IF (IRANK .EQ. 0) THEN
+        do REMRANK=1,IPROC-1
+          CALL MPI_SEND(terL, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                  0, MPI_COMM_WORLD, IERR)
+          print*,'here 1',REMRANK
+        enddo
+        print*,'here 2'
+      ENDIF
+      
+      print*,'here 3'
+      CALL MPI_FINALIZE(IFINISH)
+      print*,'here 4'
+      STOP
+      END
+
+      DOUBLE PRECISION FUNCTION FOFS(NV,X)
+      implicit double precision (a-h,o-z)
+      INCLUDE 'mpif.h'
+      double precision X(NV),pxy(6),acc(6),co(6),rtm(6),cc(5)
+      double precision qc(10,6),rry(10,6),pq(10),pqq(10),c1(6),pp(6)
+      integer mn(6)
+
+      ncut=10
+      mc=5
+      nc=2
+      nq=5
+
+      do 3 j=1,nq
+      pqq(j+1)=.2
+    3 pq(j)=.5/nq+(j-1.)/nq
+      pqq(1)=.1
+      pqq(nq+1)=.1
+      mx=0
+C     if(x(10).gt.50.)x(10)=50.
+C     if(x(10).lt.5.)x(10)=5.
+C     si=x(10)
+C     if(x(11).gt.50.)x(11)=50.
+C     sv=x(11)
+      if(x(1).lt.175.)x(1)=175.
+C     if(x(11).lt.5.)x(11)=5.
+      ter=x(1)
+      if(x(2).lt.10.)x(2)=10.
+      if(x(2).gt.ter*1.5)x(2)=ter*1.5
+      st=x(2)
+C     if(x(3).gt.8.)x(3)=8.
+      if(x(3).lt.1.)x(3)=1.
+      a=x(3)
+      if(x(4).gt.x(3)/2.0)x(4)=x(3)/2.0
+      if(x(4).lt.0.01)x(4)=0.01
+      sa=x(4)
+C     if(x(5).lt.5.0)x(5)=5.0
+      si=x(5)
+      if(x(6).gt.17.)x(6)=17.
+      if(x(6).lt..2)x(6)=.2
+      sig=x(6)
+      if(x(7).lt..2)x(7)=.2
+      sv=x(7)
+C     print*,"par",(x(i),i=1,8)
+
+      mx=0
+      chi=0.
+      do 2 ij=1,nc
+
+      do 11 i1=1,mc
+      read(3,*)acc(i1),mn(i1),(rry(j,i1),j=1,nq)
+   11 continue
+
+      if(ij.eq.1)then
+      if(x(8).lt.0.01)x(8)=0.01
+      if(x(9).lt.0.01)x(9)=0.01
+      if(x(10).lt.0.01)x(10)=0.01
+      av1=x(8)
+      av2=x(9)
+      av3=x(10)
+      endif
+      if(ij.eq.2)then
+      if(x(11).lt.0.01)x(11)=0.01
+      if(x(12).lt.0.01)x(12)=0.01
+      if(x(13).lt.0.01)x(13)=0.01
+      av1=x(11)
+      av2=x(12)
+      av3=x(13)
+      endif
+      call accum(ter,st,a,sa,si,sig,av1,av2,av3,sv,pxy,qc,rtm,rry)
+      mmn=0
+      do 10 i1=1,mc
+      mmn=mmn+mn(i1)
+   10 continue
+
+C     write(*,"(3(f6.3,i5,5f8.0))")
+C    *(acc(i1),mn(i1),(rry(j,i1),j=1,nq),i1=1,mc)
+C     write(*,"(3(f6.3,i5,5f8.3))")
+C    *(pxy(i1),mn(i1),(qc(j,i1),j=1,nq),i1=1,mc)
+
+      do 2 i=1,mc
+      if(mn(i).ge.ncut.and.mx.eq.0)then
+      chi=chi+mmn*acc(i)*pqq(1)*log(acc(i)*pqq(1)/
+     *(pxy(i)*qc(1,i)+.00001))
+      do 45 j=2,nq
+      yy=qc(j,i)-qc(j-1,i)
+      if(yy.lt.0.001)yy=0.001
+      chi=chi+mmn*acc(i)*pqq(j)*log(acc(i)*pqq(j)/(pxy(i)*yy+.00001))
+   45 continue
+      chi=chi+mmn*acc(i)*pqq(nq+1)*log(acc(i)*pqq(nq+1)/
+     *(pxy(i)*(1.-qc(nq,i))+.00001))
+      elseif(mn(i).lt.ncut)then 
+      chi=chi+mmn*(acc(i)+.002)*log((acc(i)+.002)/pxy(i))
+      endif
+
+    2 continue
+      rewind (3)
+      fofs=chi
+      RETURN
+      end
+
+      subroutine accum(ter,st,cr,crsd,sis,sig,av1,av2,
+     *av3,sv,pxy,qc,rtm,rry)
+C sis=sd in stim (v), sig=gp smooth, theta1
+      implicit double precision (a-h,o-z)
+      INCLUDE 'mpif.h'
+      double precision terL,stL,crL,crsdL,sisL
+      double precision sigL,av1L,av2L,av3L,svL
+      double precision pxyL(6),qcL(10,6),rtmL(6),rryL(10,6)
+      parameter (n=100,m=160,nsim=9000,nstep=400)
+      integer n,nt1,nt2,nt3,nt4,iseed,id(2),k(n,m),ich(nsim,2),irt(nsim)
+      integer ichR(nsim,2),irtR(nsim),lcR(nsim)
+      integer ichFlat(nsim*2),ichFlatR(nsim*2)
+      equivalence (ich, ichFlat)
+      equivalence (ichR, ichFlatR)
+      double precision rtR(10000)
+      double precision x(n),r(n,n),v(n,m),y(n),ze,one,scal,
+     *a(n,m),b(n,m),gs(nsim),gu1(10),gg1(2*(2*n-1)*(2*m-1)),agrf(n,m)
+     *,th(2),vgrf(n,m),v1(n,m),v2(n,m),v3(n,m),gt(nstep)
+     *,rt(10000),jk(6),rc(10000,6),re(10000),rry(10,6),pxy(6),
+     *rrn(10),cor(6),rtm(6),rr(10,6),qc(10,6),qe(10),pk(6),qeq(10),
+     *LAM(2*n-1,2*m-1),vgrf2(n,m),uu,ss
+      integer brng,lc(nsim),lk(6)
+      integer simcpu(nsim)
+      real*8 sec0,sec1,sec2,sec3,tseconds(nsim,3)
+      INTEGER omp_get_thread_num,REMRANK
+      INTEGER IRANK,IPROC,IERR
+      INTEGER STATUS(MPI_STATUS_SIZE)
+      double precision parRECV(14),parSEND(14)
+
+      CALL MPI_COMM_RANK (MPI_COMM_WORLD,IRANK,IERR)
+      CALL MPI_COMM_SIZE (MPI_COMM_WORLD,IPROC,IERR)
+
+  50  continue
+
+      print*,'ACCUM: I am IRANK',IRANK
+
+      IF (IRANK .EQ. 0 .AND. IPROC .GT. 1) THEN
+        do REMRANK=1,IPROC-1
+          terL=ter
+          CALL MPI_SEND(terL, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          stL=st
+          CALL MPI_SEND(stL, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          crL=cr
+          CALL MPI_SEND(crL, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          crsdL=crsd
+          CALL MPI_SEND(crsdL, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          sisL=sis
+          CALL MPI_SEND(sisL, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          sigL=sig
+          CALL MPI_SEND(sigL, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          av1L=av1
+          CALL MPI_SEND(av1L, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          av2L=av2
+          CALL MPI_SEND(av2L, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          av3L=av3
+          CALL MPI_SEND(av3L, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          svL=sv
+          CALL MPI_SEND(svL, 1, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          pxyL=pxy
+          CALL MPI_SEND(pxyL, 6, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          qcL=qc
+          CALL MPI_SEND(qcL, 10*6, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          rtmL=rtm
+          CALL MPI_SEND(rtmL, 6, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+          rryL=rry
+          CALL MPI_SEND(rryL, 10*6, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, IERR)
+        enddo
+      ENDIF
+      IF (IRANK .NE. 0) THEN
+        CALL MPI_RECV(terL, 1, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        ter=terL
+        print*,'slave',IRANK,'received ter',ter
+        IF (ter .EQ. -1) THEN
+          CALL MPI_FINALIZE(IFINISH)
+          STOP
+        ENDIF
+        CALL MPI_RECV(stL, 1, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        st=stL
+        print*,'slave',IRANK,'received st',st
+        CALL MPI_RECV(crL, 1, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        cr=crL
+        print*,'slave',IRANK,'received cr',cr
+        CALL MPI_RECV(crsdL, 1, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        crsd=crsdL
+        CALL MPI_RECV(sisL, 1, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        sis=sisL
+        CALL MPI_RECV(sigL, 1, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        sig=sigL
+        CALL MPI_RECV(av1L, 1, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        av1=av1L
+        CALL MPI_RECV(av2L, 1, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        av2=av2L
+        CALL MPI_RECV(av3L, 1, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        av3=av3L
+        CALL MPI_RECV(svL, 1, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        sv=svL
+        CALL MPI_RECV(pxyL, 6, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        pxy=pxyL
+        CALL MPI_RECV(qcL, 10*6, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        qc=qcL
+        CALL MPI_RECV(rtmL, 6, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        rtm=rtmL
+        CALL MPI_RECV(rryL, 10*6, MPI_DOUBLE_PRECISION, 0,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+        rry=rryL
+      ENDIF
+      method=0
+      call gettim(nt1,nt2,nt3,nt4)
+      iseed=(nt4*100000+nt3*10000+nt4*100+nt3)+1+IRANK
+      call ranunif(gs,nsim,iseed)
+      pi=4.0*atan(1.0)
+      scal=1.0D0
+      uu=0.0
+      ss=1.0
+C mean (if needed SD of drift rate distribution), 10 ms steps
+      mc=5
+      nq=5
+      e=10.
+C Radius 39 pixels for response areas ("1"=15); patch stim SD=12 
+      ze=0.0D0
+      one=1.D0
+C v is drift rate distrib, a is accumulated evidence array, k resp areas
+      si=6
+      s1=2.*si**2
+      s2=si*sqrt(2.*pi)
+      s3=2.*sis**2
+      s4=sis*sqrt(2.*pi)
+      ui=50
+      uj=80
+      do 1 j=1,m
+      do 1 i=1,n
+      yy=i
+      xx=j
+      k(i,j)=5
+      uj=80.
+C si=6 is for stim generation value to compute ABCY areas.
+C sis is Sd in drift distribs.
+      b(i,j)=exp(-((xx-uj)**2+(yy-ui)**2)/s1)/s2
+      v1(i,j)=exp(-((xx-uj)**2+(yy-ui)**2)/s3)/s4
+C     if(b(i,j).gt..016)k(i,j)=2
+C     if(b(i,j).gt..05)k(i,j)=1
+      if(b(i,j).gt..0003)k(i,j)=2
+      if(b(i,j).gt..03)k(i,j)=1
+      uj=30.
+      v2(i,j)=exp(-((xx-uj)**2+(yy-ui)**2)/s3)/s4
+      b(i,j)=exp(-((xx-uj)**2+(yy-ui)**2)/s1)/s2
+C     if(b(i,j).gt..016)k(i,j)=3
+      if(b(i,j).gt..0003)k(i,j)=3
+      uj=130.
+      v3(i,j)=exp(-((xx-uj)**2+(yy-ui)**2)/s3)/s4
+      b(i,j)=exp(-((xx-uj)**2+(yy-ui)**2)/s1)/s2
+C     if(b(i,j).gt..016)k(i,j)=4
+      if(b(i,j).gt..0003)k(i,j)=4
+    1 continue
+C  RUSS begin here, all write and prints are my debugging code
+C above:
+C k array is a b c d y conditions (1-5)
+C v's are gaussian functions for drift rates driving the process
+      th(1)=sig
+      th(2)=th(1)
+      call calc_LAM(n,m,th,LAM)
+C m is number of simulations irt is RT on the trial and ich posn (1-360)
+!$omp parallel
+!$omp do schedule(dynamic) private(gu1,i,j,ii,vgrf,ier,gt,isd,a,am,id,asum,it,crr,vs,agrf,
+     *iseed,vgrf2,gg1,sec0,sec1,sec2,sec3)
+      do ii=1,nsim/IPROC
+C nsim (about 4000) is what I use for parallelization, debug with 1,4
+C below      do ii=1,4   -say
+       sec0=omp_get_wtime()
+       iseed=gs(ii)*99999999
+       if(iseed.lt.0)iseed=-iseed
+       sec1=omp_get_wtime()
+       call ranunif(gt,nstep,iseed)
+       sec1=omp_get_wtime()-sec1
+C this gets the seed for the seeds above
+      do 8 j=1,m
+      do 8 i=1,n
+    8 a(i,j)=0.0
+      asum=0.0
+       isd=gt(1)*99999999
+       if(isd.lt.0)isd=-isd
+       call ranunif(gu1,10,isd)
+Clears array a which is the thing that is incremented
+      do 2 j=1,nstep
+       isd=gt(j)*99999999
+       if(isd.lt.0)isd=-isd
+C  Above generates seeds for the nsim realizations of the grf in gt
+       if(j.eq.1)vs=1.+sv*(gu1(8)-.5)
+       if(j.eq.1)crr=cr+crsd*(gu1(5)-.5)
+C  Above generates seeds for the nsim realizations of the grf in gt
+C lazy way of getting some variability added to params above
+       if (2*(j/2).ne.j) then
+         if(j.eq.1)sec2=omp_get_wtime()
+         call gauss(uu,ss,gg1,2*(2*n-1)*(2*m-1),isd)
+         if(j.eq.1)sec2=omp_get_wtime()-sec2
+         call circulant_grf(n,m,LAM,gg1,vgrf,vgrf2)
+         agrf=vgrf
+       else
+         agrf=vgrf2
+       endif
+       a=a+av1*vs*v1+av2*vs*v2+av3*vs*v3+agrf
+C above line increments a with drifts v1-v3 and gauss rand field noise
+C agrf  vs is random variability in size of drift distrib functions
+C      write(*,"(2i5,8f9.2)")ii,j,th,a(50,80),av1*v1(50,80),agrf(50,80)
+      asum=sum(a)
+      asum=asum/(1.*n*m)
+      a=a-asum
+C  keep sum of evidence constant
+      am=0
+      am=maxval(a)
+      id=maxloc(a)
+C     write(*,"(4i5,8f9.2)")ii,j,id,am,asum,agrf(3,4),agrf(7,4)
+      if(am.gt.crr)go to 4
+C finish decision process if the largest value, am, is greater than crid is array with location
+    2 continue
+    4 continue
+C Save values of position and number of iterations (RT)
+      irt(ii)=j
+      ich(ii,1)=id(1)
+      ich(ii,2)=id(2)
+      rt(ii)=j+(ter+st*(.5-gu1(10)))/e
+      lc(ii)=k(id(1),id(2))
+C putting values in arrays for next step of processing
+C     if(ii.eq.3999)write(*,"(9i5,9f7.2)")ii,ich(ii,1),ich(ii,2),
+C    *irt(ii),id(1),id(2),lc(ii),k(id(1),id(2)),k(50,80)
+C     write(4,"(4i4,9f7.2)")ii,j,ich(ii,1),ich(ii,2),lc(ii),rt(ii)
+      tseconds(ii,1)=sec1
+      tseconds(ii,2)=sec2
+      tseconds(ii,3)=omp_get_wtime()-sec0
+      simcpu(ii)=omp_get_thread_num()
+      enddo
+!$omp end parallel
+       IF (IRANK .NE. 0) THEN
+         CALL MPI_SEND(lc, nsim/IPROC, MPI_INTEGER, 0,
+     +                   0, MPI_COMM_WORLD, IERR)
+         CALL MPI_SEND(rt, nsim/IPROC, MPI_DOUBLE_PRECISION, 0,
+     +                   0, MPI_COMM_WORLD, IERR)
+         CALL MPI_SEND(irt, nsim/IPROC, MPI_INTEGER, 0,
+     +                   0, MPI_COMM_WORLD, IERR)
+         CALL MPI_SEND(ichFLAT, 2*nsim, MPI_INTEGER, 0,
+     +                   0, MPI_COMM_WORLD, IERR)
+         GO TO 50
+       ENDIF
+       IF (IRANK .EQ. 0 .AND. IPROC .GT. 1) THEN
+         do REMRANK=1,IPROC-1
+           CALL MPI_RECV(lcR, nsim/IPROC, MPI_INTEGER, REMRANK,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+           CALL MPI_RECV(rtR, nsim/IPROC, MPI_DOUBLE_PRECISION, REMRANK,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+           CALL MPI_RECV(irtR, nsim/IPROC, MPI_INTEGER, REMRANK,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+           CALL MPI_RECV(ichFlatR, 2*nsim, MPI_INTEGER, REMRANK,
+     +                     0, MPI_COMM_WORLD, STATUS, IERR)
+           jj=0
+           do ii=nsim*REMRANK/IPROC+1,nsim*(REMRANK+1)/IPROC
+             jj=jj+1
+             lc(ii)=lcR(jj)
+             rt(ii)=rtR(jj)
+             irt(ii)=irtR(jj)
+             ich(ii,1)=ichR(jj,1)
+             ich(ii,2)=ichR(jj,2)
+           enddo
+         enddo
+       do 28 i=1,10000
+       do 28 j=1,6
+       rc(i,j)=0.
+   28 continue
+       do 29 i=1,mc
+       jk(i)=0
+   29  lk(i)=0
+
+       do 11 ii=1,nsim
+       jjj=lc(ii)
+       lk(jjj)=lk(jjj)+1
+       l2=rt(ii)
+       jk(jjj)=jk(jjj)+l2
+       rc(l2,jjj)=rc(l2,jjj)+1.
+C       print*,'RES',ii,irt(ii),ich(ii,1),ich(ii,2)
+C      print*,ii,l2,jjj,lk(jjj),jk(jjj),rc(l2,jjj)
+c       print*,'stats',ii,simcpu(ii),irt(ii),
+c     *  tseconds(ii,1),tseconds(ii,2),tseconds(ii,3)
+   11 continue
+      lsum=0
+      do 13 j=1,mc
+   13 lsum=lsum+lk(j)
+      do 14 i=1,mc
+       cor(i)=lk(i)*1.0/(lsum*1.0)
+   14  rtm(i)=e*jk(i)/(1.*lk(i))
+C     write(4,"(9f7.2)")rtm,cor
+       do 15 j=1,mc
+       do 5 i=1,nstep
+       if(lk(j).ne.0)rc(i,j)=rc(i,j)/(lk(j)*1.0)
+      re(i)=rc(i,j)
+    5 continue
+C     write(*,"(9f7.2)")(re(i),i=1,200)
+      do 7 i=1,nq
+      rrn(i)=rry(i,j)
+      qe(i)=(i-1.0)/nq+.5/nq
+      qeq(i)=qe(i)
+    7 continue
+      tr=0.
+      call qant(re,nstep,qeq,nq,e,tr)
+      corr=cor(j)
+      pxy(j)=cor(j)
+      write(*,"(f7.3,10f7.1)")corr,(qeq(i),i=1,nq)
+      tr=0.
+C     write(*,"(9f7.2)")(rry(i,1),i=1,5)
+C     write(*,"(9f7.2)")(rrn(i),i=1,5)
+      call qant1(re,nstep,rrn,qe,nq,e,tr,corr)
+C     write(*,"('qants',9f7.2)")qe
+      do 16 i=1,nq
+   16 qc(i,j)=qe(i)
+   15 continue
+      ENDIF
+      return
+      end
+
+      subroutine qant1(r,n,rt,q,m,e,ter,corr)
+      implicit double precision (a-h,o-z)
+      double precision r(n),q(m),rr(n),rt(m)
+      do 3 i=1,n
+    3 rr(i)=0.
+      do 2 i=2,n
+    2 rr(i)=rr(i-1)+r(i)
+      rsum=rr(n)
+      do 5 i=1,n
+    5 rr(i)=rr(i)/rsum
+C now rr contains the cumulative distribution function (0 to 1)
+C now need to get probability given RT.  RT=e*step+ter
+      do 4 j=1,m
+      art=(rt(j)-ter)/e
+      irt=art
+      if(irt.lt.1)irt=1
+      if(irt.lt.1)art=1.
+      if(irt.ge.n)irt=n-1
+      q(j)=rr(irt)+(art-1.*irt)*(rr(irt+1)-rr(irt))
+      if(q(j).lt.0.01)q(j)=0.01
+    4 continue
+      return
+      end
+
+      subroutine qant(r,n,q,m,e,ter)
+      implicit double precision (a-h,o-z)
+      double precision r(n),q(m),rr(n)
+      do 3 i=1,n
+    3 rr(i)=0.
+      rr(1)=r(1)
+      do 2 i=2,n
+    2 rr(i)=rr(i-1)+r(i)
+C now rr contains the cumulative distribution
+      j=1
+      do 1 i=1,n-1
+C     print*,i,j,rr(i),q(j)
+      if(rr(i).gt.q(j))then
+      rrr=rr(i)-rr(i-1)
+      if(rrr.lt.0.000001)rrr=0.00001
+      q(j)=e*(i-1+(q(j)-rr(i-1))/(rrr))+ter
+      j=j+1
+      if(j.gt.m)go to 4
+      endif
+    1 continue
+    4 continue
+      return
+      end
+
+      subroutine gauss(uu,ss,ggg,ng,seed)
+      USE MKL_VSL_TYPE
+      USE MKL_VSL
+      integer nr,nc
+      parameter (nr=100)
+      parameter (nc=160)
+      double precision ggg(2*(2*nr-1)*(2*nc-1))
+      double precision uu,ss,u,s
+      integer brng,method,seed,ng
+      TYPE (VSL_STREAM_STATE) :: stream
+      brng=VSL_BRNG_MCG31
+      method=0
+      m=1
+      u=uu
+      s=ss
+      if (2*(2*nr-1)*(2*nc-1).ne.ng) then
+        write(*,*)"ERROR: requested wrong number of random "
+        write(*,*)"   numbers in gauss(). Exiting."
+        stop
+      endif
+
+      ierr=vslnewstream( stream, brng,  seed )
+        ierr=vdrnggaussian( method, stream, ng, ggg, u, s)
+      errcode=vsldeletestream( stream )
+      return
+      end
+
+      subroutine ranunif(gu,nit,seed)
+      USE MKL_VSL_TYPE
+      USE MKL_VSL
+      double precision gu(21000),q1,q2
+      integer brng,method,seed
+      TYPE (VSL_STREAM_STATE) :: stream
+      brng=VSL_BRNG_MCG31
+      method=0
+      m=1
+      q1=0.D0
+      q2=1.D0
+      ierr=vslnewstream( stream, brng,  seed )
+        ierr=vdrnguniform( method, stream, nit, gu, q1,q2)
+C     print*,idum,kg(1),kg(2),kg(3),kg(4),"rand"
+      errcode=vsldeletestream( stream )
+      return
+      end
+
+      subroutine gp(n,x,sig,r)
+      implicit double precision (a-h,o-z)
+      double precision x(n),k(n,n),r(n,n)
+      do 2 i=1,n
+      do 2 j=1,n
+      r(i,j)=0.0D0
+      k(i,j)=x(j)-x(i)
+      k(i,j)=1.0D0*exp(-0.5D0*k(i,j)*k(i,j)/(sig*sig))
+      if(i.eq.j)k(i,j)=k(i,j)+1.0D-12
+    2 continue
+      call DPOTF2('Upper',n,k,n,info)
+      if(info.gt.0)print*,"problem, not positive definite"
+C Get upper right triangular matrix.
+      do 1 i=1,n
+        do 1 j=i,n
+   1      r(i,j)=k(i,j)
+      return
+      end
+
+      SUBROUTINE SIMPLX(X,SCALE,CRIT,ITMAX,ITRACE,IOPT,NV)
+      implicit double precision (a-h,o-z)
+C     X IS PARAMETER VALUES, SCALE DETERMINES SPREAD OF SIMPLX POINTS
+C     AROUND STARTING VALUE, NV IS NO. OF PARAMETERS
+C     CRIT IS CONVERGENCE CRITERION, ITMAX IS MAX. NO. OF ITERATIONS,
+C     AND ITRACE GIVES PRINT OUT EVERY ITRACE ITERATIONS,
+C     EVERY IOPT TRIALS TEST IF BEST PARAMETERS WITHIN .00001
+C     PROGRAM IS DIMENSIONED FOR A MAXIMUM OF 9 PARAMETERS
+      double precision X(39),SCALE(39),PL(40)
+      DIMENSION P(40,39),Y(40),PSTAR(39),PBAR(39)
+      INTEGER MATRIX(5,5)
+C     THIS MATRIX COUNTS THE NUMBER OF EACH TYPE OF MOVE
+C     FOLLOWING EACH TYPE OF PREVIOUS MOVE SUMMING MATRIX(I,J)
+C     OVER I=1,5 GIVES THE NUMBER OF TIMES MOVE J WAS USED
+      LOGICAL TRACE
+      ALPH=1.0
+      BET=0.5
+      TRACE=.TRUE.
+      GAMMA=2.0
+      IF(CRIT.LE.0.0)CRIT=1.E-8
+      IF(ITMAX.LE.0)ITMAX=1
+      DO 5 I=1,5
+      DO 5 J=1,5
+    5 MATRIX(I,J)=0
+      LASTM=1
+      ITER=1
+      NVP1=NV+1
+      FNV=NV
+      FNVP1=NVP1
+      ASSIGN 35 TO NEXT
+C     DO 15 J=1,NV
+C     IF(SCALE(J).GT.0.0) GO TO 15
+C     SCALE(J)=X(J)*.2
+C  15 CONTINUE
+C     GENERATE A REGULAR SIMPLX IN NV DIMENSIONS WITH VERTICES AT UNIT
+C     DISTANCE FROM THE CENTROID AND CENTROID AT THE ORIGIN
+      T1=(1.0-SQRT(FNVP1))/SQRT(FNV**3)
+      T2=SQRT(FNVP1/FNV)+T1
+      DO 23 I=1,NV
+      DO 22 J=1,NV
+      IF (I-J)20,21,20
+   20 P(I,J)=T1
+      P(J,I)=T1
+      GO TO 22
+   21 P(I,I)=T2
+   22 CONTINUE
+   23 CONTINUE
+      T1=-1.0/SQRT(FNV)
+      DO 24 J=1,NV
+   24 P(NVP1,J)=T1
+C     NOTE THAT THE NV POINTS P(I,J), J=1,NV DEFINE THE ITH
+C     POINT IN THE NV DIMENSIONED SIMPLEX
+C     MOVE CENTROID TO STARTING VECTOR AND SCALE COLUMNS
+      DO 26 J=1,NV
+      DO 25 I=1,NVP1
+   25 P(I,J)=P(I,J)*SCALE(J)+X(J)
+   26 CONTINUE
+C     COMPUTE FUNCTION VALUES FOR SIMPLEX POINTS AND FIND MIN VALUE
+C     OF FUNCTION
+      DO 29 I=1,NVP1
+      WRITE(*,669) I,(P(I,J),J=1,NV)
+      DO 28 J=1,NV
+   28 PSTAR(J)=P(I,J)
+      T1=FOFS(NV,PSTAR)
+   29 Y(I)=T1
+   30 T1=Y(1)
+      IL=1
+      DO 32 I=2,NVP1
+      IF(T1-Y(I))32,32,31
+   31 T1=Y(I)
+      IL=I
+   32 CONTINUE
+      GO TO NEXT,(35,80)
+   35 IF(TRACE) WRITE(*,600)
+  600 FORMAT(' ',24X,'NO',4X,'IL',3X,'FUNCTION',4X,'CRITERION',3X,'PARAM
+     *ETERS')
+      ASSIGN 80 TO NEXT
+C     STARTING POINT OF ITERATIVE CYCLE, FIND Y(IH)
+ 1000 T1=Y(1)
+      IH=1
+      TRACE=.FALSE.
+      IT=ITER-1
+      IF(MOD(IT,ITRACE).EQ.0) TRACE=.TRUE.
+      IF (MOD(IT,IOPT).NE.0) GO TO 44
+      IF (IT.EQ.0) GO TO 43
+      DO 41 I=1,NV
+      IF (ABS(P(IL,I)-PL(I)).GT.0.00000001) GO TO 43
+   41 CONTINUE
+      WRITE(*,700) IOPT
+  700 FORMAT(/,'NO IMPROVEMENT IN',I3,'TRIALS')
+      GO TO 90
+   43 DO 42 I=1,NV
+   42 PL(I)=P(IL,I)
+   44 DO 46 I=2,NVP1
+      IF(T1-Y(I))45,46,46
+   45 T1=Y(I)
+      IH=I
+   46 CONTINUE
+C     COMPUTE CENTROID EXCLUDING POINT WITH MAX VALUE
+      DO 50 J=1,NV
+      T1=0.0
+      DO 49 I=1,NVP1
+      IF(I-IH)48,49,48
+   48 T1=P(I,J)+T1
+   49 CONTINUE
+   50 PBAR(J)=T1/FNV
+C     TRY A REFLECTION
+C     TRY A REFLECTION
+      DO 51 J=1,NV
+   51 PSTAR(J)=(1.0+ALPH)*PBAR(J)-ALPH*P(IH,J)
+      T1=FOFS(NV,PSTAR)
+      IF(T1.GT.Y(IL)) GO TO 54
+C     REFLECTION SUCCEEDED, TRY AN EXPANSION
+      DO 52 J=1,NV
+      P(IH,J)=PSTAR(J)
+   52 PSTAR(J)=(1.0+GAMMA)*PSTAR(J)-GAMMA*PBAR(J)
+      T2=T1
+      T1=FOFS(NV,PSTAR)
+      IL=IH
+      IF(T1.GT.T2) GO TO 76
+C     EXPANSION SUCCEEDED
+      IF(TRACE) WRITE(*,601)
+  601 FORMAT(20H EXPANSION SUCCEEDED)
+      MATRIX(LASTM,1)=MATRIX(LASTM,1)+1
+      LASTM=1
+      GO TO 72
+   54 T2=Y(IL)
+      I2=IL
+C     REFLECTION FAILED, FIND NEXT TO BIGGEST Y AND TEST
+      DO 57 I=1,NVP1
+      IF(I-IH)55,57,55
+   55 IF(Y(I)-T2)57,57,56
+   56 T2=Y(I)
+      I2=I
+   57 CONTINUE
+      IF(T1.LT.T2) GO TO 71
+C     NEW POINT CLOSE TO MAXIMUM, EXCHANGE IF NECESSARY AND TRY A CONTRA
+C     CTION
+      IF(T1.GE.Y(IH)) GO TO 61
+C     EXCHANGE PSTAR AND Y
+      DO 60 J=1,NV
+      T2=PSTAR(J)
+      PSTAR(J)=P(IH,J)
+   60 P(IH,J)=T2
+C     CALCULATE NEW POINT FOR CONTRACTION
+   61 DO 62 J=1,NV
+   62 PSTAR(J)=(1.0-BET)*PBAR(J)+BET*P(IH,J)
+      T1=FOFS(NV,PSTAR)
+      IF(T1.LT.Y(IH)) GO TO 70
+C     CONTRACTION FAILED
+      IF(TRACE) WRITE(*,602)
+  602 FORMAT(19H CONTRACTION FAILED)
+      MATRIX(LASTM,5)=MATRIX(LASTM,5)+1
+      LASTM=5
+      DO 66 I=1,NVP1
+      IF(I-IL)64,66,64
+   64 DO 65 J=1,NV
+      P(I,J)=(P(IL,J)+P(I,J))/2.0
+   65 PSTAR(J)=P(I,J)
+      Y(I)=FOFS(NV,PSTAR)
+   66 CONTINUE
+      GO TO 30
+   70 IF(TRACE) WRITE(*,603)
+  603 FORMAT(22H CONTRACTION SUCCEEDED)
+      MATRIX(LASTM,4)=MATRIX(LASTM,4)+1
+      LASTM=4
+      IF(T1.LT.Y(IL))IL=IH
+      GO TO 72
+   71 IF(TRACE) WRITE(*,664)
+  664 FORMAT(12H NORMAL MOVE)
+      MATRIX(LASTM,3)=MATRIX(LASTM,3)+1
+      LASTM=3
+   72 Y(IH)=T1
+   73 DO 74 J=1,NV
+   74 P(IH,J)=PSTAR(J)
+      GO TO 80
+   76 IF(TRACE) WRITE(*,604)
+  604 FORMAT(21H REFLECTION SUCCEEDED)
+      MATRIX(LASTM,2)=MATRIX(LASTM,2)+1
+      LASTM=2
+      Y(IH)=T2
+   80 T1=0.0
+C     CHECK FOR MINIMUM
+      DO 81 I=1,NVP1
+   81 T1=Y(I)+T1
+      T1=T1/FNVP1
+      T2=0.0
+      DO 82 I=1,NVP1
+   82 T2=(Y(I)-T1)**2+T2
+      T2=SQRT(T2/FNV)
+      IF(T2.LT.CRIT) GO TO 90
+      IF(TRACE) WRITE(*,665)ITER,IL,Y(IL),T2,(P(IL,J),J=1,NV)
+  665 FORMAT(1H+,20X,2I6,2E12.4,39F8.3)
+      ITER=ITER+1
+      IF(ITER.LT.ITMAX) GO TO 1000
+      WRITE(*,666)
+  666 FORMAT(29H MAXIMUM NUMBER OF ITERATIONS)
+   90 DO 91 J=1,NV
+   91 X(J)=P(IL,J)
+      WRITE(*,876)((MATRIX(I,J),J=1,5),I=1,5)
+  876 FORMAT(/,29X,'SUBSEQUENT MOVE'/' ',24X,'EXP REF NOR CON FLD'
+     */' ',17X,'EXP',5I5/' ',17X,'REF',5I5/' ','PREVIOUS',9X,'NOR',5I5/'
+     * ','MOVE',11X,'CON',5I5/' ',17X,'FLD',5I5)
+      DO 92 I=1,NVP1
+      WRITE(*,669) I,(P(I,J),J=1,NV)
+  669 FORMAT(' ','VERTEX',I3,2X,39F8.3)
+   92 CONTINUE
+      WRITE(*,667) ITER,IL,Y(IL),T2
+  667 FORMAT(/,'ITER=',I4,1X,'IL=',I2,1X,'Y(IL)=',E11.4,3X,'CRITE
+     *',E11.4)
+      WRITE(*,668) (P(IL,J),J=1,NV),Y(IL)
+      if(iter.ne.200)
+     *print*,"a ter eta sz 4drifts (then 2 dummy drifts) z po st"
+      if(iter.ne.500)WRITE(*,"(20f10.4)") (P(IL,J),J=1,NV),Y(IL)
+      if(iter.ne.40)WRITE(124,"(20f10.4)") (P(IL,J),J=1,NV),Y(IL)
+  668 FORMAT(' ','BEST PARAMETER ESTIMATES',39F10.3)
+      RETURN
+      END
+
+      subroutine calc_LAM(nrows,ncols,th,LAM)
+      Use MKL_DFTI
+      integer i,j,k,m,nr,nc,nrows,ncols
+      parameter (nr=100)
+      parameter (nc=160)
+      double complex blkcirc_2D(nr*2-1,nc*2-1)
+      double complex blkcirc((nr*2-1)*(nc*2-1))
+      equivalence (blkcirc_2D, blkcirc)
+      type(DFTI_DESCRIPTOR), POINTER :: My_Desc1_Handle
+      integer Status, L(2)
+      double precision s1,s2,rows(nr,nc),cols(nr,nc),th(2)
+      double precision LAM(nr*2-1,nc*2-1),tx(nc),ty(nr)
+
+      if (nrows.ne.nr .or. ncols.ne.nc) then
+        write(*,*) "ERROR: nrows/ncols in accum not equal to"
+        write(*,*) "   parameters nr/nc in calc_LAM. Exiting."
+        stop
+      endif
+
+      s1=th(1)
+      s2=th(2)
+
+ccccccccccccccccccccccccccccccccccccccccccccccccc
+c   The following only needs to be done once.   c
+c   It generates 'LAM' which is then used to    c
+c   multiply against complex random numbers     c
+c   then FFT'd to generate the random fields.   c
+ccccccccccccccccccccccccccccccccccccccccccccccccc
+
+      do i=1,nc
+        tx(i)=i-1
+      enddo
+
+      do i=1,nr
+        ty(i)=i-1
+      enddo
+
+      do i=1,nc
+      do j=1,nr
+         rows(j,i)=(1.-(tx(i)-tx(1))**2/s2**2
+     +                -(tx(i)-tx(1))*(ty(j)-ty(1))/(s1*s2)
+     +                -(ty(j)-ty(1))**2/s1**2)
+     +   *exp(-((tx(i)-tx(1))**2/s2**2+(ty(j)-ty(1))**2/s1**2))
+
+         cols(j,i)=(1.-(tx(1)-tx(i))**2/s2**2
+     +                -(tx(1)-tx(i))*(ty(j)-ty(1))/(s1*s2)
+     +                -(ty(j)-ty(1))**2/s1**2)
+     +   *exp(-((tx(1)-tx(i))**2/s2**2+(ty(j)-ty(1))**2/s1**2))
+      enddo
+      enddo
+
+      do i=1,nc
+      do j=1,nr
+        blkcirc_2D(j,i)=rows(j,i)
+      enddo
+      enddo
+
+      do i=1,nc-1
+      do j=1,nr
+        blkcirc_2D(j,i+nc)=cols(j,nc-i+1)
+      enddo
+      enddo
+
+      do i=1,nc
+      do j=1,nr-1
+        blkcirc_2D(j+nr,i)=cols(nr-j+1,i)
+      enddo
+      enddo
+
+      do i=1,nc-1
+      do j=1,nr-1
+        blkcirc_2D(j+nr,i+nc)=rows(nr-j+1,nc-i+1)
+      enddo
+      enddo
+
+! Perform a complex to complex transform
+
+      L(1)=nr*2-1
+      L(2)=nc*2-1
+      Status = DftiCreateDescriptor(My_Desc1_Handle, DFTI_DOUBLE,
+     +DFTI_COMPLEX, 2, L)
+      Status = DftiCommitDescriptor(My_Desc1_Handle)
+      Status = DftiComputeForward(My_Desc1_Handle, blkcirc)
+      Status = DftiFreeDescriptor(My_Desc1_Handle)
+
+! result is given by blkcirc_2D(j,k), 1<=j<=nr*2-1, 1<=k<=nc*2-1
+
+      do i=1,nc*2-1
+      do j=1,nr*2-1
+        LAM(j,i)=real(blkcirc_2D(j,i))/((nc*2-1)*(nr*2-1))
+        if (LAM(j,i).lt.-10e-15) then
+          write(*,*) 'Could not find positive definite embedding!',
+     +                LAM(j,i)
+          stop
+        endif
+        if (LAM(j,i).lt.0) then
+          LAM(j,i)=0
+        else
+          LAM(j,i)=sqrt(LAM(j,i))
+        endif
+      enddo
+      enddo
+
+      return
+      end
+
+
+      subroutine circulant_grf(nrows,ncols,LAM,gg1,F1,F2)
+      Use MKL_DFTI
+      integer i,j,k,m,nr,nc,nrows,ncols
+      parameter (nr=100)
+      parameter (nc=160)
+      double precision gg1(2*(2*nr-1)*(2*nc-1))
+      double complex X_2D(nr*2-1,nc*2-1)
+      double complex X((nr*2-1)*(nc*2-1))
+      equivalence (X_2D, X)
+      type(DFTI_DESCRIPTOR), POINTER :: My_Desc1_Handle
+      integer Status, L(2)
+      double precision LAM(nr*2-1,nc*2-1)
+      double precision F1(nr,nc),F2(nr,nc)
+
+      if (nrows.ne.nr .or. ncols.ne.nc) then
+        write(*,*) "ERROR: nrows/ncols in accum not equal to"
+        write(*,*) "   parameters nr/nc in circulant_grf. Exiting."
+        stop
+      endif
+
+! Populate X_2D with random complex numbers scaled by LAM
+
+      k=1
+      do i=1,nc*2-1
+      do j=1,nr*2-1
+        X_2D(j,i)=LAM(j,i)*cmplx(gg1(k),gg1(k+1))
+        k=k+2
+      enddo
+      enddo
+
+! Do two-dimensional double precision complex FFT
+
+      L(1)=nr*2-1
+      L(2)=nc*2-1
+      Status = DftiCreateDescriptor(My_Desc1_Handle, DFTI_DOUBLE,
+     +DFTI_COMPLEX, 2, L)
+      Status = DftiCommitDescriptor(My_Desc1_Handle)
+      Status = DftiComputeForward(My_Desc1_Handle, X)
+      Status = DftiFreeDescriptor(My_Desc1_Handle)
+
+! Two Gaussian Random Fields are in F1 and F2
+
+      do i=1,nc
+      do j=1,nr
+        F1(j,i)=real(X_2D(j,i))
+        F2(j,i)=aimag(X_2D(j,i))
+      enddo
+      enddo
+
+      return
+      end
+
+

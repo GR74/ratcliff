@@ -1,0 +1,423 @@
+File: /u/russ/bench/intel/benchtwod3/README_benchtwod3
+
+Ran benchmarks on TACC Stampede Xeon Phi Cluster.
+
+In this directory /u/russ/bench/intel/benchtwod3/
+
+README_benchtwod3 - this file
+benchtwod3mpi.1 - output of benchtwod3mpi on 1 core
+benchtwod3mpi.2	- output of benchtwod3mpi on 2 cores
+benchtwod3mpi.3	- output of benchtwod3mpi on 3 cores
+benchtwod3mpi.4	- output of benchtwod3mpi on 4 cores
+benchtwod3mpi.5	- output of benchtwod3mpi on 5 cores
+benchtwod3mpi.6	- output of benchtwod3mpi on 6 cores
+benchtwod3mpi.f - the Fortran program
+mpi.batchfile   - the batch file
+benchtwod3mpi.6.png - an image file of x-axis responses for 
+                      the 6 core condition
+
+I saved the raw RT (steps) and x/y coordinates for
+each simulation in the above .1->.6 files. You can filter
+out all 18000 simulations by grepping out the files with
+the string 'RES' in them.
+
+See 
+howto4roger/tacc_stampede.txt
+howto4roger/openmpi_build.txt
+...for running simulations using benchtwod3.f on one node
+(one node has 68 cores, 4 threads per core)
+
+In order to use more than one node, we needed to add in MPI
+to pass values from accum in nodes back to a master node.
+The program to do this is a modified version of
+benchtwod3.f called benchtwod3mpi.f
+
+We are still using openMP to distribute threads to cores
+on each node. Note that I did not try to minimize calls
+to random number generators to fractions of nsim, even
+though the parallel sections are scaled down by the number
+of cores (nsim/N threads per accum execution per node).
+
+MPI runs all of benchtwod3mpi.f on all nodes, except 
+for areas surrounded by IF statements which are relegated
+to the "master". Again, I did not take exacting care to
+make sure that the non-master nodes were doing less work 
+than they needed to. It really doesn't matter: those non-
+master nodes simply pass their accum results to the master,
+and then they do whatever they want. All I did was make 
+sure they did not print out messages, which would confuse
+the output.
+
+The critical MPI commands are MPI_SEND (which sends accum results
+from non-master nodes) and MPI_RECV (which the master issues and
+waits on each non-master node in turn for its MPI_SEND). The
+master then places the received data into arrays and continues
+with the processing, calculating quantiles, etc.
+
+Compile benchtwod3mpi.f like this on Stampede:
+
+(We still need mkl_dfti.o, but don't need to make it with mpiifort.)
+
+ifort -ipo -c /opt/intel/Compiler/11.1/064/mkl/include/mkl_dfti.f90
+
+mpiifort -traceback -xMIC-AVX512 -qopenmp -lmkl_intel_lp64 \
+-lmkl_intel_thread -lmkl_core benchtwod3mpi.f mkl_dfti.o -o benchtwod3mpi
+
+In order to run MPI prograns you must submit them using
+sbatch. (srun errors-out).
+
+sbatch takes a batch file which looks like this:
+
+mpi.batchfile
+-------
+#!/bin/bash
+#SBATCH -J myMPI           # job name
+#SBATCH -o myMPI.o%j       # output and error file name (%j expands to jobID)
+#SBATCH -n 6               # total number of mpi tasks requested
+#SBATCH -N 6               # total number of nodes requested
+#SBATCH -p normal          # queue (partition) -- normal, development, etc.
+#SBATCH -t 01:30:00        # run time (hh:mm:ss) - 1.5 hours
+#SBATCH --mail-user=russchilders@gmail.com
+#SBATCH --mail-type=begin  # email me when the job starts
+#SBATCH --mail-type=end    # email me when the job finishes
+
+export OMP_NUM_THREADS=64
+#export KMP_AFFINITY="verbose,compact"
+export KMP_AFFINITY="compact"
+export KMP_HW_SUBSET=1T,1O
+
+ibrun ./benchtwod3mpi        # run the MPI executable
+-------
+
+The lines 
+#SBATCH -n 6               # total number of mpi tasks requested
+#SBATCH -N 6               # total number of nodes requested
+...tell the batch processor to use 6 nodes and to run one version
+of ./benchtwod3mpi on each.
+
+Note that we were in the $WORK directory
+/work/04601/tg839007/benchtwod3
+on the KNL Cluster.
+
+Run the batch file like this:
+
+sbatch --cpu-freq=high mpi.batchfile
+
+I (Russ) was sent an email telling me when the batch started
+and when it ended and how long it took. Here are the elapsed times
+(in seconds) for 1->6 nodes to run 2*9000 simulations:
+
+N  Time
+1  41
+2  24
+3  18
+4  15
+5  12
+6  11
+
+If there is a 5-second overhead for all of these (batch job submission 
+time), then here is time net of overhead:
+
+N  Time-5
+1  36
+2  19
+3  13
+4  10
+5  7
+6  6
+
+If the times scale down linearly from the N-1 condition (after
+removing the 5-second overhead):
+
+N  Time-5
+1  36/1=36
+2  36/2=18
+3  36/3=13
+4  36/4=9
+5  36/5=7
+6  36/6=6
+
+January 11, 2017
+================
+
+To run this on eccles:
+
+ifort -c /opt/intel/Compiler/11.1/064/mkl/include/mkl_dfti.f90
+
+/tmp/bin/mpifort -O3 -tpp7 -xW -cm -no-prec-div -w -openmp \
+-L/opt/intel/Compiler/11.1/064/mkl/lib/em64t -lmkl_intel_lp64 \
+-lmkl_intel_thread -lmkl_core \
+-I/opt/intel/composer_xe_2015.0.090/mkl/include \
+benchtwod3mpi.f mkl_dfti.o -o benchtwod3mpi
+
+Note that the "-ipo" flag is excluded, because that created errors
+on eccles.
+
+Compile the reality check program russ2.f:
+
+/tmp/bin/mpifort russ2.f -o russ2
+
+Run russ2 on eccles and core64rr
+
+/tmp/bin/mpirun -x LD_LIBRARY_PATH -host eccles,core64rr -np 2 ./russ2
+
+--> Note that we have to export the LD_LIBRARY_PATH (to core64rr)
+
+Run on core64rr only (from core64rr):
+
+/tmp/bin/mpirun --bind-to none ./benchtwod3mpi
+
+/tmp/bin/mpirun -x LD_LIBRARY_PATH -x OMP_NUM_THREADS=64 -host core64rr -n 1 benchtwod3mpi
+
+Run on eccles,core64rr,core48 (from eccles):
+
+/tmp/bin/mpirun --bind-to none -x LD_LIBRARY_PATH -x OMP_NUM_THREADS=64 -host eccles,core64rr,core48 -n 3 ./benchtwod3mpi
+
+Note that "--bind-to none" is included to allow threaded processes to go to 
+the nodes they want.
+
+January 13, 2017
+================
+
+Created a new MPI benchtwod3mpi.f:
+
+benchtwod3mpi.f.new_accum.f
+
+...which keeps the "slave" routines inside of accum.
+The "master" sends parameters to the "slaves", accumulates
+the results, and then sends more parameters. The "master"
+tells the "slaves" to exit by sending a ter=-1 to them.
+
+Had trouble at first getting the "master" to send parameters
+to the "slaves". Ends up that this is solved by having "slaves"
+initially send a dummy message to the "master". After that,
+back-and-forth communication works fine.
+
+January 14, 2017
+================
+
+Email from Roger:
+
+We can do fitting on the 80 phis that you can grab at once (I am pretty sure
+you told me that number).  So changing the fitting program will be even more useful.
+
+thanks
+roger
+
+BTW, parallelizing simple would not help that much because you could only split it
+int N parallel parts where N is the number of parameters.  Maybe OK if we have a
+machine with up to 10 cores and they were all the same, but with our lab
+systems (core 64 thynne etc) the paralleization you are working on is more fine
+grained and better for what we want to do.
+
+When you get a scheme set up, I will try and set up the gaussian process model
+to use your framework so I know how to use all this.
+
+---
+
+My reply:
+
+Look at
+
+/u/russ/bench/intel/benchtwod3/benchtwod3mpi.f.new_accum.f
+
+The MPI-specific calls are at the top and bottom of the main routine
+and inside of accum(). Note that I declare dummy parameters at the
+start of the program for the first call the slaves make to accum() [I
+call ter terL, for "local", but it could be ter and it won't hurt
+anything. We need the individual parameters in the dummy call because
+accum() doesn't like it if you call it without the correct variable
+types and sizes). The final message to the slaves has a terL=-1, to
+tell them to exit.
+
+Note the
+
+include "mpif.h"
+
+line, which is needed in the main routine and in accum(). This has
+variable, structure, and subroutine declarations. Probably paths as
+well.
+
+I put reality-check print statements "I am IRANK" to report if a node
+is the master (IRANK of zero) or a slave (IRANK of 1,2,...). Those can
+be commented out after things are running.
+
+You can try out your routine locally by compiling it with this:
+
+ifort -c /opt/intel/Compiler/11.1/064/mkl/include/mkl_dfti.f90
+
+/tmp/bin/mpifort -O3 -tpp7 -xW -cm -no-prec-div -w -openmp \
+-L/opt/intel/Compiler/11.1/064/mkl/lib/em64t -lmkl_intel_lp64 \
+-lmkl_intel_thread -lmkl_core \
+-I/opt/intel/composer_xe_2015.0.090/mkl/include \
+<your routine name here> mkl_dfti.o -o twod3parallelmpi
+
+Then running it with this:
+
+/tmp/bin/mpirun --bind-to none -x LD_LIBRARY_PATH -x
+OMP_NUM_THREADS=64 -host eccles,core64rr,core48 -n 3
+./twod3parallelmpi
+
+Note that I removed the -ipo flag, because it was causing compiler
+errors on eccles.
+
+I have the above compile/run commands in
+
+/u/russ/bench/intel/benchtwod3/README_benchtwod3
+
+---
+
+Run 
+twod3fitmpi.f
+
+with 78 nodes
+64 cores 
+1 thread per core
+
+change nsim=64*78*2
+
+May 15, 2017
+============
+
+Benchmarked eccles, thynne, mori, core48, core64rr
+using benchtwod3mpi.f
+
+ifort -c /opt/intel/Compiler/11.1/064/mkl/include/mkl_dfti.f90
+
+/opt/openmpi/bin/mpifort -O3 -tpp7 -xW -cm -no-prec-div -w -openmp \
+-L/opt/intel/Compiler/11.1/064/mkl/lib/em64t -lmkl_intel_lp64 \
+-lmkl_intel_thread -lmkl_core \
+-I/opt/intel/composer_xe_2015.0.090/mkl/include \
+benchtwod3mpi.f mkl_dfti.o -o benchtwod3mpi
+
+bench_5_workstations_unbalanced.sh > bench_5_workstations_unbalanced.out
+
+thynne
+Mon May 15 18:05:42 EDT 2017
+Mon May 15 18:07:33 EDT 2017
+-->111 seconds
+
+eccles
+Mon May 15 18:07:33 EDT 2017
+Mon May 15 18:10:02 EDT 2017
+--> 149 seconds
+
+mori
+Mon May 15 18:10:02 EDT 2017
+Mon May 15 18:12:53 EDT 2017
+-->171 seconds
+
+core64rr
+Mon May 15 18:12:53 EDT 2017
+Mon May 15 18:14:05 EDT 2017
+-->72 seconds
+
+core48
+Mon May 15 18:14:05 EDT 2017
+Mon May 15 18:15:36 EDT 2017
+-->91 seconds
+
+all of them
+Mon May 15 18:15:36 EDT 2017
+Mon May 15 18:16:14 EDT 2017
+-->38 seconds
+
+Here is the output for "all of them":
+
+ 0.289  118    312.    344.    376.    395.    432.
+ 0.418  171    307.    342.    370.    395.    432.
+ 0.200   82    312.    348.    366.    389.    464.
+ 0.068   28    340.    355.    366.    391.    448.
+ 0.024   10    351.    378.    437.    494.    535.
+
+ 0.244  107    316.    350.    372.    394.    452.
+ 0.282  124    314.    354.    377.    407.    481.
+ 0.292  128    309.    345.    376.    406.    506.
+ 0.130   57    315.    358.    377.    401.    436.
+ 0.052   23    333.    388.    508.    552.    689.
+
+ 179.900  13.700  18.950   9.130  11.180   8.307   0.531  15.400  10.770   6.720  14.160  11.510   8.780
+  0.421  342.5  385.9  414.7  443.7  486.1
+  0.280  352.6  392.7  419.8  447.5  489.6
+  0.179  346.6  390.3  420.0  448.9  489.7
+  0.050  349.1  389.0  417.6  449.7  490.6
+  0.069  342.2  381.4  413.8  445.2  490.0
+  0.330  357.1  396.7  426.9  456.4  497.3
+  0.227  354.7  397.5  429.9  457.7  500.0
+  0.262  357.0  398.3  427.1  457.7  500.0
+  0.109  352.9  394.0  424.0  454.0  495.1
+  0.072  344.9  385.0  417.1  450.0  498.3
+ 179.900  13.700  18.950   9.130  11.180   8.307   0.531  15.400  10.770   6.720  14.160  11.510   8.780 400.756
+
+
+May 16, 2017
+============
+
+Given the above number of seconds it takes each computer
+to run the benchmark program, here is the number of loops
+to be apportioned to the 9000 nsim accum loop (instead 
+of 9000/5 each):
+
+thynne:   1746
+eccles:   1301
+mori:     1133
+core64rr: 2691
+core48:   2129
+
+total:    9000
+
+The new program is 
+
+benchtwod3mpi_balanced.f
+
+...and is compiled like this (see bench_5_workstations_balanced.sh):
+
+ifort -c /opt/intel/Compiler/11.1/064/mkl/include/mkl_dfti.f90
+
+/opt/openmpi/bin/mpifort -O3 -tpp7 -xW -cm -no-prec-div -w -openmp \
+-L/opt/intel/Compiler/11.1/064/mkl/lib/em64t -lmkl_intel_lp64 \
+-lmkl_intel_thread -lmkl_core \
+-I/opt/intel/composer_xe_2015.0.090/mkl/include \
+benchtwod3mpi_balanced.f mkl_dfti.o -o benchtwod3mpi_balanced
+
+...and is run like this (where the -hosts option must be specified
+in exactly the order shown -hosts eccles,thynne,mori,core64rr,core48):
+
+/opt/openmpi/bin/mpirun --bind-to none -x LD_LIBRARY_PATH \
+-x OMP_NUM_THREADS=64 -host eccles,thynne,mori,core64rr,core48 -n 5 benchtwod3mpi_balanced
+
+This "balanced" version takes 24 seconds to run, which is 63% of the
+old "unbalanced" (equally-apportioned accum loops) time of 38 seconds.
+
+Note that the routine tries to get as many threads (cores) on each machine
+(up to a maximum of 64), even if adding more threads does not provide
+much of a speedup.
+
+Here is the output of the balanced version:
+
+ 0.289  118    312.    344.    376.    395.    432.
+ 0.418  171    307.    342.    370.    395.    432.
+ 0.200   82    312.    348.    366.    389.    464.
+ 0.068   28    340.    355.    366.    391.    448.
+ 0.024   10    351.    378.    437.    494.    535.
+
+ 0.244  107    316.    350.    372.    394.    452.
+ 0.282  124    314.    354.    377.    407.    481.
+ 0.292  128    309.    345.    376.    406.    506.
+ 0.130   57    315.    358.    377.    401.    436.
+ 0.052   23    333.    388.    508.    552.    689.
+
+ 179.900  13.700  18.950   9.130  11.180   8.307   0.531  15.400  10.770   6.720  14.160  11.510   8.780
+  0.413  349.8  388.2  416.5  445.4  486.8
+  0.276  354.1  392.5  419.6  451.2  492.0
+  0.189  347.9  391.3  420.7  449.0  489.4
+  0.049  345.4  384.4  416.2  444.4  488.5
+  0.073  345.5  385.3  412.8  440.6  486.4
+  0.320  354.5  394.8  423.3  452.7  495.0
+  0.236  356.6  399.6  425.7  455.0  496.9
+  0.255  353.8  396.2  425.9  454.8  495.7
+  0.111  354.5  397.1  431.6  461.2  504.8
+  0.077  352.9  396.5  421.0  450.9  487.9
+ 179.900  13.700  18.950   9.130  11.180   8.307   0.531  15.400  10.770   6.720  14.160  11.510   8.780 410.228
+
+End file: /u/russ/bench/intel/benchtwod3/README_benchtwod3
