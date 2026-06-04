@@ -69,3 +69,70 @@ def test_condition_g2_b_handles_5_categories():
     obs_quant = jnp.ones((5, 5)) * 400.0  # placeholder quantiles
     val = float(obj_b.condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant))
     assert np.isfinite(val)
+
+
+def test_fofs_b_new_returns_finite_scalar():
+    """fofs_b_new on real twod3datanew data (subject 0) returns finite positive scalar."""
+    import jax
+    from pathlib import Path
+    from shared import data_io
+    from model_b import objective as obj_b
+
+    path = Path(__file__).resolve().parents[2] / "data" / "twod3datanew"
+    raw = data_io.load_twod3datanew(path)
+    data = {
+        "prop": jnp.asarray(raw["prop"][0]),       # (2, 5)
+        "count": jnp.asarray(raw["count"][0]),     # (2, 5)
+        "quant": jnp.asarray(raw["quant"][0]),     # (2, 5, 5)
+    }
+    params = jnp.array([200., 50., 10., 2., 12., 10., 0.5,
+                        15., 10., 8., 14., 11., 9.])
+    key = jax.random.key(0)
+    val = float(obj_b.fofs_b_new(params, data, key, nsim=16, chunk_size=4))
+    assert np.isfinite(val)
+    assert val > 0, f"G2 should be positive, got {val}"
+
+
+def test_fofs_b_new_deterministic():
+    """Same key + same params -> same fofs value."""
+    import jax
+    from pathlib import Path
+    from shared import data_io
+    from model_b import objective as obj_b
+
+    path = Path(__file__).resolve().parents[2] / "data" / "twod3datanew"
+    raw = data_io.load_twod3datanew(path)
+    data = {
+        "prop": jnp.asarray(raw["prop"][0]),
+        "count": jnp.asarray(raw["count"][0]),
+        "quant": jnp.asarray(raw["quant"][0]),
+    }
+    params = jnp.array([200., 50., 10., 2., 12., 10., 0.5,
+                        15., 10., 8., 14., 11., 9.])
+    key = jax.random.key(7)
+    a = float(obj_b.fofs_b_new(params, data, key, nsim=16, chunk_size=4))
+    b = float(obj_b.fofs_b_new(params, data, key, nsim=16, chunk_size=4))
+    assert a == b, f"fofs_b_new non-deterministic: a={a!r}, b={b!r}"
+
+
+def test_fofs_b_new_responds_to_param_change():
+    """Changing ter should change fofs value (not zero gradient case at least)."""
+    import jax
+    from pathlib import Path
+    from shared import data_io
+    from model_b import objective as obj_b
+
+    path = Path(__file__).resolve().parents[2] / "data" / "twod3datanew"
+    raw = data_io.load_twod3datanew(path)
+    data = {
+        "prop": jnp.asarray(raw["prop"][0]),
+        "count": jnp.asarray(raw["count"][0]),
+        "quant": jnp.asarray(raw["quant"][0]),
+    }
+    params_a = jnp.array([200., 50., 10., 2., 12., 10., 0.5,
+                          15., 10., 8., 14., 11., 9.])
+    params_b = params_a.at[0].set(250.0)  # ter changed
+    key = jax.random.key(0)
+    val_a = float(obj_b.fofs_b_new(params_a, data, key, nsim=16, chunk_size=4))
+    val_b = float(obj_b.fofs_b_new(params_b, data, key, nsim=16, chunk_size=4))
+    assert val_a != val_b, f"fofs insensitive to ter change: both = {val_a}"

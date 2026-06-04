@@ -86,3 +86,55 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
         return jnp.where(obs_count[i] >= NCUT, c_full, c_lumped)
 
     return jnp.array([per_cat(i) for i in range(MC)]).sum()
+
+
+def fofs_b_new(params, data, key, nsim=512, chunk_size=4):
+    """
+    Vectorized G2 objective for Model B, summed across 2 conditions.
+
+    params : (13,) parameter vector. See clamp_b docstring for layout.
+    data   : dict with "prop" (2, 5), "count" (2, 5), "quant" (2, 5, 5).
+    key    : JAX typed key.
+    Returns scalar G2.
+    """
+    # Local imports to avoid hard top-level dependency cycle risk
+    from model_b import simulate as sim_b
+    from shared import prng
+
+    p = clamp_b(params)
+    ter, st, cr, crsd, sis, sig = p[0], p[1], p[2], p[3], p[4], p[5]
+    si = 6.0  # zone width, fixed
+
+    # Per-condition drift vectors (2 conditions x 3 drifts each)
+    avs = jnp.stack([
+        jnp.array([p[d1], p[d2], p[d3]]) for (d1, d2, d3) in COND_MAP_B
+    ])  # shape (2, 3)
+
+    # One subkey per condition
+    cond_keys = jnp.stack([prng.split_for_condition(key, ci) for ci in range(2)])
+
+    # Convert sis/sig/si to Python floats so they remain static for simulate_b's JIT
+    # (simulate_b has static_argnums on positions 8, 9, 10 = sis, sig, si).
+    # In a JIT'd outer caller, this conversion must be done at trace time, not runtime.
+    # For now (not JIT'd), use Python floats directly.
+    sis_py = float(sis)
+    sig_py = float(sig)
+    si_py = float(si)
+
+    # vmap simulate_b over (key, av1, av2, av3) — others are condition-invariant.
+    # simulate_b signature: (key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim, chunk_size)
+    sim_vmap = jax.vmap(
+        sim_b.simulate_b,
+        in_axes=(0, None, None, None, None, 0, 0, 0, None, None, None, None, None),
+    )
+    rts, cats = sim_vmap(
+        cond_keys, ter, st, cr, crsd,
+        avs[:, 0], avs[:, 1], avs[:, 2],
+        sis_py, sig_py, si_py, nsim, chunk_size,
+    )
+    # rts, cats: (2, nsim)
+
+    # vmap condition_g2_b over (rts[ci], cats[ci], data[ci, :])
+    g2_vmap = jax.vmap(condition_g2_b, in_axes=(0, 0, 0, 0, 0))
+    g2_per_cond = g2_vmap(rts, cats, data["prop"], data["count"], data["quant"])
+    return g2_per_cond.sum()
