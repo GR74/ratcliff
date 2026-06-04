@@ -71,6 +71,44 @@ def condition_g2_vectorized(rt, cat, obs_prop, obs_count, obs_quant):
     return contribs.sum()
 
 
-def fofs_new(params, data, key, nsim=4000):
-    """Placeholder — implemented in Task 3.C.1."""
-    raise NotImplementedError
+def fofs_new(params, data, key, nsim=4000, chunk_size=256):
+    """
+    Vectorized G² objective summed across 4 conditions.
+
+    params : (10,) parameter vector — see clamp() docs.
+    data   : dict with "prop" (4,3), "count" (4,3), "quant" (4,5,3).
+    key    : JAX typed key.
+    nsim   : trials per condition.
+    chunk_size : trial chunk for the Stage 2 simulator.
+
+    Returns scalar G² (sum over conditions).
+    """
+    p = clamp(params)
+    ter, st, sa, si, sig = p[0], p[1], p[3], p[4], p[5]
+    # Per-condition (drift, boundary) from COND_MAP
+    drifts = jnp.stack([p[di] for (di, _) in COND_MAP])     # (4,)
+    boundaries = jnp.stack([p[bi] for (_, bi) in COND_MAP])  # (4,)
+
+    # One subkey per condition, deterministic from `key`
+    cond_keys = jnp.stack([prng.split_for_condition(key, ci) for ci in range(4)])
+
+    # vmap simulate over (key, cr, av); other params are condition-invariant.
+    # simulate signature: (key, ter, st, cr, crsd, si, sig, av, nsim, chunk_size)
+    sim_vmap = jax.vmap(
+        sim_new.simulate,
+        in_axes=(0, None, None, 0, None, None, None, 0, None, None),
+    )
+    rts, cats = sim_vmap(
+        cond_keys, ter, st, boundaries, sa, si, sig, drifts, nsim, chunk_size
+    )
+    # rts, cats: (4, nsim)
+
+    # vmap condition_g2 over the 4 (rts[ci], cats[ci], data[ci, :])
+    g2_vmap = jax.vmap(
+        condition_g2_vectorized,
+        in_axes=(0, 0, 0, 0, 0),
+    )
+    g2_per_cond = g2_vmap(
+        rts, cats, data["prop"], data["count"], data["quant"]
+    )
+    return g2_per_cond.sum()
