@@ -9,6 +9,38 @@ Targets: laptop (CPU dev), 64-core workstation (CPU production), H100 supercompu
 
 See `docs/plans/2026-06-03-ratcliff-speedup-design.md` for the full design and rationale.
 
-## Status
+## Quick start
 
-Stage 0 — repo init. See design doc §6 for the staged plan.
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -e ".[dev]"
+.\scripts\smoke.ps1
+```
+
+First smoke run takes 30–90 seconds (JAX JIT compile); subsequent runs are 9–14 seconds on a warm cache.
+
+If PowerShell blocks `.ps1` scripts, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke.ps1
+```
+
+On the Linux workstation:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+./scripts/smoke.sh
+```
+
+## Stage status
+
+- [x] Stage 0 — repo init, env setup
+- [x] Stage 1 — validation infrastructure, smoke tests pass on laptop CPU
+- [ ] Stage 2 — single-GEMM + cumsum rewrite of `model_a/simulate.py`
+- [ ] Stage 3 — `vmap` `fofs` over conditions, L-BFGS optimizer, simplex fallback
+- [ ] Stage 4 — Model B GRF + accumulator port
+- [ ] Stage 5 — benchmark report across laptop / 64-core / H100
+- [ ] Stage 6 (optional) — Triton kernel for per-step scan
