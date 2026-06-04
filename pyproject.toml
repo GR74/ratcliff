@@ -37,3 +37,6 @@ include = ["shared*", "model_a*", "model_b*"]
 [tool.pytest.ini_options]
 testpaths = ["shared/tests", "model_a/tests", "model_b/tests"]
 addopts = "-v --tb=short --strict-markers -ra"
+markers = [
+    "perf: performance regression tests (skipped by default, run with -m perf)",
+]
