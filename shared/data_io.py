@@ -4,36 +4,38 @@ from pathlib import Path
 import numpy as np
 
 
-def load_twod24data(path):
+def load_twod24data(path: str | Path) -> dict[str, np.ndarray]:
     """
-    Parse `twod24data` as 64 lines × 27 fields = 3 categories × (prop, count, q1..q5, x1, x2).
+    Parse a Ratcliff RT/proportion data file: N non-empty lines × 27 fields
+    = 3 categories × (prop, count, q1..q5, x1, x2). The x1/x2 RT-extreme
+    fields are ignored.
 
     Returns dict with:
-      prop  : (64, 3) float — observed response proportion per category
-      count : (64, 3) int   — observed trial count per category
-      quant : (64, 5, 3) float — 5 RT quantiles per category
+      prop  : (N, 3) float — observed response proportion per category
+      count : (N, 3) int   — observed trial count per category
+      quant : (N, 5, 3) float — 5 RT quantiles per category
     """
-    lines = [
-        ln for ln in Path(path).read_text().splitlines() if ln.strip()
-    ]
-    n_lines = len(lines)
+    raw_lines = Path(path).read_text().splitlines()
+    # Keep (file_line_number_1_based, content) for non-blank lines.
+    indexed = [(i, ln) for i, ln in enumerate(raw_lines, start=1) if ln.strip()]
+    n_lines = len(indexed)
 
     prop = np.zeros((n_lines, 3), dtype=np.float64)
     count = np.zeros((n_lines, 3), dtype=np.int64)
     quant = np.zeros((n_lines, 5, 3), dtype=np.float64)
 
-    for i, ln in enumerate(lines):
+    for record_idx, (file_lineno, ln) in enumerate(indexed):
         fields = ln.split()
         if len(fields) != 27:
             raise ValueError(
-                f"line {i}: expected 27 fields, got {len(fields)} — line: {ln!r}"
+                f"{path}:{file_lineno}: expected 27 fields, got {len(fields)} — line: {ln!r}"
             )
         for cat in range(3):
             base = cat * 9
-            prop[i, cat] = float(fields[base])
-            count[i, cat] = int(float(fields[base + 1]))
+            prop[record_idx, cat] = float(fields[base])
+            count[record_idx, cat] = int(float(fields[base + 1]))
             for q in range(5):
-                quant[i, q, cat] = float(fields[base + 2 + q])
+                quant[record_idx, q, cat] = float(fields[base + 2 + q])
             # fields base+7 (x1) and base+8 (x2) ignored — RT extremes, not used by fofs
 
     return {"prop": prop, "count": count, "quant": quant}
