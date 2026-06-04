@@ -43,3 +43,60 @@ def test_zone_array_cat1_inside_cat2_inside_5():
     assert int(k[50, 80]) == 1
     # Cell far from any bump (e.g., (0, 0)) should be cat 5
     assert int(k[0, 0]) == 5
+
+
+def test_simulate_chunk_b_returns_shapes():
+    from model_b import grf
+    import jax
+    LAM = grf.calc_LAM(s1=10.0, s2=10.0)
+    v1, v2, v3 = sim_b.drift_bumps(sis=12.0)
+    k_zone = sim_b.zone_array(si=6.0)
+    key = jax.random.key(0)
+    rt, cat = sim_b._simulate_chunk_b(
+        key, ter=200.0, st=50.0, cr=10.0, crsd=2.0,
+        av1=15.0, av2=10.0, av3=8.0,
+        LAM=LAM, v1=v1, v2=v2, v3=v3, k_zone=k_zone,
+        chunk_size=2,
+    )
+    assert rt.shape == (2,)
+    assert cat.shape == (2,)
+    assert jnp.all(jnp.isfinite(rt))
+
+
+def test_simulate_chunk_b_cat_in_valid_range():
+    from model_b import grf
+    import jax
+    LAM = grf.calc_LAM(s1=10.0, s2=10.0)
+    v1, v2, v3 = sim_b.drift_bumps(sis=12.0)
+    k_zone = sim_b.zone_array(si=6.0)
+    key = jax.random.key(0)
+    _, cat = sim_b._simulate_chunk_b(
+        key, ter=200.0, st=50.0, cr=10.0, crsd=2.0,
+        av1=15.0, av2=10.0, av3=8.0,
+        LAM=LAM, v1=v1, v2=v2, v3=v3, k_zone=k_zone,
+        chunk_size=4,
+    )
+    # cat in {1..5}
+    assert jnp.all((cat >= 1) & (cat <= 5))
+
+
+def test_simulate_chunk_b_deterministic():
+    from model_b import grf
+    import jax
+    LAM = grf.calc_LAM(s1=10.0, s2=10.0)
+    v1, v2, v3 = sim_b.drift_bumps(sis=12.0)
+    k_zone = sim_b.zone_array(si=6.0)
+    key = jax.random.key(42)
+    rt_a, _ = sim_b._simulate_chunk_b(
+        key, ter=200.0, st=50.0, cr=10.0, crsd=2.0,
+        av1=15.0, av2=10.0, av3=8.0,
+        LAM=LAM, v1=v1, v2=v2, v3=v3, k_zone=k_zone,
+        chunk_size=2,
+    )
+    rt_b, _ = sim_b._simulate_chunk_b(
+        key, ter=200.0, st=50.0, cr=10.0, crsd=2.0,
+        av1=15.0, av2=10.0, av3=8.0,
+        LAM=LAM, v1=v1, v2=v2, v3=v3, k_zone=k_zone,
+        chunk_size=2,
+    )
+    np.testing.assert_array_equal(rt_a, rt_b)
