@@ -49,3 +49,28 @@ def test_grouped_by_subject_returns_4_conditions_per_subject():
     assert g["prop"].shape == (16, 4, 3)
     assert g["count"].shape == (16, 4, 3)
     assert g["quant"].shape == (16, 4, 5, 3)
+
+
+def test_load_twod3datanew_returns_expected_shape():
+    from shared import data_io
+    from pathlib import Path
+    path = Path(__file__).resolve().parents[2] / "data" / "twod3datanew"
+    d = data_io.load_twod3datanew(path)
+    # 2 conditions per subject, 5 categories, 5 quantiles
+    assert d["prop"].ndim == 3 and d["prop"].shape[1:] == (2, 5)
+    assert d["count"].ndim == 3 and d["count"].shape[1:] == (2, 5)
+    assert d["quant"].ndim == 4 and d["quant"].shape[1:] == (2, 5, 5)
+    # Proportions per condition sum close to 1
+    prop_sums = d["prop"].sum(axis=2)
+    assert np.all(np.abs(prop_sums - 1.0) < 0.05)
+
+
+def test_load_twod3datanew_first_record_values():
+    from shared import data_io
+    from pathlib import Path
+    path = Path(__file__).resolve().parents[2] / "data" / "twod3datanew"
+    d = data_io.load_twod3datanew(path)
+    # First subject, first condition — sanity check
+    assert d["prop"][0, 0, 0] >= 0.0
+    # At least one category should have non-zero count
+    assert d["count"][0, 0].sum() > 0
