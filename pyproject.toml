@@ -1,0 +1,36 @@
+[project]
+name = "ratcliff"
+version = "0.1.0"
+description = "JAX port of Ratcliff spatially-extended diffusion models"
+requires-python = ">=3.11"
+dependencies = [
+    "jax>=0.4.28",
+    "jaxlib>=0.4.28",
+    "numpy>=1.26",
+    "scipy>=1.11",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-xdist>=3.5",
+]
+fit = [
+    "jaxopt>=0.8",
+    "optax>=0.2",
+]
+viz = [
+    "matplotlib>=3.8",
+    "jupyter>=1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["shared*", "model_a*", "model_b*"]
+
+[tool.pytest.ini_options]
+testpaths = ["shared/tests", "model_a/tests", "model_b/tests"]
+addopts = "-v --tb=short"
