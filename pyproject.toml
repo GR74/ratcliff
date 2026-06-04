@@ -4,8 +4,8 @@ version = "0.1.0"
 description = "JAX port of Ratcliff spatially-extended diffusion models"
 requires-python = ">=3.11"
 dependencies = [
-    "jax>=0.4.28",
-    "jaxlib>=0.4.28",
+    "jax>=0.4.30,<0.12",
+    "jaxlib>=0.4.30,<0.12",
     "numpy>=1.26",
     "scipy>=1.11",
 ]
@@ -31,6 +31,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["shared*", "model_a*", "model_b*"]
 
+[tool.setuptools.package-data]
+"*" = ["data/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["shared/tests", "model_a/tests", "model_b/tests"]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short --strict-markers -ra"
