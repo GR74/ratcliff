@@ -63,17 +63,50 @@ def calc_LAM(n: int = DEFAULT_N, m: int = DEFAULT_M, s1: float = 15.0, s2: float
     # 2D FFT, take real, normalize
     spectral = jnp.fft.fft2(blkcirc).real / (n_pad * m_pad)
 
-    # Positive-definite check. Tolerance matches Fortran reference (-1e-14;
-    # see `benchtwod3mpi.f.new_accum.f.THIS_ONE_WORKS` line 996). The empirical
-    # knee at 100x160 is s ≈ 17.95 per `reference/README_random_field`.
-    min_val = jnp.min(spectral)
+    # Note: PD embedding check moved to assert_pd_embedding() for JIT compatibility.
+    # Caller is responsible for ensuring s1, s2 are in the valid range (clamp_b
+    # in objective.py clips sig to [0.2, 17.0], well within the empirical 17.95 ceiling).
+    return jnp.sqrt(jnp.maximum(spectral, 0.0))
+
+
+def assert_pd_embedding(n: int = DEFAULT_N, m: int = DEFAULT_M,
+                       s1: float = 15.0, s2: float = 15.0):
+    """
+    Validate that the circulant embedding for (n, m, s1, s2) is positive-definite.
+
+    This runs the same spectral computation as calc_LAM but ONLY checks
+    positive-definiteness. Use this in Python-level preconditions before
+    calling calc_LAM inside a JIT region.
+
+    Raises ValueError if the minimum spectral value < -1e-14 (matching
+    the Fortran reference). For 100x160 fields, this happens at s1 or s2 > ~17.95.
+    """
+    # Repeat the embedding step from calc_LAM and check.
+    i_idx = jnp.arange(m)
+    j_idx = jnp.arange(n)
+    dx_pos = i_idx[None, :].astype(jnp.float64)
+    dy_pos = j_idx[:, None].astype(jnp.float64)
+    rows = _kernel_value(dx_pos, dy_pos, s1, s2)
+    cols = _kernel_value(-dx_pos, dy_pos, s1, s2)
+
+    n_pad = 2 * n - 1
+    m_pad = 2 * m - 1
+    blkcirc = jnp.zeros((n_pad, m_pad), dtype=jnp.complex128)
+    blkcirc = blkcirc.at[:n, :m].set(rows.astype(jnp.complex128))
+    cols_right = cols[:, 1:][:, ::-1]
+    blkcirc = blkcirc.at[:n, m:].set(cols_right.astype(jnp.complex128))
+    cols_bottom = cols[1:, :][::-1, :]
+    blkcirc = blkcirc.at[n:, :m].set(cols_bottom.astype(jnp.complex128))
+    rows_br = rows[1:, 1:][::-1, ::-1]
+    blkcirc = blkcirc.at[n:, m:].set(rows_br.astype(jnp.complex128))
+
+    spectral = jnp.fft.fft2(blkcirc).real / (n_pad * m_pad)
+    min_val = float(jnp.min(spectral))
     if min_val < -1e-14:
         raise ValueError(
-            f"Could not find positive definite embedding (min spectral = {float(min_val):.3e}). "
+            f"Could not find positive definite embedding (min spectral = {min_val:.3e}). "
             f"For 100x160, s1, s2 must be < ~17.95."
         )
-
-    return jnp.sqrt(jnp.maximum(spectral, 0.0))
 
 
 def circulant_grf(LAM, g1, g2):

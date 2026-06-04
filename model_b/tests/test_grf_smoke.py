@@ -18,10 +18,16 @@ def test_calc_LAM_is_nonneg():
     assert jnp.all(LAM >= 0)
 
 
-def test_calc_LAM_fails_on_large_s():
+def test_assert_pd_embedding_fails_on_large_s():
     """Per Russ's notes, s > 17.95 breaks the positive-definite embedding."""
     with pytest.raises(ValueError, match="positive definite"):
-        grf.calc_LAM(n=100, m=160, s1=20.0, s2=20.0)
+        grf.assert_pd_embedding(n=100, m=160, s1=20.0, s2=20.0)
+
+
+def test_assert_pd_embedding_passes_at_safe_s():
+    """At s=15, the embedding is positive-definite."""
+    # Should not raise
+    grf.assert_pd_embedding(n=100, m=160, s1=15.0, s2=15.0)
 
 
 def test_calc_LAM_smaller_field_works_at_smaller_s():
