@@ -93,3 +93,30 @@ def _simulate_chunk(key, ter, st, cr, crsd, L, v, chunk_size):
     cat = jnp.where((pos > IPA) & (pos < IPB), 1,
           jnp.where((pos <= IPC) | (pos >= IPD), 3, 2))
     return rt, cat
+
+
+@partial(jax.jit, static_argnums=(8, 9))
+def simulate(key, ter, st, cr, crsd, si, sig, av, nsim, chunk_size=256):
+    """
+    Run `nsim` independent Monte Carlo trials with the given parameters.
+
+    Returns (rt, cat) each of shape (nsim,). RT in ms; cat in {1, 2, 3}.
+
+    Trials are processed in chunks of `chunk_size` via jax.lax.map. The whole
+    computation is JIT'd into one XLA program; chunks run sequentially to keep
+    peak memory bounded. Each unique (nsim, chunk_size) pair triggers one JIT
+    compile.
+    """
+    L = chol_factor(sig)
+    v = drift_profile(av, si)
+
+    # Allocate enough chunks to cover nsim; last chunk may have padding trials
+    # that we'll slice off at the end.
+    n_chunks = (nsim + chunk_size - 1) // chunk_size
+    keys = prng.trial_keys(key, n_chunks)               # (n_chunks,) typed keys
+
+    def run_chunk(k):
+        return _simulate_chunk(k, ter, st, cr, crsd, L, v, chunk_size)
+
+    rts, cats = jax.lax.map(run_chunk, keys)            # (n_chunks, chunk_size) each
+    return rts.reshape(-1)[:nsim], cats.reshape(-1)[:nsim]

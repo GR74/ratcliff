@@ -116,3 +116,53 @@ def test_simulate_chunk_immediate_crossing_at_low_cr():
     # the MEDIAN RT is consistent with jstop ≈ 1-2.
     median_rt = float(jnp.median(rt))
     assert median_rt < 250, f"expected near-immediate crossing, median rt = {median_rt}"
+
+
+def test_simulate_returns_full_nsim_shape():
+    """simulate(...) returns (rt, cat) each of shape (nsim,)."""
+    key = prng.root_key(0)
+    rt, cat = sim_new.simulate(
+        key, ter=200.0, st=50.0, cr=50.0, crsd=10.0,
+        si=4.0, sig=5.0, av=20.0, nsim=512, chunk_size=128
+    )
+    assert rt.shape == (512,)
+    assert cat.shape == (512,)
+
+
+def test_simulate_handles_non_multiple_chunk():
+    """nsim that isn't a multiple of chunk_size still returns exactly nsim outputs."""
+    key = prng.root_key(0)
+    rt, cat = sim_new.simulate(
+        key, ter=200.0, st=50.0, cr=50.0, crsd=10.0,
+        si=4.0, sig=5.0, av=20.0, nsim=300, chunk_size=128
+    )
+    assert rt.shape == (300,)
+    assert cat.shape == (300,)
+
+
+def test_simulate_deterministic_for_same_key():
+    """Same key reproduces bit-exact outputs."""
+    key = prng.root_key(11)
+    rt_a, cat_a = sim_new.simulate(
+        key, ter=200.0, st=50.0, cr=50.0, crsd=10.0,
+        si=4.0, sig=5.0, av=20.0, nsim=64, chunk_size=64
+    )
+    rt_b, cat_b = sim_new.simulate(
+        key, ter=200.0, st=50.0, cr=50.0, crsd=10.0,
+        si=4.0, sig=5.0, av=20.0, nsim=64, chunk_size=64
+    )
+    np.testing.assert_array_equal(rt_a, rt_b)
+    np.testing.assert_array_equal(cat_a, cat_b)
+
+
+def test_simulate_differs_for_different_keys():
+    """Different keys produce different outputs."""
+    rt_a, _ = sim_new.simulate(
+        prng.root_key(0), ter=200.0, st=50.0, cr=50.0, crsd=10.0,
+        si=4.0, sig=5.0, av=20.0, nsim=64, chunk_size=64
+    )
+    rt_b, _ = sim_new.simulate(
+        prng.root_key(1), ter=200.0, st=50.0, cr=50.0, crsd=10.0,
+        si=4.0, sig=5.0, av=20.0, nsim=64, chunk_size=64
+    )
+    assert not jnp.array_equal(rt_a, rt_b)
