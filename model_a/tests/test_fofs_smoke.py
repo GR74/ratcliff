@@ -37,7 +37,7 @@ def test_fofs_is_deterministic_for_same_key():
     key = prng.root_key(7)
     a = float(jax_port.fofs(params, data, key, nsim=256))
     b = float(jax_port.fofs(params, data, key, nsim=256))
-    assert a == b
+    assert a == b, f"fofs non-deterministic: a={a!r}, b={b!r}"
 
 
 def test_fofs_changes_when_params_change():
@@ -50,4 +50,4 @@ def test_fofs_changes_when_params_change():
     # index to 6; use ter (0) or any other active parameter.
     a = float(jax_port.fofs(params_a, data, key, nsim=512))
     b = float(jax_port.fofs(params_b, data, key, nsim=512))
-    assert a != b
+    assert a != b, f"fofs insensitive to ter change: both returned {a!r}"
