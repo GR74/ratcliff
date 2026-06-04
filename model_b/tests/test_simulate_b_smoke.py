@@ -100,3 +100,49 @@ def test_simulate_chunk_b_deterministic():
         chunk_size=2,
     )
     np.testing.assert_array_equal(rt_a, rt_b)
+
+
+def test_simulate_b_full_nsim_shape():
+    import jax
+    key = jax.random.key(0)
+    rt, cat = sim_b.simulate_b(
+        key, ter=200.0, st=50.0, cr=10.0, crsd=2.0,
+        av1=15.0, av2=10.0, av3=8.0,
+        sis=12.0, sig=10.0, si=6.0,
+        nsim=16, chunk_size=4,
+    )
+    assert rt.shape == (16,)
+    assert cat.shape == (16,)
+    assert jnp.all(jnp.isfinite(rt))
+    assert jnp.all((cat >= 1) & (cat <= 5))
+
+
+def test_simulate_b_handles_non_multiple_chunk():
+    import jax
+    key = jax.random.key(0)
+    rt, cat = sim_b.simulate_b(
+        key, ter=200.0, st=50.0, cr=10.0, crsd=2.0,
+        av1=15.0, av2=10.0, av3=8.0,
+        sis=12.0, sig=10.0, si=6.0,
+        nsim=10, chunk_size=4,
+    )
+    assert rt.shape == (10,)
+    assert cat.shape == (10,)
+
+
+def test_simulate_b_deterministic_for_same_key():
+    import jax
+    key = jax.random.key(11)
+    rt_a, _ = sim_b.simulate_b(
+        key, ter=200.0, st=50.0, cr=10.0, crsd=2.0,
+        av1=15.0, av2=10.0, av3=8.0,
+        sis=12.0, sig=10.0, si=6.0,
+        nsim=8, chunk_size=4,
+    )
+    rt_b, _ = sim_b.simulate_b(
+        key, ter=200.0, st=50.0, cr=10.0, crsd=2.0,
+        av1=15.0, av2=10.0, av3=8.0,
+        sis=12.0, sig=10.0, si=6.0,
+        nsim=8, chunk_size=4,
+    )
+    np.testing.assert_array_equal(rt_a, rt_b)

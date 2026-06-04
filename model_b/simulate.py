@@ -136,3 +136,38 @@ def _simulate_chunk_b(key, ter, st, cr, crsd, av1, av2, av3,
 
     rt_chunk, cat_chunk = jax.vmap(per_trial)(trial_keys, crr, ndt)
     return rt_chunk, cat_chunk
+
+
+@partial(jax.jit, static_argnums=(8, 9, 10, 11, 12))
+def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
+               sis, sig, si, nsim, chunk_size=4):
+    """
+    Run `nsim` Model B trials with the given parameters.
+
+    Parameters:
+        sis : drift bump width
+        sig : GRF correlation length (s1=s2=sig)
+        si  : zone-array width
+    Returns (rt, cat) each shape (nsim,). cat in {1..5}. RT in ms.
+
+    Memory note: chunk_size=4 default for laptop CPU. H100 can use much larger.
+    """
+    # calc_LAM has a Python-side `if min_val < -1e-14: raise` that requires a
+    # concrete (non-traced) value. Since sis/sig/si are static args, force JAX
+    # to evaluate these at trace time so calc_LAM sees concrete arrays.
+    with jax.ensure_compile_time_eval():
+        LAM = grf.calc_LAM(s1=sig, s2=sig)
+        v1, v2, v3 = drift_bumps(sis=sis)
+        k_zone = zone_array(si=si)
+
+    n_chunks = (nsim + chunk_size - 1) // chunk_size
+    keys = prng.trial_keys(key, n_chunks)
+
+    def run_chunk(k):
+        return _simulate_chunk_b(
+            k, ter, st, cr, crsd, av1, av2, av3,
+            LAM, v1, v2, v3, k_zone, chunk_size,
+        )
+
+    rts, cats = jax.lax.map(run_chunk, keys)
+    return rts.reshape(-1)[:nsim], cats.reshape(-1)[:nsim]
