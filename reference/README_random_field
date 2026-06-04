@@ -1,0 +1,639 @@
+File: /u/postdoc/russ/random_field/README_random_field
+
+take a look at the 2D Gaussian process called a Gaussian random field
+
+The routines are in a NAG library.
+
+So what I want is something similar to twod3 and twod4
+maybe 64x40 field.
+
+http://www.nag.com/numeric/fl/nagdoc_fl24/pdf/INDEXES/KWIC/gaussianrandomfield.html
+
+G05ZSF  with setups in the other routines.
+
+I just want to a routine to call to get an array back that
+is a guassian random field with a Gaussian variogram
+ICOV2 = 5 in G05ZRF
+
+I want to give it a seed so I can parallelize it as in
+the other work.
+
+---
+http://www.nag.com/numeric/fl/nagdoc_fl24/pdf/INDEXES/KWIC/gaussianrandomfield.html
+
+G05ZRF Setup for simulating two-dimensional random fields, preset variogram
+http://www.nag.com/numeric/fl/nagdoc_fl24/pdf/G05/g05zrf.pdf
+---
+
+Looks like we want the NAG libraries for Intel Fortran compiler 
+double precision for Linux 64-bit (Fedora 10 version of the kernel). 
+It wants glibc-2.9, but it looks like eccles (CentOS 6.8/Fedora 12) 
+has glibc-2.12.
+
+hardware:          Intel(R) 64 systems and compatible (including AMD64)
+operating system:  Linux 2.6.27 (glibc-2.9) and compatible
+Fortran compiler:  Intel Fortran Compiler for Intel(R) 64,
+                   Version 13.0.1 and compatible
+
+http://www.nag.co.uk/doc/inun/fl24.html
+
+Installer's note:
+
+http://www.nag.co.uk/doc/inun/fl24/l6idcl/in.html
+
+Users' note:
+
+http://www.nag.co.uk/doc/inun/fl24/l6idcl/un.html
+
+---
+
+Software is here:
+
+http://www.nag.com/content/downloads-nag-fortran-library-versions
+
+Looks like it's this:
+
+Linux x64
+64-bit
+ 
+  	Using Intel Fortran Compiler v. 13.0.1 and compatible
+Using 32-bit integers
+NAG Product Code: FLL6I25DCL
+Mark 25 	Download Product
+Contact us to purchase
+Compatibility Information
+
+
+Installation notes:
+
+http://www.nag.com/content/installing-nag-fortran-library-mark-25?ProdCode=fll6i25dcl
+
+cd /tmp
+wget http://www.nag.com/downloads/impl/fll6i25dcl.tgz
+
+Documentation is here:
+
+wget http://www.nag.com/downloads/impl/mk25_doc.tgz
+
+Downloaded the above into /tmp
+
+tar xzf fll6i25dcl.tgz
+gunzip mk25_doc.tgz
+# as root:
+./install.sh
+
+Installed into /opt/NAG/
+Note that intel compiler is in /opt/intel/
+
+Deleted the downloaded files.
+
+---
+
+Need a license file.  Ran this:
+
+[csh russ@eccles /opt/NAG/fll6i25dcl]$ license/bin/linux_x64/khostid
+
+...which returned:
+
+KUSARI ID = "X0otVccEcdWnkZjIyoo6lsnkuUnoIpZtnKFb"
+
+...which I'm suppposed to "email to NAG".
+
+More license specifics:
+
+http://www.nag.co.uk/content/kusari-licence-management
+
+NAG's email:
+
+http://www.nag.co.uk/content/nag-technical-support-service#contact
+
+support@nag.com
+
+Sent this to the above email address from my personal gmail account:
+
+Subject: License Full/Node license for FLL6I25DCL
+
+I am using a routine in the NAG library and need a full/node license for.
+
+FLL6I25DCL
+KUSARI ID = "X0otVccEcdWnkZjIyoo6lsnkuUnoIpZtnKFb"
+
+I am a programmer at The Ohio State University and work in the Dept of Psychology 
+for a research professor who is doing modeling on perception and who wants to use 
+routine G05ZSF in an Intel Fortran 15.0.0/Centos6.8 Linux 64-bit environment.
+
+I may request more licenses for other computers running Intel Fortran 11.1/Fedora 12 
+Linux 64-bit.
+
+Thank you,
+Russ Childers
+russchilders@gmail.com
+
+---
+
+November 4, 2016
+================
+
+Email from Roger:
+
+Subject: alternative for gaussian random fields
+
+Take a look at the examples:
+
+http://www.math.umd.edu/~bnk/CLIP/clip.gauss.htm
+
+sources
+
+http://math4411.math.umd.edu/bak/SOURCE/
+
+C programs, but they could be compiled and linked into fortran
+You may have to get the intel C compiler or it may be part of the
+intel suite
+
+---
+
+http://math4411.math.umd.edu/bak/SOURCE/
+
+http://math4411.math.umd.edu/bak/SOURCE/gaussian.tar.gz
+
+http://math4411.math.umd.edu/bak/SOURCE/manual.pdf
+
+Had to download fftw-2.1.5.tar.gz from:
+http://www.fftw.org/download.html
+
+
+and copied 
+
+fftw.h	libfftw.a
+
+...into
+
+/u/postdoc/russ/random_field/FF/
+
+Then untarred/gzipped gaussian.tar.gz 
+in /u/postdoc/russ/random_field/
+...which placed code into 
+/u/postdoc/russ/random_field/gaussian/
+
+Then
+
+cd /u/postdoc/russ/random_field/gaussian/
+make FFTW_LIB=/u/postdoc/russ/random_field/FF FFTW_H=/u/postdoc/russ/random_field/FF
+...which made the libraries/demos/documentation for the gaussian r.f. stuff.
+
+In DEMOS there is a 'field_demo' executable which takes 'field.ini'
+as an input. I modified 'field.ini' into 'field_russ.ini' to do Matern
+correlations.
+
+---
+
+November 4, 2016
+================
+
+A 320x200 smooth-ish gaussian random field in 5-degree chunks (64x40).
+
+cd /u/postdoc/russ/random_field/gaussian/DEMOS/
+
+./field_demo field_russ.ini
+
+Generates 
+
+/u/postdoc/russ/random_field/gaussian/DEMOS/sph.txt
+
+This file has this as its first line:
+
+# Gaussian 40x64 r.f. with Matern (6.000000, 2.000000) correlation and mean 0.
+
+The remaining lines are the rows and columns of the gaussian random field.
+
+Column 1 is the row (0->39)
+Column 2 is the column (0->63)
+Column 3 is the value of the g.r.f. at that point (floating point number)
+
+The random number generator drand48 runs about 330,000 times for each 
+execution of the above. I seed drand48 with the current microsecond 
+(0->999999).
+
+November 7, 2016
+================
+
+Calling a C routine from FORTRAN with floating point and integer numbers:
+
+russ.f:
+
+      program adder
+      EXTERNAL addnums
+      integer rows,columns
+      double precision a,b,c(40,64)
+      a=1
+      b=2
+      rows=40
+      columns=64
+      call addnums(a,b,c,rows,columns)
+      write(*,*) c
+      stop    
+      end program
+
+addnums.c:
+
+#include <stdio.h>
+void addnums_(double *a, double *b, double *result, int *rows, int *columns)
+{
+  int ii,jj;
+  for (ii=0;ii<*rows;ii++)
+    for (jj=0;jj<*columns;jj++)
+      result[ii*(*columns)+jj] = *a + *b + ii*10+jj;
+}
+
+ifort -c russ.f
+cc -c addnums.c
+ifort -o russ russ.o addnums.o
+./russ
+
+...produces:
+
+   3.00000000000000        4.00000000000000        5.00000000000000     
+   6.00000000000000        7.00000000000000        8.00000000000000     
+...
+   453.000000000000        454.000000000000        455.000000000000     
+   456.000000000000     
+
+November 15, 2016
+=================
+
+There is a working example of calling a C routine from a FORTRAN
+routine. The C routine generates a gaussian random field and 
+passes it back to the FORTRAN routine. A Makefile does the compiling 
+and linking.
+
+All the following files are in /u/postdoc/russ/random_field/
+
+The FORTRAN routine passes top the C routine: 
+ the number of rows,
+ the number of columns,
+ an array of two thetas (SDs),
+ an array of 400,000 random numbers between 0 and 1. 
+The FORTRAN routine receives back:
+ an array with the gaussian random field in row order,
+ a return value flag which should equal zero.
+
+Here is the FORTRAN routine "generate_grf.f":
+
+      program generate_grf
+c "USE IFPORT" is so rand() works in this example
+      USE IFPORT
+c "EXTERNAL grf" is needed to properly link the C subroutine grf_
+      EXTERNAL grf
+      integer max_rand_count 
+      integer rows,columns,ret_val
+      parameter (max_rand_count=400000)
+      parameter (rows=40)
+      parameter (columns=64)
+      double precision theta(2)
+      double precision, allocatable :: R(:),gaussianrandomfield(:)
+      allocate (R(max_rand_count),gaussianrandomfield(rows*columns))
+      theta(1)=6.
+      theta(2)=2.
+      
+      do 5 i=1,max_rand_count
+        R(i)=rand()
+ 5    continue
+
+      call grf(rows,columns,theta,R,gaussianrandomfield,ret_val)
+      do 10 i=1,rows
+        do 20 j=1,columns
+          write(*,*) i,j,gaussianrandomfield((i-1)*columns+j)
+ 20     continue
+        write(*,*) ''
+ 10   continue
+      write(*,*) 'DONE',ret_val
+      stop    
+      end program
+
+Here is the C subroutine "grf.c":
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <fftw.h>
+#include <math.h>
+#include <time.h>
+#include "gaussian.h"
+#define max_rand_count 400000
+extern long counter;
+extern double *rand_array;
+
+void grf_(int *wn1,int *wn2,double *theta,double *R,double *grf,int *ret_val)
+{
+  int n1=128;
+  int n2=128;
+  char covtype='m';
+  int i,j;
+  struct timeval tv;
+
+  rand_array=R;
+
+  counter=0;
+  *ret_val=write_field2(n1,n2,*wn1,*wn2,theta,covtype,grf);
+
+//  for(i=0;i<*wn1;i++)
+//    for(j=0;j<*wn2;j++)
+//      printf("%f\n",grf[i*(*wn2)+j]);
+
+  if (counter>max_rand_count)
+  {
+    printf("\nERROR: %ld random numbers were used; maximum is %ld\n",counter,max_rand_count);
+    exit(1);
+  }
+}
+
+Here is the Makefile:
+
+FFTW_H       =/u/postdoc/russ/random_field/FF
+FFTW_LIB     =/u/postdoc/russ/random_field/FF
+GAUSSIAN_H   =/u/postdoc/russ/random_field/gaussian/LIB
+GAUSSIAN_LIB =/u/postdoc/russ/random_field/gaussian/LIB
+CFLAGS       =-I${FFTW_H} -I${GAUSSIAN_H} -O
+LIBS =${GAUSSIAN_LIB}/gaussian.a ${FFTW_LIB}/libfftw.a -lm
+
+generate_grf:
+	ifort -c generate_grf.f -o generate_grf.o
+	gcc -c /u/postdoc/russ/random_field/grf.c ${CFLAGS} -o grf.o
+	ifort generate_grf.o grf.o ${LIBS} -o generate_grf
+
+clean:
+	/bin/rm generate_grf
+
+
+In order to compile, you copy the Makefile and generate_grf.f
+to a directory of your choice and type 
+
+make generate_grf
+
+This will find the grf.c routine in /u/postdoc/russ/random_field/
+and the libraries in /u/postdoc/russ/random_field/FF/ and
+/u/postdoc/russ/random_field/gaussian/LIB/
+
+Then run generate_grf:
+
+./generate_grf
+
+Currently, the routine prints out three columns:
+ the row of the gaussian random field
+ the column of the gaussian random field
+ the value of the gaussian random field at that row/column
+ ...and a DONE message with the return value (with a # at the front)
+
+When you make changes to generate_grf.f, you need to
+
+make clean
+...then...
+make generate_grf
+
+Right now the gaussian random field routines are tuned 
+to accept an array of 400000 random numbers for every
+40 row -by- 64 column gaussian field.
+
+There is a return value which should equal zero.
+If the routine crashes (if rows or columns are changed)
+then it may do so silently or it may throw a SEGFAULT.
+
+November 17, 2016
+=================
+
+The theta(1) and theta(2) values have a limited range
+where the Matern gaussian random field is valid for 
+a field size of 40x60, and are related with an inverse 
+function. I have plotted valid pairs of <theta(1),theta(2)> for
+
+theta(1)=.1->12. 
+and 
+theta(2)=.1->4.
+
+...in this plot:
+
+/u/postdoc/russ/random_field/matern_grf_theta_1_2.png
+
+I will need to dig into the code more to see why there is a 
+limited number of combinations of <theta(1),theta(2)>,
+but it probably has to do with the size of the field:
+if the field is too small to allow the top and bottom rows
+and left and right sides to be uncorrelated (given 
+theta(1) and theta(2)), I think the Matern GRF algorithm fails.
+
+November 17, 2016
+=================
+
+Turns out that the algorithm which calculates the Matern
+GRF can only generate fields with a maximum of 19,600 cells 
+(e.g. 140x140). (This may be a glitch in the original code, because
+the code uses the standard fftw library which can handle giant 
+ffts.)
+
+Also, it generates a matrix using one x,y size and extracts
+the upper-left corner and returns that as the GRF. If the
+dimensions specified for the return matrix are not the same as
+the dimensions for the "generating" matrix, then there's a chance
+that the first and last rows/columns will be correlated (depending
+on the theta values).
+
+For square matrices, valid theta1/theta2 pairs trace (roughly)
+a y=16/x function.
+
+For rectangular matrices, the valid theta1/theta2 pairs
+are a ~1/x function with some x or y offset and cutoff at the
+x/y axes.
+
+Here are scatterplots of valid theta1/theta2 pairs for
+a variety of rows and columns (where the generating and display
+matrices are the same dimensions):
+
+Square:
+matern_grf_theta_1_2_140_140.png
+matern_grf_theta_1_2_128_128.png
+matern_grf_theta_1_2_64_64.png
+
+Rectangular:
+matern_grf_theta_1_2_80_128.png
+matern_grf_theta_1_2_40_64.png
+matern_grf_theta_1_2_100_160.png
+
+November 28, 2016
+=================
+
+pngs of mesh plots and txt matrix files of 100x160 mesh using circulant 
+algorithm for Gaussian Random Fields from Section 2.2 of 
+https://people.smp.uq.edu.au/DirkKroese/ps/MCSpatial.pdf.
+
+Used file circulant.m, which is a copy of the Matlab code from the 
+above Section.
+
+The XX_YY numbers are the equivalent (I think) to standard deviations
+of gaussian peaks. Anything over 17.95 in standard deviation lead to a
+"Could not find positive definite embedding!" for matrix size 100x160.
+Pretty sure this is because top and bottom rows became correlated.
+
+/u/postdoc/russ/random_field/
+
+circulant_mesh_05_05.png
+grf_circulant_05_05.txt
+
+circulant_mesh_10_10.png
+grf_circulant_10_10.txt
+
+circulant_mesh_15_15.png
+grf_circulant_15_15.txt
+
+circulant_mesh_17.5_17.5.png
+grf_circulant_17.5_17.5.txt
+
+circulant_mesh_17.95_17.95.png
+grf_circulant_17.95_17.95.txt
+
+---
+
+Code for 2-d complex fft in fortran:
+
+https://software.intel.com/en-us/node/471390
+
+fft2_complex.f90
+
+The above is in Fortran 90. Need a Fortran 77 version.
+
+This provides clues for a Fortran 77 version and a fftw version
+called from Intel Fortran:
+
+https://software.intel.com/en-us/articles/the-intel-math-kernel-library-and-its-fast-fourier-transform-routines
+
+The example at the above page is for a 1-dimensional FFT.
+
+This page reveals how to use an f90 file in F77: just compile it.
+
+http://www.ch.cam.ac.uk/computing/software/intel-math-kernel-library
+
+"Intel completely changed the way you use FFT somewhere between 
+versions 7 and 9 of the library. To use them from Fortran under 
+version 9 and above you need to copy the $MKLINCLUDE/mkl_dfti.f90 
+file into your Fortran project and compile it (ifort -c mkl_dfti.f90) 
+so you can then use the module (USE MKL_DFTI) in your own code."
+
+Thus, one can use the mkl_dfti.f90 if one first compiles it
+into mkl_dfti.o and then links it in to the F77 program. Remove the
+
+include '/opt/intel/Compiler/11.1/064/mkl/include/mkl_dfti.f90'
+
+line, and "USE MKL_DFTI" is adequate.
+
+So now we have 
+
+fft2_complex.f, which is in Fortran 77. Compile mkl_dfti.f90
+(on eccles) like so: 
+
+ifort -ipo -c /opt/intel/Compiler/11.1/064/mkl/include/mkl_dfti.f90
+
+...this creates:
+
+mkl_dft_type.mod
+mkl_dfti.mod
+mkl_dfti.o
+
+(We need the .mod files and the .o or the compile/link below won't work.)
+
+...then compile/link fft2_complex.f and mkl_dfti.o:
+
+ifc4 mkl_dfti.o fft2_complex.f
+
+This produces an a.out which runs.
+
+November 29, 2016
+=================
+
+Created Gaussian Random Field generator via Circulant embedding
+in Fortran:
+
+/u/postdoc/russ/random_field/circulant_grf.f
+
+...derived from Section 2.2 of
+
+https://people.smp.uq.edu.au/DirkKroese/ps/MCSpatial.pdf
+
+The .f90 library 
+/opt/intel/Compiler/11.1/064/mkl/include/mkl_dfti.f90
+
+is needed to use the MKL Discrete Fourier Transform (DFT)
+in the MKL libraries. Our Fortran 77 format does not like the above,
+so you need to 
+
+ifort -ipo -c /opt/intel/Compiler/11.1/064/mkl/include/mkl_dfti.f90
+
+...this creates:
+
+mkl_dft_type.mod
+mkl_dfti.mod
+mkl_dfti.o
+
+...in your local directory.
+
+We need the .mod files and the .o or the compile/link below won't work.
+
+Then compile/link circulant_grf.f and mkl_dfti.o:
+
+ifc4 mkl_dfti.o circulant_grf.f
+
+This produces an a.out which runs once through the algorithm
+and produces two 100x160 arrays in fort.48 and fort.49 (for
+testing purposes - ordered by column).
+
+Note that most of the circulant_grf.f routine calculates the 
+FFT-converted kernel called 'LAM' which is a constant for all 
+subsequent GRF calculations (assuming the number of rows, columns, 
+and standard deviations remain the same). I've written these 
+comments to show where the one-time code is:
+
+ccccccccccccccccccccccccccccccccccccccccccccccccc
+c   The following only needs to be done once.   c
+c   It generates 'LAM' which is then used to    c
+c   multiply against complex random numbers     c
+c   then FFT'd to generate the random fields.   c
+ccccccccccccccccccccccccccccccccccccccccccccccccc
+
+...LAM is calculated here...
+
+ccccccccccccccccccccccccccccccccccccccccccccc
+c  End of section where LAM is calculated.  c
+c  Pass LAM to the parallel section which   c
+c  includes the following code. Only        c
+c  calculate the following code once        c
+c  for every two steps (odd numbered steps  c
+c  use F1; even numbered steps use F2).     c
+ccccccccccccccccccccccccccccccccccccccccccccc
+
+Note also that the "kernel" has a similar form to the gaussian 
+process (from the file circulant.m, which was copied from
+Section 2.2 above):
+
+% These are the standard deviations in the x and y dimensions
+
+s1=15;s2=15;
+
+% This is the function which populates the circulant matrix
+
+rho=@(x,y)((1-x^2/s2^2-x*y/(s1*s2)-y^2/s1^2)...
+*exp(-(x^2/s2^2+y^2/s1^2)));
+
+% These are the basis of values passed to rho
+
+tx=[0:n-1]; ty=[0:m-1]; % create grid for field
+
+% Rows and Cols go into the circular matrix
+
+Rows=zeros(m,n); Cols=Rows;
+
+for i=1:n
+for j=1:m
+Rows(j,i)=rho(tx(i)-tx(1),ty(j)-ty(1)); % rows of blocks
+Cols(j,i)=rho(tx(1)-tx(i),ty(j)-ty(1)); % columns
+end
+end
+
+
+File: /u/postdoc/russ/random_field/README_random_field
