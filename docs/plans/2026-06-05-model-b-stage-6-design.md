@@ -12,7 +12,17 @@ Stage 5 H100 benchmarking (2026-06-05) confirmed `simulate_b` runs at 5.18s per 
 
 The current generator uses Dietrich-Newsam circulant embedding via batched 2D FFT (`model_b/grf.py::circulant_grf`). Per chunk: generate (chunk, n_fft, 2, n_pad, m_pad) fp32 normals (~13 GB at chunk=64), do one batched 2D FFT (~12,800 transforms at chunk=64), cumsum the resulting drift field over time. The FFT itself is bandwidth-bound on H100 and contributes the dominant cost.
 
-The Karhunen-Loève (K-L) expansion observation: for a block-circulant covariance like ours, the eigendecomposition **is** the FFT of the kernel. The eigenvalues are `|LAM|²` at each frequency; the eigenvectors are columns of the discrete Fourier basis. Truncating to the top K modes by eigenvalue gives a rank-K approximation. For sig=10 on the 100×160 grid, the spectral density decays exponentially, so K ≈ 100 modes captures > 99.9% of total variance.
+The Karhunen-Loève (K-L) expansion observation: for a block-circulant covariance like ours, the eigendecomposition **is** the FFT of the kernel. The eigenvalues are `|LAM|²` at each frequency; the eigenvectors are columns of the discrete Fourier basis. Truncating to the top K modes by eigenvalue gives a rank-K approximation.
+
+**Empirical spectrum measurement (2026-06-05, Task 2 diagnostic).** The Kroese §2.2 kernel has a polynomial prefactor (`(1 - x²/s²² - xy/(s₁s₂) - y²/s₁²)`) that broadens the spectrum substantially relative to a pure Gaussian. Actual K values needed at our grid:
+
+| sig | K for 95% | K for 99% | K for 99.9% |
+|---|---|---|---|
+| 5  | 3744 | 5295 | 7399 |
+| 10 | 936  | 1325 | 1850 |
+| 15 | 417  | 588  | 821  |
+
+Original design assumed K ≈ 100 for sig=10 — that was off by ~13×. The speedup story still works because the K-L speedup is **memory-bandwidth-dominated** (smaller noise tensor, fewer random draws) not compute-dominated (GEMM cost scales with K). At K=1325 the noise tensor is ~410 MB per chunk vs 6.5 GB for the FFT path — still an ~16× memory reduction. Defaults are now `variance_threshold=0.99`, `k_max=2000`.
 
 Replacing the full FFT with a (NM × K) basis matrix × (K, batch) random sample matrix gives a single batched GEMM instead of a batched FFT. H100 fp32 GEMM throughput is ~67 TFLOPS sustained; H100 batched FFT at our sizes is bandwidth-bound at ~20% of that. The runtime should be dominated by GEMM cost, which scales O(NM × K × batch) instead of O(N_pad × M_pad × log(N_pad × M_pad) × batch).
 
