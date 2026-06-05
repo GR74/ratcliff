@@ -22,7 +22,8 @@ class FitResult:
 
 
 def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
-                  tol: float = 1e-7, chunk_size: int = 4, use_kl: bool = False):
+                  tol: float = 1e-7, chunk_size: int = 4, use_kl: bool = False,
+                  on_update=None):
     """
     Scipy Nelder-Mead simplex fit for Model B.
 
@@ -34,16 +35,25 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
     tol        : scipy NM x/f tolerance.
     chunk_size : trial chunk for simulate_b (small for laptop, larger for H100).
     use_kl     : if True, use Stage 6 K-L low-rank GRF inside fofs_b_new.
+    on_update  : optional callable(eval_n, loss, x_array) invoked after every
+                 function evaluation. Enables live progress reporting from the
+                 UI without modifying scipy.
 
     Returns FitResult.
     """
     from scipy.optimize import minimize
 
+    n_evals = [0]
+
     def loss_numpy(p_np):
+        n_evals[0] += 1
         p = jnp.asarray(p_np)
         val = obj_b.fofs_b_new(p, data, key, nsim=nsim,
                                 chunk_size=chunk_size, use_kl=use_kl)
-        return float(val)
+        val_f = float(val)
+        if on_update is not None:
+            on_update(n_evals[0], val_f, p_np.copy())
+        return val_f
 
     res = minimize(
         loss_numpy, np.asarray(x0),
