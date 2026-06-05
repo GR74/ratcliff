@@ -63,6 +63,19 @@ pip install --quiet --upgrade pip
 pip install --quiet -U "jax[cuda12]"
 pip install --quiet -e ".[dev,fit]"
 
+# 3.5. Make NVIDIA libs from the venv discoverable.
+# On some images (RunPod PyTorch 2.8, others) the system LD_LIBRARY_PATH points
+# at /usr/local/cuda/lib64 which does NOT contain cuSPARSE / cuDNN / cuBLAS in
+# the layout JAX expects. Without this, jax falls back to CPU silently. Add
+# every nvidia/*/lib path that pip installed for jax[cuda12].
+PYVER=$(python -c "import sys; print(f'python{sys.version_info.major}.{sys.version_info.minor}')")
+NVDIRS=$(ls -d "$WORKDIR/ratcliff/.venv/lib/$PYVER/site-packages/nvidia/"*/lib 2>/dev/null | paste -sd: -)
+if [ -n "$NVDIRS" ]; then
+  echo "[setup] Adding venv NVIDIA libs to LD_LIBRARY_PATH:"
+  echo "        $NVDIRS"
+  export LD_LIBRARY_PATH="$NVDIRS:${LD_LIBRARY_PATH:-}"
+fi
+
 # 4. Confirm GPU
 echo "[verify] JAX devices:"
 python -c "import jax; print('  ', jax.devices())"
