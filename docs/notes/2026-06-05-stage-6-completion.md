@@ -7,7 +7,7 @@
 
 ## Headline result
 
-Full Model B parameter recovery at production `nsim=9000` now runs in **20.1 min** on a single H100, down from 30.3 min in Stage 5 and weeks on the original 6-node Fortran MPI cluster. Per-evaluation cost is **2.25× faster** than Stage 5 with **better** parameter recovery quality.
+Full Model B parameter recovery at production `nsim=9000` now runs in **20.1 min** on a single H100, down from 30.3 min in Stage 5 and "hours and hours" on the original 6-node Fortran MPI cluster (per Ratcliff's verbal calibration). Per-evaluation cost is **2.25× faster** than Stage 5 with **better** parameter recovery quality.
 
 ## Results vs Stage 5
 
@@ -65,7 +65,9 @@ Eight of twelve active params recovered to within 5%. Four params under 1% (ter,
 | **Stage 6 v2 (K-L)** | **~4.7 sec** | **4.71 sec** |
 
 **Per-call speedup vs Fortran 6-node MPI cluster: ~5×**
-**Full-fit calendar speedup vs Fortran "weeks per fit": ~500-1000× (dominated by queue + restart overhead in the Fortran case)**
+**Per-fit speedup vs Fortran "hours and hours": ~10-30× (Ratcliff's calibration; exact original time was never timed precisely)**
+
+**Honest claim for the methods paper:** "5× faster per simulator call vs his 6-node MPI cluster, full parameter recovery fit in 20 minutes on a $2/hr rented GPU instead of hours to days of cluster time." Do not claim "weeks → minutes" without further calibration — the "weeks" framing only applies to paper-level calendar throughput including queue + restart overhead, not per-fit time.
 
 ## What this unlocks
 
