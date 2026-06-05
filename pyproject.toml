@@ -39,4 +39,5 @@ testpaths = ["shared/tests", "model_a/tests", "model_b/tests"]
 addopts = "-v --tb=short --strict-markers -ra"
 markers = [
     "perf: performance regression tests (skipped by default, run with -m perf)",
+    "slow: slow integration tests (run with -m slow or include explicitly)",
 ]
