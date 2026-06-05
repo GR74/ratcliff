@@ -1,5 +1,8 @@
 """Quick smoke + timing test for the optimized simulate_b. ~30 seconds total."""
 import jax
+# Enable x64 BEFORE any other JAX op (matches conftest.py + main benchmark script).
+jax.config.update("jax_enable_x64", True)
+
 import time
 from model_b import simulate as sim_b
 
