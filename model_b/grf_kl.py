@@ -67,3 +67,17 @@ def calc_kl_basis(sig: float,
         V[:, 2 * k + 1] = lam_k[k] * im
 
     return jnp.asarray(V), K, variance_captured
+
+
+def sample_kl_grf(V, z, n: int = 100, m: int = 160):
+    """
+    Generate GRF samples from the truncated K-L basis.
+
+    V : (NM, 2K) fp32 basis from calc_kl_basis (with √λ already folded in)
+    z : (batch, 2K) iid N(0,1) random samples
+    n, m : output grid dimensions
+
+    Returns: (batch, n, m) fp32 GRF realizations.
+    """
+    grf_flat = z @ V.T   # (batch, NM)
+    return grf_flat.reshape(-1, n, m)

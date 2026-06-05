@@ -1,4 +1,5 @@
 """Smoke tests for model_b/grf_kl.py — K-L basis builder + sampler."""
+import jax
 import jax.numpy as jnp
 
 from model_b import grf_kl
@@ -31,3 +32,14 @@ def test_calc_kl_basis_k_grows_with_higher_threshold():
     _, K_95, _ = grf_kl.calc_kl_basis(sig=10.0, variance_threshold=0.95, k_max=2000)
     _, K_99, _ = grf_kl.calc_kl_basis(sig=10.0, variance_threshold=0.99, k_max=2000)
     assert K_95 <= K_99, f"K should grow with threshold (95%={K_95}, 99%={K_99})"
+
+
+def test_sample_kl_grf_shape():
+    """sample_kl_grf should produce (batch, n, m) reals."""
+    V, K, _ = grf_kl.calc_kl_basis(sig=10.0)
+    key = jax.random.key(0)
+    z = jax.random.normal(key, (32, 2 * K), dtype=jnp.float32)
+    out = grf_kl.sample_kl_grf(V, z, n=100, m=160)
+    assert out.shape == (32, 100, 160), f"expected (32, 100, 160), got {out.shape}"
+    assert out.dtype == jnp.float32
+    assert jnp.all(jnp.isfinite(out))
