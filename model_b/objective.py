@@ -114,13 +114,14 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False):
     # One subkey per condition
     cond_keys = jnp.stack([prng.split_for_condition(key, ci) for ci in range(2)])
 
-    # Convert sis/sig/si to Python floats so they remain static for simulate_b's JIT
-    # (simulate_b has static_argnums on positions 8, 9, 10 = sis, sig, si).
-    # In a JIT'd outer caller, this conversion must be done at trace time, not runtime.
-    # For now (not JIT'd), use Python floats directly.
-    sis_py = float(sis)
+    # sis and si flow through as JAX tensors so the JIT inner cores trace
+    # once and reuse the compiled graph across distinct parameter values
+    # (drift_bumps and zone_array are pure jnp ops). sig stays a Python
+    # float because the K-L path's calc_kl_basis uses numpy and must see
+    # a concrete value; the FFT path's calc_LAM still accepts it fine.
+    sis_arr = jnp.asarray(sis, dtype=jnp.float64)
+    si_arr = jnp.asarray(si, dtype=jnp.float64)
     sig_py = float(sig)
-    si_py = float(si)
 
     # vmap simulate_b over (key, av1, av2, av3) — others are condition-invariant.
     # simulate_b signature: (key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim, chunk_size, use_kl)
@@ -131,7 +132,7 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False):
     rts, cats = sim_vmap(
         cond_keys, ter, st, cr, crsd,
         avs[:, 0], avs[:, 1], avs[:, 2],
-        sis_py, sig_py, si_py, nsim, chunk_size, use_kl,
+        sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
     )
     # rts, cats: (2, nsim)
 

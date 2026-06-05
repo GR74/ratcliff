@@ -291,7 +291,14 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
     run inside jax tracing. The compute-heavy inner cores are jitted.
     """
     if use_kl:
-        V_kl, _K_kl, _ = grf_kl.calc_kl_basis(sig=float(sig), n=N, m=M)
+        # pad_to_k_max=True keeps V_kl shape constant across sig values, so
+        # _simulate_b_kl_inner JIT compiles ONCE and stays cached across the
+        # fit instead of recompiling per new sig vertex scipy visits.
+        # Cost: ~50% larger GEMM (K=k_max=2000 vs ~1325 at sig=10); benefit:
+        # no JIT recompile per eval (~2-4 sec saved per new sig).
+        V_kl, _K_kl, _ = grf_kl.calc_kl_basis(
+            sig=float(sig), n=N, m=M, pad_to_k_max=True,
+        )
         return _simulate_b_kl_inner(
             key, ter, st, cr, crsd, av1, av2, av3,
             V_kl, sis, si, nsim, chunk_size,

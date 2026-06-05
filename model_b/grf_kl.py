@@ -7,17 +7,42 @@ sig=10 with K ≈ 100. Runtime sampling is one batched GEMM instead of a 2D FFT.
 
 See docs/plans/2026-06-05-model-b-stage-6-design.md for math + design rationale.
 """
+import functools
+
 import jax.numpy as jnp
 import numpy as np
 
 from model_b import grf as grf_circulant
 
 
+# Module-level LRU cache for calc_kl_basis. Bounded so it doesn't grow without
+# limit if a fit visits many distinct sig values. Each entry holds a
+# (n*m, 2*k_max) fp32 array — 256 MB at NM=16000, k_max=2000.
+_BASIS_CACHE_MAXSIZE = 64
+_basis_cache = {}
+_basis_cache_order = []
+
+
+def _cached_calc_kl_basis(sig_key, n, m, k_max, variance_threshold, pad_to_k_max):
+    cache_key = (sig_key, n, m, k_max, variance_threshold, pad_to_k_max)
+    cached = _basis_cache.get(cache_key)
+    if cached is not None:
+        return cached
+    result = _calc_kl_basis_impl(sig_key, n, m, k_max, variance_threshold, pad_to_k_max)
+    _basis_cache[cache_key] = result
+    _basis_cache_order.append(cache_key)
+    if len(_basis_cache_order) > _BASIS_CACHE_MAXSIZE:
+        evicted = _basis_cache_order.pop(0)
+        _basis_cache.pop(evicted, None)
+    return result
+
+
 def calc_kl_basis(sig: float,
                   n: int = 100,
                   m: int = 160,
                   k_max: int = 2000,
-                  variance_threshold: float = 0.99):
+                  variance_threshold: float = 0.99,
+                  pad_to_k_max: bool = False):
     """
     Build the truncated K-L basis for the circulant-embedded covariance.
 
@@ -33,7 +58,25 @@ def calc_kl_basis(sig: float,
     grows linearly with K). 99% captures enough variance to keep simulator
     statistics within ~1% of the exact circulant generator while still cutting
     memory traffic ~5-8× vs the batched FFT path.
+
+    pad_to_k_max : if True, zero-pad V to shape (n*m, 2*k_max). This is
+        critical for callers inside JIT — keeps the basis tensor shape
+        constant across distinct sig values, preventing repeated tracing
+        and XLA recompilation. Default False preserves the original tight
+        shape for tests + standalone use.
+
+    Cached by (rounded sig, n, m, k_max, variance_threshold, pad_to_k_max)
+    so a fit visiting the same sig twice doesn't rebuild.
     """
+    # Round sig key to 6 decimals so floating-point jitter still hits cache.
+    sig_key = round(float(sig), 6)
+    return _cached_calc_kl_basis(sig_key, n, m, k_max,
+                                  variance_threshold, pad_to_k_max)
+
+
+def _calc_kl_basis_impl(sig: float, n: int, m: int, k_max: int,
+                         variance_threshold: float, pad_to_k_max: bool):
+    """The actual K-L basis construction. Wrapped by calc_kl_basis with caching."""
     LAM = grf_circulant.calc_LAM(n=n, m=m, s1=sig, s2=sig)
     n_pad, m_pad = LAM.shape
 
@@ -61,7 +104,10 @@ def calc_kl_basis(sig: float,
     n_grid = np.arange(n)[:, None]
     m_grid = np.arange(m)[None, :]
 
-    V = np.empty((n * m, 2 * K), dtype=np.float32)
+    # Pad output to (n*m, 2*k_max) when requested; the extra columns are zeros
+    # so any random noise multiplied against them contributes nothing.
+    cols = 2 * k_max if pad_to_k_max else 2 * K
+    V = np.zeros((n * m, cols), dtype=np.float32)
     for k in range(K):
         phase = 2.0 * np.pi * (
             i_star[k] * n_grid / n_pad + j_star[k] * m_grid / m_pad
