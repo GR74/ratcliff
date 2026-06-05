@@ -52,7 +52,12 @@ def calc_kl_basis(sig: float,
     j_star = top_idx % m_pad
     lam_k = np.sqrt(sorted_eigvals[:K]).astype(np.float32)
 
-    norm = 1.0 / np.sqrt(n_pad * m_pad)
+    # NOTE on normalization: the circulant_grf path computes
+    #   F = fft2(LAM * z)  (unnormalized forward FFT)
+    # whose variance per cell is sum_k LAM[k]^2. To match that, the K-L
+    # basis must use the UNNORMALIZED Fourier eigenvectors (no 1/sqrt(N)
+    # factor) — those are the actual eigenvectors of the circulant matrix.
+    # They're orthogonal but each has norm sqrt(N_pad*M_pad), not unit-norm.
     n_grid = np.arange(n)[:, None]
     m_grid = np.arange(m)[None, :]
 
@@ -61,8 +66,8 @@ def calc_kl_basis(sig: float,
         phase = 2.0 * np.pi * (
             i_star[k] * n_grid / n_pad + j_star[k] * m_grid / m_pad
         )
-        re = (np.cos(phase) * norm).astype(np.float32).flatten()
-        im = (np.sin(phase) * norm).astype(np.float32).flatten()
+        re = np.cos(phase).astype(np.float32).flatten()
+        im = np.sin(phase).astype(np.float32).flatten()
         V[:, 2 * k] = lam_k[k] * re
         V[:, 2 * k + 1] = lam_k[k] * im
 
