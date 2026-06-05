@@ -228,7 +228,7 @@ print(f"  (This is the Fortran scale — full headline benchmark)")
 t0 = time.perf_counter()
 result = fit_b.fit_simplex_b(
     syn_data, jax.random.key(1), x0,
-    nsim=NSIM_PROD, maxiter=500, chunk_size=BEST_CHUNK_B,
+    nsim=NSIM_PROD, maxiter=200, chunk_size=BEST_CHUNK_B,
 )
 wall = time.perf_counter() - t0
 
