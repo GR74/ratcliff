@@ -102,7 +102,7 @@ params_b = dict(
     sis=12.0, sig=10.0, si=6.0,
 )
 
-chunk_sizes_to_try = [16, 64, 256, 1024]
+chunk_sizes_to_try = [16, 32, 64, 128, 256, 1024]
 best = None
 
 for cs in chunk_sizes_to_try:
@@ -131,6 +131,12 @@ print(f"  Speedup vs 6-node Fortran: {11.0 / best[1]:.1f}x")
 print(f"  Speedup vs 1-node Fortran (36s): {36.0 / best[1]:.1f}x")
 
 BEST_CHUNK_B = best[0]
+# fofs_b_new and fit_simplex_b vmap over 2 conditions, which roughly doubles
+# the effective memory footprint per chunk. Halve the chunk size (with a floor
+# of 16) to keep these stages from OOMing while still using the GPU well.
+FIT_CHUNK_B = max(BEST_CHUNK_B // 2, 16)
+print(f"  Using chunk_size={FIT_CHUNK_B} for fofs_b_new / fit_simplex_b "
+      f"(halved to fit 2x vmap)")
 
 # ----------------------------------------------------------------------
 # Section 3: fofs_b_new wall clock (full 2-condition objective)
@@ -159,7 +165,7 @@ params_b_vec = jnp.array([
 key = jax.random.key(0)
 t_fofs, val = time_call(
     obj_b.fofs_b_new, params_b_vec, data_b, key,
-    n_iter=3, warmup=1, nsim=NSIM_PROD, chunk_size=BEST_CHUNK_B,
+    n_iter=3, warmup=1, nsim=NSIM_PROD, chunk_size=FIT_CHUNK_B,
 )
 print(f"  fofs_b_new(nsim=9000): {t_fofs*1000:.0f} ms/call (value={float(val):.2f})")
 print(f"  Per-call: simulate_b runs 2 conds via vmap, so effectively 2x simulate work")
@@ -214,7 +220,7 @@ def _generate_synthetic_data_b(true_params, key, nsim=512, chunk_size=64):
 print(f"  Generating synthetic data at nsim=1024 per condition...")
 key_data = jax.random.key(0)
 syn_data = _generate_synthetic_data_b(TRUE_PARAMS_B, key_data, nsim=1024,
-                                       chunk_size=BEST_CHUNK_B)
+                                       chunk_size=FIT_CHUNK_B)
 print(f"  Data shapes: prop={syn_data['prop'].shape}, count={syn_data['count'].shape}")
 
 # Perturb start
@@ -223,12 +229,12 @@ x0 = TRUE_PARAMS_B * jnp.asarray(np.random.uniform(0.9, 1.1, size=13))
 print(f"  Perturbed start: ±10% from truth")
 
 # Fit at production-scale nsim
-print(f"\n  Running fit_simplex_b at nsim={NSIM_PROD}, chunk_size={BEST_CHUNK_B}...")
+print(f"\n  Running fit_simplex_b at nsim={NSIM_PROD}, chunk_size={FIT_CHUNK_B}...")
 print(f"  (This is the Fortran scale — full headline benchmark)")
 t0 = time.perf_counter()
 result = fit_b.fit_simplex_b(
     syn_data, jax.random.key(1), x0,
-    nsim=NSIM_PROD, maxiter=200, chunk_size=BEST_CHUNK_B,
+    nsim=NSIM_PROD, maxiter=200, chunk_size=FIT_CHUNK_B,
 )
 wall = time.perf_counter() - t0
 
