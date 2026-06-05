@@ -88,13 +88,14 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
     return jnp.array([per_cat(i) for i in range(MC)]).sum()
 
 
-def fofs_b_new(params, data, key, nsim=512, chunk_size=4):
+def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False):
     """
     Vectorized G2 objective for Model B, summed across 2 conditions.
 
     params : (13,) parameter vector. See clamp_b docstring for layout.
     data   : dict with "prop" (2, 5), "count" (2, 5), "quant" (2, 5, 5).
     key    : JAX typed key.
+    use_kl : if True, use Stage 6 K-L low-rank GRF inside simulate_b.
     Returns scalar G2.
     """
     # Local imports to avoid hard top-level dependency cycle risk
@@ -122,15 +123,15 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4):
     si_py = float(si)
 
     # vmap simulate_b over (key, av1, av2, av3) — others are condition-invariant.
-    # simulate_b signature: (key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim, chunk_size)
+    # simulate_b signature: (key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim, chunk_size, use_kl)
     sim_vmap = jax.vmap(
         sim_b.simulate_b,
-        in_axes=(0, None, None, None, None, 0, 0, 0, None, None, None, None, None),
+        in_axes=(0, None, None, None, None, 0, 0, 0, None, None, None, None, None, None),
     )
     rts, cats = sim_vmap(
         cond_keys, ter, st, cr, crsd,
         avs[:, 0], avs[:, 1], avs[:, 2],
-        sis_py, sig_py, si_py, nsim, chunk_size,
+        sis_py, sig_py, si_py, nsim, chunk_size, use_kl,
     )
     # rts, cats: (2, nsim)
 
