@@ -59,3 +59,38 @@ def test_marginal_variance_parity():
         f"Mean variance mismatch: circulant={mean_var_c:.6f}, "
         f"K-L={mean_var_k:.6f}, rel_err={rel_err:.4f}"
     )
+
+
+def _empirical_acf_row(grfs, max_lag=10):
+    """Autocorrelation along column direction at center row, averaged over samples."""
+    grfs_centered = grfs - grfs.mean(axis=0, keepdims=True)
+    row = grfs_centered[:, 50, :]  # (n_samples, m)
+    var = row.var()
+    acf = np.zeros(max_lag + 1)
+    acf[0] = 1.0
+    for lag in range(1, max_lag + 1):
+        cov = (row[:, :-lag] * row[:, lag:]).mean()
+        acf[lag] = cov / var
+    return acf
+
+
+def test_autocorrelation_parity():
+    """ACF along column direction should match between circulant and K-L generators.
+
+    Tolerance 0.10 absolute is generous to absorb K-L truncation bias plus
+    sampling noise. At 99% variance retention, ACF mismatch should be modest.
+    """
+    n_samples = 2000
+    key_c = jax.random.key(0)
+    key_k = jax.random.key(1)
+    grfs_c = _sample_circulant_grfs(key_c, n_samples)
+    grfs_k = _sample_kl_grfs(key_k, n_samples)
+
+    acf_c = _empirical_acf_row(grfs_c, max_lag=10)
+    acf_k = _empirical_acf_row(grfs_k, max_lag=10)
+
+    max_diff = float(np.abs(acf_c - acf_k).max())
+    assert max_diff < 0.10, (
+        f"ACF max diff {max_diff:.4f} > 0.10. "
+        f"circulant={acf_c}, K-L={acf_k}"
+    )
