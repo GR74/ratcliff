@@ -54,29 +54,29 @@ def _simulate_chunk_smooth(key, ter, st, cr, crsd, L, v, chunk_size,
     incr = incr - incr.mean(axis=-1, keepdims=True)
     a = jnp.cumsum(incr, axis=1)                          # (chunk, NSTEP, N)
 
-    # Soft first-crossing weights
+    # Soft first-crossing weights — fully log-space for numerical stability.
+    # log P(first crossing at t) = log P(cross at t) + sum_{s<t} log P(not cross at s)
     crossed_score = a.max(axis=-1) - crr[:, None]         # (chunk, NSTEP)
-    post_cross = jax.nn.sigmoid(crossed_score / tau_step)  # (chunk, NSTEP)
-    # "Not yet crossed by time t" = product(1 - post_cross[s] for s < t)
-    log_not_yet = jnp.cumsum(jnp.log(1.0 - post_cross + 1e-9), axis=1)
-    # Shift so "not yet at t" excludes step t
+    log_post_cross = jax.nn.log_sigmoid(crossed_score / tau_step)   # (chunk, NSTEP)
+    log_not_cross = jax.nn.log_sigmoid(-crossed_score / tau_step)   # (chunk, NSTEP)
+    log_not_yet = jnp.cumsum(log_not_cross, axis=1)
     log_not_yet_prev = jnp.concatenate([
         jnp.zeros((chunk_size, 1)), log_not_yet[:, :-1]
     ], axis=1)
-    not_yet_prev = jnp.exp(log_not_yet_prev)
-    # Prob of first crossing exactly at step t
-    weights = post_cross * not_yet_prev                    # (chunk, NSTEP)
-    # Normalize so total prob is 1
-    weights = weights / (weights.sum(axis=1, keepdims=True) + 1e-9)
+    log_w = log_post_cross + log_not_yet_prev              # (chunk, NSTEP)
+    # Normalize via softmax (numerically stable)
+    weights = jax.nn.softmax(log_w, axis=1)
 
     # Soft jstop = E[first crossing time]
     timesteps = jnp.arange(1, NSTEP + 1, dtype=jnp.float64)
     soft_jstop = (weights * timesteps).sum(axis=1)         # (chunk,)
     rt = (soft_jstop + ndt) * E
 
-    # Soft category probs
-    # At each step t, soft pos_t via softmax(a[t] / tau_pos)
-    pos_probs = jax.nn.softmax(a / tau_pos, axis=-1)       # (chunk, NSTEP, N)
+    # Soft category probs.
+    # tau_pos is in absolute accumulator-value units. With typical
+    # a values in [-cr, cr] = [-50, +50] and tau_pos=20, softmax is in the
+    # smooth regime everywhere.
+    pos_probs = jax.nn.softmax(a / tau_pos, axis=-1)              # (chunk, NSTEP, N)
     # Band masks (N,)
     positions = jnp.arange(1, N + 1, dtype=jnp.float64)
     mask_1 = (positions > IPA) & (positions < IPB)
@@ -94,7 +94,7 @@ def _simulate_chunk_smooth(key, ter, st, cr, crsd, L, v, chunk_size,
 
 @partial(jax.jit, static_argnums=(8, 9))
 def simulate_smooth(key, ter, st, cr, crsd, si, sig, av, nsim,
-                    chunk_size=256, tau_step=0.5, tau_pos=2.0):
+                    chunk_size=256, tau_step=2.0, tau_pos=20.0):
     """
     Differentiable smooth-surrogate simulator. Returns (rt, cat_probs).
     rt        : (nsim,) smooth expected RT in ms.
