@@ -16,6 +16,7 @@ import jax
 import jax.numpy as jnp
 
 from model_b import grf
+from model_b import grf_kl
 from shared import prng
 
 # Model B field dimensions
@@ -171,20 +172,66 @@ def _simulate_chunk_b(key, ter, st, cr, crsd, av1, av2, av3,
     return rt, cat
 
 
+def _simulate_chunk_b_kl(key, ter, st, cr, crsd, av1, av2, av3,
+                          V_kl, v1, v2, v3, k_zone, chunk_size):
+    """K-L low-rank variant of _simulate_chunk_b.
+
+    Replaces the (chunk, n_fft, 2, n_pad, m_pad) noise + batched 2D FFT with
+    (chunk, NSTEP, 2K) noise + a single batched GEMM via V_kl. Memory
+    footprint drops ~16x at K=1325 vs the FFT path. Downstream logic
+    (drift + cumsum + first-crossing + categorization) is identical.
+
+    K (number of complex modes retained) is recovered from V_kl.shape[1] // 2,
+    which is static at trace time since V_kl has a fixed shape.
+    """
+    ku, kg = jax.random.split(key)
+    two_K = V_kl.shape[1]   # static: V_kl shape is fixed at trace time
+
+    # Per-trial uniforms (mirrors Fortran gu1)
+    u = jax.random.uniform(ku, (chunk_size, 10))
+    crr = (cr + crsd * (u[:, 4] - 0.5)).astype(jnp.float32)
+    ndt = (ter + st * (0.5 - u[:, 9])) / E
+
+    # Sample (chunk, NSTEP, 2K) iid normals
+    z = jax.random.normal(kg, (chunk_size, NSTEP, two_K), dtype=jnp.float32)
+
+    # One batched GEMM: (chunk, NSTEP, 2K) @ (2K, NM) -> (chunk, NSTEP, NM)
+    grf_flat = jnp.einsum("csk,Nk->csN", z, V_kl)
+    grf_path = grf_flat.reshape(chunk_size, NSTEP, N, M)
+
+    # Drift + accumulator (identical to _simulate_chunk_b)
+    v1_f32 = v1.astype(jnp.float32)
+    v2_f32 = v2.astype(jnp.float32)
+    v3_f32 = v3.astype(jnp.float32)
+    av1_f32 = jnp.float32(av1)
+    av2_f32 = jnp.float32(av2)
+    av3_f32 = jnp.float32(av3)
+    drift_const = av1_f32 * v1_f32 + av2_f32 * v2_f32 + av3_f32 * v3_f32
+    incr = drift_const[None, None, :, :] + grf_path
+
+    incr = incr - incr.mean(axis=(-2, -1), keepdims=True)
+    a = jnp.cumsum(incr, axis=1)
+
+    max_per_step = a.reshape(chunk_size, NSTEP, -1).max(axis=-1)
+    crossed = max_per_step > crr[:, None]
+    any_crossed = crossed.any(axis=1)
+    jstop = jnp.where(any_crossed, jnp.argmax(crossed, axis=1) + 1, NSTEP)
+
+    a_at_crossing = a[jnp.arange(chunk_size), jstop - 1, :, :]
+    pos_flat = jnp.argmax(a_at_crossing.reshape(chunk_size, -1), axis=-1)
+    row = pos_flat // M
+    col = pos_flat % M
+    cat = jnp.where(any_crossed, k_zone[row, col], jnp.int32(5))
+    rt = (jstop.astype(jnp.float64) + ndt) * E
+
+    return rt, cat
+
+
 @partial(jax.jit, static_argnums=(11, 12))
-def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
-               sis, sig, si, nsim, chunk_size=4):
-    """
-    Run `nsim` Model B trials with the given parameters.
-
-    Parameters:
-        sis : drift bump width
-        sig : GRF correlation length (s1=s2=sig)
-        si  : zone-array width
-    Returns (rt, cat) each shape (nsim,). cat in {1..5}. RT in ms.
-
-    Memory note: chunk_size=4 default for laptop CPU. H100 can use much larger.
-    """
+def _simulate_b_fft(key, ter, st, cr, crsd, av1, av2, av3,
+                    sis, sig, si, nsim, chunk_size):
+    """FFT-path inner core for simulate_b. Bit-for-bit identical to the
+    pre-Stage-6 simulate_b body."""
     LAM = grf.calc_LAM(s1=sig, s2=sig)
     v1, v2, v3 = drift_bumps(sis=sis)
     k_zone = zone_array(si=si)
@@ -200,3 +247,56 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
 
     rts, cats = jax.lax.map(run_chunk, keys)
     return rts.reshape(-1)[:nsim], cats.reshape(-1)[:nsim]
+
+
+@partial(jax.jit, static_argnums=(11, 12))
+def _simulate_b_kl_inner(key, ter, st, cr, crsd, av1, av2, av3,
+                          V_kl, sis, si, nsim, chunk_size):
+    """K-L-path inner core for simulate_b. V_kl is passed as a traced array
+    (built outside jit by grf_kl.calc_kl_basis, which uses numpy)."""
+    v1, v2, v3 = drift_bumps(sis=sis)
+    k_zone = zone_array(si=si)
+
+    n_chunks = (nsim + chunk_size - 1) // chunk_size
+    keys = prng.trial_keys(key, n_chunks)
+
+    def run_chunk(k):
+        return _simulate_chunk_b_kl(
+            k, ter, st, cr, crsd, av1, av2, av3,
+            V_kl, v1, v2, v3, k_zone, chunk_size,
+        )
+
+    rts, cats = jax.lax.map(run_chunk, keys)
+    return rts.reshape(-1)[:nsim], cats.reshape(-1)[:nsim]
+
+
+def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
+               sis, sig, si, nsim, chunk_size=4, use_kl=False):
+    """
+    Run `nsim` Model B trials with the given parameters.
+
+    Parameters:
+        sis : drift bump width
+        sig : GRF correlation length (s1=s2=sig)
+        si  : zone-array width
+        use_kl : if True, use K-L low-rank GRF path (model_b/grf_kl.py) for
+                 reduced memory footprint at large chunk sizes. Default False
+                 preserves the original FFT path bit-for-bit.
+    Returns (rt, cat) each shape (nsim,). cat in {1..5}. RT in ms.
+
+    Memory note: chunk_size=4 default for laptop CPU. H100 can use much larger.
+
+    Note: this outer wrapper is intentionally NOT jit-compiled. When use_kl=True
+    the K-L basis is constructed via numpy in grf_kl.calc_kl_basis, which cannot
+    run inside jax tracing. The compute-heavy inner cores are jitted.
+    """
+    if use_kl:
+        V_kl, _K_kl, _ = grf_kl.calc_kl_basis(sig=float(sig), n=N, m=M)
+        return _simulate_b_kl_inner(
+            key, ter, st, cr, crsd, av1, av2, av3,
+            V_kl, sis, si, nsim, chunk_size,
+        )
+    return _simulate_b_fft(
+        key, ter, st, cr, crsd, av1, av2, av3,
+        sis, sig, si, nsim, chunk_size,
+    )
