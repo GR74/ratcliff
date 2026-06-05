@@ -1,0 +1,17 @@
+.git/
+.github/
+.venv/
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+node_modules/
+frontend/dist/
+frontend/node_modules/
+docs/
+scripts/_diag_kl_spectrum.py
+*.txt
+!h100_section4.txt
