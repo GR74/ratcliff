@@ -1,8 +1,5 @@
 """Smoke tests for model_b/grf_kl.py — K-L basis builder + sampler."""
-import jax
 import jax.numpy as jnp
-import numpy as np
-import pytest
 
 from model_b import grf_kl
 

@@ -7,7 +7,6 @@ sig=10 with K ≈ 100. Runtime sampling is one batched GEMM instead of a 2D FFT.
 
 See docs/plans/2026-06-05-model-b-stage-6-design.md for math + design rationale.
 """
-import jax
 import jax.numpy as jnp
 import numpy as np
 
