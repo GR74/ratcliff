@@ -132,11 +132,14 @@ print(f"  Speedup vs 1-node Fortran (36s): {36.0 / best[1]:.1f}x")
 
 BEST_CHUNK_B = best[0]
 # fofs_b_new and fit_simplex_b vmap over 2 conditions, which roughly doubles
-# the effective memory footprint per chunk. Halve the chunk size (with a floor
-# of 16) to keep these stages from OOMing while still using the GPU well.
-FIT_CHUNK_B = max(BEST_CHUNK_B // 2, 16)
+# the effective memory footprint per chunk. The z noise tensor alone is
+# (chunk * 2_conds * 200 * 2 * 199 * 319) fp32 = ~6.5 GB at chunk=16. Cap at 16
+# to leave room for downstream cumsum + reduce ops on an 80 GB H100.
+# (Section 2 sweep showed chunk={16,32,64,128} are all ~5.2s anyway —
+# we're FFT-bandwidth bound, chunk size doesn't help past 16.)
+FIT_CHUNK_B = 16
 print(f"  Using chunk_size={FIT_CHUNK_B} for fofs_b_new / fit_simplex_b "
-      f"(halved to fit 2x vmap)")
+      f"(hard-capped at 16 for 2x vmap memory; chunk doesn't matter for speed)")
 
 # ----------------------------------------------------------------------
 # Section 3: fofs_b_new wall clock (full 2-condition objective)
