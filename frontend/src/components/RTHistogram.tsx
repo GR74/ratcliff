@@ -22,7 +22,7 @@ export function RTHistogram({ rt, cat, title }: Props) {
       data={traces}
       layout={{
         barmode: "overlay",
-        title: title ?? "Reaction time by category",
+        title: { text: title ?? "Reaction time by category" },
         xaxis: { title: { text: "RT (ms)" } },
         yaxis: { title: { text: "Count" } },
         height: 400,
