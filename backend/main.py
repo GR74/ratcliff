@@ -11,6 +11,13 @@ Endpoints (all under /api):
 
 Static React bundle is served from /  when it exists at frontend/dist.
 """
+# CRITICAL: enable x64 BEFORE any JAX import. The simulator code explicitly
+# requests float64 / complex128 dtypes; if x64 isn't enabled, JAX silently
+# truncates to fp32 / complex64 and the simulator produces numerically wrong
+# output. Must come before any `from model_b import ...` line.
+import jax
+jax.config.update("jax_enable_x64", True)
+
 from pathlib import Path
 from typing import Optional
 
