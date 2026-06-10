@@ -58,23 +58,35 @@ class DDMAgent:
         self.params = params
         self.agent_id = agent_id
 
-    def decide(self, evidence: float, rng: np.random.Generator):
+    def decide(self, evidence: float, rng: np.random.Generator,
+               extra_drift: float = 0.0, boundary_scale: float = 1.0):
         """One decision at a given evidence level.
 
         evidence > 0 favors choice 1, < 0 favors choice 0, 0 is ambiguous.
+        extra_drift / boundary_scale: see decide_batch (social drift + caution).
         Returns (choice in {0, 1}, rt in seconds).
         """
-        choices, rts = self.decide_batch(evidence, 1, rng)
+        choices, rts = self.decide_batch(
+            evidence, 1, rng, extra_drift=extra_drift, boundary_scale=boundary_scale
+        )
         return int(choices[0]), float(rts[0])
 
-    def decide_batch(self, evidence: float, n: int, rng: np.random.Generator):
+    def decide_batch(self, evidence: float, n: int, rng: np.random.Generator,
+                     extra_drift: float = 0.0, boundary_scale: float = 1.0):
         """Vectorized: n independent decisions at one evidence level.
+
+        extra_drift   : an additive drift term (e.g. trust-weighted SOCIAL drift
+                        from peers — how communication enters the accumulator).
+        boundary_scale: multiplies the boundary for this decision (e.g. raise
+                        caution under novelty/uncertainty without mutating the
+                        agent's default params).
 
         Returns (choices: int array (n,), rts: float array (n,)). Fast — all
         trials step in lockstep until each crosses a bound.
         """
         p = self.params
-        drift = p.drift_scale * evidence
+        drift = p.drift_scale * evidence + extra_drift
+        boundary = p.boundary * boundary_scale
         noise_sd = p.sigma * np.sqrt(DT)
 
         x = np.zeros(n)
@@ -88,8 +100,8 @@ class DDMAgent:
                 break
             x[active] += drift * DT + noise_sd * rng.standard_normal(k)
 
-            hi = active & (x >= p.boundary)
-            lo = active & (x <= -p.boundary)
+            hi = active & (x >= boundary)
+            lo = active & (x <= -boundary)
             t = p.ndt + step * DT
             choice[hi] = 1
             rt[hi] = t
