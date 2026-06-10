@@ -142,9 +142,9 @@ export function FieldTab() {
                 className="w-full mt-2 accent-accent"
               />
               <p className="text-xs text-slate-500 mt-1">
-                Drag to orbit, scroll to zoom. Toggle "threshold plane" to overlay the
-                decision threshold — a real trial commits when the surface first pokes
-                through it.
+                Drag to orbit, scroll to zoom. In single-trial mode the gold trail
+                tracks the winning region — the marker flashes at the moment the
+                decision commits. Toggle "threshold plane" to overlay the threshold.
               </p>
             </>
           ) : (

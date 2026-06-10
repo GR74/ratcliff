@@ -3,6 +3,7 @@ import {
   FitResultResponse,
   FitStatusResponse,
   ParamSet,
+  PhaseResponse,
   PredictResponse,
   SimulateResponse,
   UploadedData,
@@ -58,6 +59,37 @@ export async function postField(
     signal: opts.signal,
   });
   return jsonOrThrow<FieldResponse>(r);
+}
+
+export async function postPhase(
+  params: ParamSet,
+  opts: {
+    xParam?: string;
+    xRange?: [number, number];
+    yParam?: string;
+    yRange?: [number, number];
+    grid?: number;
+    nsim?: number;
+    metric?: "accuracy" | "rt";
+    signal?: AbortSignal;
+  } = {},
+): Promise<PhaseResponse> {
+  const r = await fetch(`${BASE}/phase`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      params,
+      x_param: opts.xParam ?? "cr",
+      x_range: opts.xRange ?? [4, 18],
+      y_param: opts.yParam ?? "av1",
+      y_range: opts.yRange ?? [4, 24],
+      grid: opts.grid ?? 12,
+      nsim: opts.nsim ?? 200,
+      metric: opts.metric ?? "accuracy",
+    }),
+    signal: opts.signal,
+  });
+  return jsonOrThrow<PhaseResponse>(r);
 }
 
 export async function postUpload(file: File): Promise<UploadedData> {

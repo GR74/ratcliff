@@ -254,16 +254,99 @@ def field_snapshots(params: dict,
     a = jnp.cumsum(incr, axis=1)   # (n_trials, NSTEP, N, M)
 
     field = a[0] if mode == "single" else a.mean(axis=0)   # (NSTEP, N, M)
+    field_np = np.asarray(field)                           # (NSTEP, N, M)
 
     step_idx = np.linspace(0, NSTEP - 1, n_frames).astype(int)
-    sampled = np.asarray(field[step_idx])                  # (n_frames, N, M)
-    sampled = sampled[:, ::grid_stride, ::grid_stride]     # downsample grid
+    sampled = field_np[step_idx]                           # (n_frames, N, M)
+    sampled_ds = sampled[:, ::grid_stride, ::grid_stride]  # downsample grid
 
-    return {
-        "frames": sampled.astype(np.float32).tolist(),
+    out = {
+        "frames": sampled_ds.astype(np.float32).tolist(),
         "steps": step_idx.tolist(),
         "threshold": float(params["cr"]),
-        "n": int(sampled.shape[1]),
-        "m": int(sampled.shape[2]),
+        "n": int(sampled_ds.shape[1]),
+        "m": int(sampled_ds.shape[2]),
         "nstep": int(NSTEP),
+    }
+
+    # Single-trial only: trace the winning region's trajectory (the argmax
+    # location of the accumulator at each sampled frame) and the commitment
+    # frame (first frame whose field max exceeds the threshold). Coordinates
+    # are in DOWNSAMPLED grid units so they line up with the rendered surface.
+    if mode == "single":
+        cr = float(params["cr"])
+        trajectory = []
+        crossing_frame = None
+        for fi, frame in enumerate(sampled):              # full-res frame (N, M)
+            flat = int(np.argmax(frame))
+            row = flat // M
+            col = flat % M
+            val = float(frame[row, col])
+            trajectory.append([row // grid_stride, col // grid_stride, val])
+            if crossing_frame is None and val > cr:
+                crossing_frame = fi
+        out["trajectory"] = trajectory
+        out["crossing_frame"] = crossing_frame
+
+    return out
+
+
+def phase_diagram(params: dict,
+                  x_param: str = "cr",
+                  x_range: tuple[float, float] = (4.0, 18.0),
+                  y_param: str = "av1",
+                  y_range: tuple[float, float] = (4.0, 24.0),
+                  grid: int = 12,
+                  nsim: int = 200,
+                  metric: str = "accuracy",
+                  key_seed: int = 0) -> dict:
+    """Sweep a 2D parameter grid and return a heatmap of accuracy or mean RT.
+
+    x_param/y_param : keys of the single-condition param dict (cr, av1, sis, ...).
+    metric : "accuracy" (proportion of trials in category 1, the target region)
+             or "rt" (mean decision time in ms).
+
+    Because cr/av*/sis/etc. are traced (non-static) JIT args, simulate_b compiles
+    once and every grid cell reuses it — the sweep is grid*grid fast calls.
+    Returns {x_values, y_values, z (grid x grid), x_param, y_param, metric}.
+    """
+    if metric not in ("accuracy", "rt"):
+        raise ValueError(f"metric must be 'accuracy' or 'rt', got {metric!r}")
+    valid = ("ter", "st", "cr", "crsd", "sis", "sig", "av1", "av2", "av3")
+    if x_param not in valid or y_param not in valid:
+        raise ValueError(f"x_param/y_param must be one of {valid}")
+
+    defaults = _get_device_defaults()
+    xs = np.linspace(x_range[0], x_range[1], grid)
+    ys = np.linspace(y_range[0], y_range[1], grid)
+    z = np.zeros((grid, grid), dtype=np.float64)
+
+    base = dict(params)
+    for yi, yv in enumerate(ys):
+        for xi, xv in enumerate(xs):
+            p = dict(base)
+            p[x_param] = float(xv)
+            p[y_param] = float(yv)
+            key = jax.random.key(key_seed + yi * grid + xi)
+            rt, cat = sim_b.simulate_b(
+                key,
+                ter=p["ter"], st=p["st"], cr=p["cr"], crsd=p["crsd"],
+                av1=p["av1"], av2=p["av2"], av3=p["av3"],
+                sis=p["sis"], sig=p["sig"], si=6.0,
+                nsim=nsim, chunk_size=defaults["chunk_size"],
+                use_kl=defaults["use_kl"],
+            )
+            cat_np = np.asarray(cat)
+            if metric == "accuracy":
+                z[yi, xi] = float((cat_np == 1).mean())
+            else:
+                z[yi, xi] = float(np.asarray(rt).mean())
+
+    return {
+        "x_values": xs.tolist(),
+        "y_values": ys.tolist(),
+        "z": z.tolist(),
+        "x_param": x_param,
+        "y_param": y_param,
+        "metric": metric,
     }

@@ -228,3 +228,56 @@ def test_field_snapshots_rejects_bad_mode():
     import pytest
     with pytest.raises(ValueError, match="mode must be"):
         model_api.field_snapshots(DEFAULT_PARAMS, mode="bogus")
+
+
+# ---- 9.A: trajectory trace ----------------------------------------------
+
+def test_field_snapshots_single_has_trajectory():
+    """Single mode returns a per-frame argmax trajectory + crossing frame."""
+    out = model_api.field_snapshots(DEFAULT_PARAMS, mode="single",
+                                    n_frames=12, grid_stride=2, key_seed=0)
+    assert "trajectory" in out and "crossing_frame" in out
+    assert len(out["trajectory"]) == 12
+    for pt in out["trajectory"]:
+        assert len(pt) == 3  # [row_ds, col_ds, value]
+        assert 0 <= pt[0] < out["n"]
+        assert 0 <= pt[1] < out["m"]
+    # crossing_frame is an int index or None
+    assert out["crossing_frame"] is None or isinstance(out["crossing_frame"], int)
+
+
+def test_field_snapshots_mean_has_no_trajectory():
+    """Mean mode omits trajectory (no single crossing)."""
+    out = model_api.field_snapshots(DEFAULT_PARAMS, mode="mean",
+                                    n_frames=6, n_trials_mean=4, grid_stride=4)
+    assert "trajectory" not in out
+
+
+# ---- 9.B: phase diagram -------------------------------------------------
+
+def test_phase_diagram_accuracy_shape():
+    out = model_api.phase_diagram(DEFAULT_PARAMS, grid=4, nsim=64, metric="accuracy")
+    assert len(out["z"]) == 4 and len(out["z"][0]) == 4
+    assert len(out["x_values"]) == 4 and len(out["y_values"]) == 4
+    for row in out["z"]:
+        for v in row:
+            assert 0.0 <= v <= 1.0  # accuracy is a proportion
+
+
+def test_phase_diagram_rt_metric():
+    out = model_api.phase_diagram(DEFAULT_PARAMS, grid=3, nsim=64, metric="rt")
+    for row in out["z"]:
+        for v in row:
+            assert v > 0  # mean RT positive
+
+
+def test_phase_diagram_rejects_bad_metric():
+    import pytest
+    with pytest.raises(ValueError, match="metric must be"):
+        model_api.phase_diagram(DEFAULT_PARAMS, grid=2, metric="bogus")
+
+
+def test_phase_diagram_rejects_bad_param():
+    import pytest
+    with pytest.raises(ValueError, match="x_param/y_param"):
+        model_api.phase_diagram(DEFAULT_PARAMS, grid=2, x_param="nonsense")

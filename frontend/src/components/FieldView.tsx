@@ -26,6 +26,8 @@ export function FieldView({ field, frameIndex, showThreshold }: Props) {
     geometry: THREE.PlaneGeometry;
     mesh: THREE.Mesh;
     thresholdPlane: THREE.Mesh;
+    trail: THREE.Line;
+    marker: THREE.Mesh;
     raf: number;
     heightScale: number;
     globalMin: number;
@@ -101,6 +103,29 @@ export function FieldView({ field, frameIndex, showThreshold }: Props) {
     thresholdPlane.position.y = (field.threshold - globalMin) * heightScale;
     scene.add(thresholdPlane);
 
+    // Winning-region trail: a polyline that grows along the argmax trajectory,
+    // plus a glowing marker that rides the leading edge. World coords map the
+    // downsampled (row, col) the same way the surface vertices do (see below).
+    const trailGeo = new THREE.BufferGeometry();
+    trailGeo.setAttribute(
+      "position",
+      new THREE.BufferAttribute(new Float32Array((field.frames.length) * 3), 3),
+    );
+    const trailMat = new THREE.LineBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.9 });
+    const trail = new THREE.Line(trailGeo, trailMat);
+    trail.visible = !!field.trajectory;
+    scene.add(trail);
+
+    const markerGeo = new THREE.SphereGeometry(Math.max(field.m, field.n) * 0.02, 16, 16);
+    const markerMat = new THREE.MeshStandardMaterial({
+      color: 0xfde047,
+      emissive: 0xf59e0b,
+      emissiveIntensity: 0.8,
+    });
+    const marker = new THREE.Mesh(markerGeo, markerMat);
+    marker.visible = !!field.trajectory;
+    scene.add(marker);
+
     const animate = () => {
       controls.update();
       renderer.render(scene, camera);
@@ -115,6 +140,8 @@ export function FieldView({ field, frameIndex, showThreshold }: Props) {
       geometry,
       mesh,
       thresholdPlane,
+      trail,
+      marker,
       raf: 0,
       heightScale,
       globalMin,
@@ -138,6 +165,10 @@ export function FieldView({ field, frameIndex, showThreshold }: Props) {
       material.dispose();
       thrGeo.dispose();
       thrMat.dispose();
+      trailGeo.dispose();
+      trailMat.dispose();
+      markerGeo.dispose();
+      markerMat.dispose();
       renderer.dispose();
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
       stateRef.current = null;
@@ -175,6 +206,41 @@ export function FieldView({ field, frameIndex, showThreshold }: Props) {
     pos.needsUpdate = true;
     st.geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     st.geometry.computeVertexNormals();
+
+    // Update the winning-region trail + marker. World coords match the surface:
+    // a (row, col, value) maps to (col - (m-1)/2, height, row - (n-1)/2).
+    const traj = field.trajectory;
+    if (traj) {
+      const cx = (field.m - 1) / 2;
+      const cz = (field.n - 1) / 2;
+      const toWorld = (r: number, c: number, v: number): [number, number, number] => [
+        c - cx,
+        (v - st.globalMin) * st.heightScale + 0.5,
+        r - cz,
+      ];
+      const trailPos = st.trail.geometry.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < traj.length; i++) {
+        // Only draw up to the current frame (the path grows as time advances).
+        const idx = Math.min(i, frameIndex);
+        const [r, c, v] = traj[idx];
+        const [wx, wy, wz] = toWorld(r, c, v);
+        trailPos.setXYZ(i, wx, wy, wz);
+      }
+      trailPos.needsUpdate = true;
+
+      const [mr, mc, mv] = traj[frameIndex];
+      const [wx, wy, wz] = toWorld(mr, mc, mv);
+      st.marker.position.set(wx, wy, wz);
+
+      // Flash bigger + brighter at the commitment frame.
+      const isCommit =
+        field.crossing_frame !== null &&
+        field.crossing_frame !== undefined &&
+        frameIndex >= field.crossing_frame;
+      const s = frameIndex === field.crossing_frame ? 2.4 : isCommit ? 1.5 : 1.0;
+      st.marker.scale.setScalar(s);
+      (st.marker.material as THREE.MeshStandardMaterial).emissiveIntensity = isCommit ? 1.6 : 0.8;
+    }
   }, [field, frameIndex]);
 
   // Toggle the threshold plane visibility without rebuilding the scene.

@@ -1,0 +1,66 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - heading "Ratcliff DDM" [level=1] [ref=e6]
+        - generic [ref=e7]: 2D spatial diffusion decision model — Stage 7 UI
+      - navigation [ref=e8]:
+        - button "Forward Sim" [ref=e9] [cursor=pointer]
+        - button "Field (3D)" [ref=e10] [cursor=pointer]
+        - button "Phase Diagram" [active] [ref=e11] [cursor=pointer]
+        - button "Fit" [ref=e12] [cursor=pointer]
+        - button "Predict" [ref=e13] [cursor=pointer]
+        - button "Compare" [ref=e14] [cursor=pointer]
+    - main [ref=e15]:
+      - generic [ref=e183]:
+        - generic [ref=e184]:
+          - heading "Phase diagram" [level=3] [ref=e185]
+          - generic [ref=e186]:
+            - text: x-axis param
+            - combobox [ref=e187]:
+              - option "cr" [selected]
+              - option "av1"
+              - option "av2"
+              - option "av3"
+              - option "sis"
+              - option "sig"
+              - option "ter"
+              - option "st"
+            - generic [ref=e188]:
+              - spinbutton [ref=e189]: "4"
+              - spinbutton [ref=e190]: "18"
+          - generic [ref=e191]:
+            - text: y-axis param
+            - combobox [ref=e192]:
+              - option "cr"
+              - option "av1" [selected]
+              - option "av2"
+              - option "av3"
+              - option "sis"
+              - option "sig"
+              - option "ter"
+              - option "st"
+            - generic [ref=e193]:
+              - spinbutton [ref=e194]: "4"
+              - spinbutton [ref=e195]: "24"
+          - generic [ref=e196]:
+            - text: color metric
+            - generic [ref=e197]:
+              - button "Accuracy" [ref=e198] [cursor=pointer]
+              - button "Mean RT" [ref=e199] [cursor=pointer]
+            - paragraph [ref=e200]: "\"Accuracy\" = proportion of trials landing in the target region (category 1, the innermost zone). This is a 5-category spatial model, not 2-choice."
+          - generic [ref=e201]:
+            - generic [ref=e202]:
+              - generic [ref=e203]: grid (144 cells)
+              - spinbutton [ref=e204]: "12"
+            - generic [ref=e205]:
+              - text: nsim / cell
+              - spinbutton [ref=e206]: "200"
+          - button "Generate phase diagram" [ref=e207] [cursor=pointer]
+          - paragraph [ref=e208]: 144 sims on CPU — expect ~5 min the first time (much faster on a GPU).
+        - generic [ref=e210]: Pick two parameters and click "Generate phase diagram" to reveal the parameter regimes.
+    - contentinfo [ref=e96]:
+      - text: "Powered by JAX + K-L low-rank GRF. Source:"
+      - link "GR74/ratcliff" [ref=e97] [cursor=pointer]:
+        - /url: https://github.com/GR74/ratcliff
+  - img [ref=e170]

@@ -273,6 +273,40 @@ def field(req: FieldRequest) -> dict:
         raise HTTPException(500, f"field failed: {e}") from e
 
 
+# ---- /api/phase --------------------------------------------------------
+
+class PhaseRequest(BaseModel):
+    params: dict
+    x_param: str = "cr"
+    x_range: tuple[float, float] = (4.0, 18.0)
+    y_param: str = "av1"
+    y_range: tuple[float, float] = (4.0, 24.0)
+    grid: int = 12
+    nsim: int = 200
+    metric: str = "accuracy"
+    key_seed: int = 0
+
+
+@app.post("/api/phase")
+def phase(req: PhaseRequest) -> dict:
+    if not (2 <= req.grid <= 24):
+        raise HTTPException(400, "grid must be in 2..24")
+    try:
+        return model_api.phase_diagram(
+            req.params,
+            x_param=req.x_param, x_range=req.x_range,
+            y_param=req.y_param, y_range=req.y_range,
+            grid=req.grid, nsim=req.nsim, metric=req.metric,
+            key_seed=req.key_seed,
+        )
+    except KeyError as e:
+        raise HTTPException(400, f"missing required param: {e}") from e
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
+    except Exception as e:
+        raise HTTPException(500, f"phase failed: {e}") from e
+
+
 # ---- Static React bundle (mounted last so it doesn't shadow /api/*) ----
 
 FRONTEND_DIST = Path(__file__).parent.parent / "frontend" / "dist"

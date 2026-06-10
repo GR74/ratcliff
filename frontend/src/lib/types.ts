@@ -90,6 +90,17 @@ export interface FieldResponse {
   n: number;
   m: number;
   nstep: number;
+  trajectory?: number[][]; // [frame] -> [row_ds, col_ds, value]
+  crossing_frame?: number | null;
+}
+
+export interface PhaseResponse {
+  x_values: number[];
+  y_values: number[];
+  z: number[][]; // [y][x]
+  x_param: string;
+  y_param: string;
+  metric: "accuracy" | "rt";
 }
 
 /** A 13-parameter vector used for fits + predictions. Indices match Ratcliff:

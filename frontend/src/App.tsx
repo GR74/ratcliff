@@ -2,12 +2,14 @@ import { CompareTab } from "./tabs/CompareTab";
 import { FieldTab } from "./tabs/FieldTab";
 import { FitTab } from "./tabs/FitTab";
 import { ForwardSimTab } from "./tabs/ForwardSimTab";
+import { PhaseTab } from "./tabs/PhaseTab";
 import { PredictTab } from "./tabs/PredictTab";
 import { useAppStore } from "./store";
 
 const TABS = [
   { id: "sim", label: "Forward Sim" },
   { id: "field", label: "Field (3D)" },
+  { id: "phase", label: "Phase Diagram" },
   { id: "fit", label: "Fit" },
   { id: "predict", label: "Predict" },
   { id: "compare", label: "Compare" },
@@ -46,6 +48,7 @@ export function App() {
       <main className="flex-1">
         {currentTab === "sim" && <ForwardSimTab />}
         {currentTab === "field" && <FieldTab />}
+        {currentTab === "phase" && <PhaseTab />}
         {currentTab === "fit" && <FitTab />}
         {currentTab === "predict" && <PredictTab />}
         {currentTab === "compare" && <CompareTab />}

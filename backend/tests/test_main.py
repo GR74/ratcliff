@@ -149,3 +149,32 @@ def test_field_missing_param_returns_400():
     bad = {k: v for k, v in DEFAULT_PARAMS.items() if k != "sig"}
     r = client.post("/api/field", json={"params": bad, "mode": "single", "n_frames": 4})
     assert r.status_code == 400
+
+
+# ---- /api/phase --------------------------------------------------------
+
+def test_phase_accuracy_returns_grid():
+    r = client.post(
+        "/api/phase",
+        json={"params": DEFAULT_PARAMS, "grid": 3, "nsim": 64, "metric": "accuracy"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["z"]) == 3 and len(body["z"][0]) == 3
+    assert body["metric"] == "accuracy"
+
+
+def test_phase_rejects_bad_metric():
+    r = client.post(
+        "/api/phase",
+        json={"params": DEFAULT_PARAMS, "grid": 2, "metric": "bogus"},
+    )
+    assert r.status_code == 400
+
+
+def test_phase_rejects_bad_grid():
+    r = client.post(
+        "/api/phase",
+        json={"params": DEFAULT_PARAMS, "grid": 99},
+    )
+    assert r.status_code == 400

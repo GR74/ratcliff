@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { DEFAULT_PARAMS, ParamSet } from "./lib/types";
 
 interface AppState {
-  currentTab: "sim" | "field" | "fit" | "predict" | "compare";
+  currentTab: "sim" | "field" | "phase" | "fit" | "predict" | "compare";
   setTab: (t: AppState["currentTab"]) => void;
 
   params: ParamSet;
