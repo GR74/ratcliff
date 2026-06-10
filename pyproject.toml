@@ -36,13 +36,13 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["shared*", "model_a*", "model_b*", "backend*"]
+include = ["shared*", "model_a*", "model_b*", "backend*", "cognitive_society*"]
 
 [tool.setuptools.package-data]
 "*" = ["data/*"]
 
 [tool.pytest.ini_options]
-testpaths = ["shared/tests", "model_a/tests", "model_b/tests", "backend/tests"]
+testpaths = ["shared/tests", "model_a/tests", "model_b/tests", "backend/tests", "cognitive_society/tests"]
 addopts = "-v --tb=short --strict-markers -ra"
 markers = [
     "perf: performance regression tests (skipped by default, run with -m perf)",

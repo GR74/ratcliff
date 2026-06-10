@@ -41,12 +41,18 @@ class DDMParams:
 
 
 class DDMAgent:
-    """A single diffusion-decision agent.
+    """A single diffusion-decision agent (the fast, 1D, NumPy decision engine).
 
     Decision: accumulate `x` from 0; positive evidence drifts toward +boundary
     (choice 1), negative toward -boundary (choice 0). Crossing a bound commits
     the choice and yields a reaction time.
+
+    Satisfies the `DecisionEngine` contract (see engine.py): the society logic
+    depends only on `decide` / `decide_batch` / `n_choices`, so this 1D engine
+    and the heavyweight 2D spatial engine are interchangeable.
     """
+
+    n_choices = 2  # 2-alternative forced choice
 
     def __init__(self, params: DDMParams, agent_id: int = 0):
         self.params = params
