@@ -114,9 +114,31 @@ shown mechanistically with a dose-response, faithful baselines, and a fair ablat
 It **isn't**: SOTA, validated at scale, or a collective-accuracy win. It is a narrow, honest,
 defensible mechanism result.
 
+## Phase 3 (scale) — first result
+
+`python -m cognitive_society.phase3_scale` sweeps N at fixed degree (4) and fixed contiguous-cluster
+fraction (25%), no truth-prior on either arm. The per-victim isolation doesn't just *hold* at scale —
+the **advantage widens**:
+
+| N | victims | outcome AUC | agreement AUC | gap |
+|---|---|---|---|---|
+| 24 | 4 | 1.00 | 0.75 | +0.25 |
+| 48 | 5 | 1.00 | 0.55 | +0.45 |
+| 96 | 8 | 1.00 | 0.55 | +0.45 |
+| 144 | 9 | 1.00 | 0.44 | +0.56 |
+
+**Outcome AUC is 1.00 at every N (perfectly scale-invariant)** — the isolation is *local*, so it's
+scale-free by construction (no global controller). **Agreement AUC degrades as N grows** (a larger
+contiguous cluster at fixed degree makes more *deeply*-captured victims, which fool agreement-trust
+harder), so the outcome-vs-agreement gap grows +0.25 → +0.56. *Honest caveat:* victim counts are still
+small (4–9/N), so the gap-grows-with-N trend is suggestive (more seeds to firm up); the robust claim is
+the flat outcome = 1.00.
+
 ## Next
 
-- **Firm up** the decisive-n (more seeds/configs → confirm the 0.00 holds with tighter bounds).
-- **Phase 3 (scale):** does the per-victim inversion + outcome's perfect isolation persist as N grows
-  (50/100/500/1000), and does the adversary cluster's realized influence → 0 (Golub–Jackson)?
-- **Write-up / Exo bridge** once the result is firmed and scaled.
+- **Firm up** the decisive-n (more seeds → tighten the gap-grows-with-N trend).
+- **Collective scale (decisive):** the *tipping-fraction* test — does outcome-grounded trust raise the
+  adversary-cluster fraction that flips the swarm's consensus vs agreement/no-trust, and does that margin
+  hold/grow with N (Centola tipping point + Golub–Jackson influence→0)? This is where *collective* accuracy
+  separates (near the tipping point, unlike the saturated minority-cluster regime).
+- **Write-up / Exo bridge** once firmed.
