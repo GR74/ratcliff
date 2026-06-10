@@ -28,6 +28,26 @@ The `frontend/` + `backend/` directories implement a React + FastAPI app for int
 
 Deploy as a single HF Space Docker image — see `HF_SPACE_README.md` for the publishing front-matter.
 
+## Cognitive Society (agentic layer)
+
+`cognitive_society/` is a scoped multi-agent system that grows out of the DDM work: each agent's
+decision-making *is* a diffusion model, agents communicate over a custom trust-weighted protocol,
+infer each other's cognitive styles, and adapt to novelty. It runs on **lightweight 1D NumPy agents**
+(no GPU, ~3s test suite) and can swap in the full 2D JAX model behind the same interface.
+
+**Headline result** (under confidently-wrong adversaries): collective accuracy
+flat **74%** → outcome-only-trust **93%** → cognitive-map-grounded + uncertainty-gated trust (ours)
+**96.5%**.
+
+```bash
+python -m cognitive_society.demo        # a society decides + reads each other's minds
+python -m cognitive_society.experiment  # the anchor robustness experiment
+pytest cognitive_society/tests/ -m "not slow"
+```
+
+See `cognitive_society/README.md`, the roadmap (`docs/plans/2026-06-05-OVERALL-PLAN-cognitive-society.md`),
+and the design notes (`docs/notes/2026-06-05-ddm-coupled-comms-design-notes.md`).
+
 ## Quick start (local development)
 
 Requires Python 3.11+ and Node 20+ (for the frontend).
@@ -84,6 +104,9 @@ docker run -p 7860:7860 ratcliff-ddm
 - [x] Stage 7.B — FastAPI backend + React frontend
 - [x] Stage 7.C — Dockerfile + HF Space configuration
 - [ ] Stage 7 deployment — push to HF Space and verify public URL (user action)
+- [x] Stage 8 — three.js evidence-field viz + decision-trajectory trace + phase diagram
+- [x] Cognitive Society — DDM agents, trust-weighted comms, cognitive mapping, adaptation (checkpoints 1-4 + anchor experiment)
+- [ ] Track B — amortized SBI for the 2D model (MVP script ready: `scripts/sbi_mvp.py`)
 - [ ] Methods paper — manuscript draft
 
 ## Tags
