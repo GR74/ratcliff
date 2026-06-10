@@ -117,8 +117,43 @@ The `DecisionEngine` protocol (`engine.py`) is the contract: `n_choices`,
    defer online and can drop deference when the peer group turns hostile. ✅ done
    (`rl.py` + `rl_experiment.py`; 8 RL tests).
 
-Status: checkpoints 1–4 implemented and tested on the 1D path (43 fast tests, no
-GPU). SBI-fitted defaults for the 2D engine are Track B (in progress).
+Status: checkpoints 1–4 implemented and tested on the 1D path. SBI-fitted defaults
+for the 2D engine are Track B (validated at scale; see top-level README).
+
+---
+
+## Decentralized swarm (Phase 0–2) — the research frontier
+
+Beyond the fully-connected society: can the robustness **emerge with no global
+controller**, when each agent hears only its graph neighbours — and is there a
+defensible *novel* claim in it? (Honest novelty boundary +  experiment design:
+`docs/notes/2026-06-10-swarm-coordination-research-synthesis.md`.)
+
+- **`topology.py`** — graph generators (complete / ring / Watts–Strogatz small-world /
+  random d-regular / Barabási–Albert scale-free); `Society(topology=adj)` couples each
+  agent only to its neighbours.
+- **Phase 0 (topology control)** — all-honest accuracy is comparable across graph families
+  (98–100%, 2pt spread): topology alone doesn't distort the swarm; local degree-6 comms
+  aggregates within ~1pt of fully-connected. `swarm_experiment.py`.
+- **Phase 1 (local maps)** — `cfg_swarm`: each agent builds a *subjective, neighbour-only*
+  cognitive map from its own noisy observations — no agent has a global view.
+- **Phase 2 (adversary clusters)** — faithful Byzantine-consensus baselines (W-MSR, A-RepC,
+  cross-inhibition) in `baselines.py`; the contiguous-cluster stress test in
+  `phase2_experiment.py`; the **demonstrated result** in `phase2_per_victim.py`.
+
+**Phase 2 result (demonstrated — narrow, honest):** measured *per captured victim*, no
+truth-derived prior, **outcome-grounded trust isolates the cluster at AUC 1.00** while
+**agreement-based trust INVERTS to ~0.00 once a victim is majority-captured** (it trusts its
+attackers — they *are* its local majority). A clean threshold inversion — the one defensible,
+unclaimed contribution. Caveats: small decisive-n, an *isolation* result (a minority cluster
+correctly can't flip the collective vote), toy 1D substrate. Full record:
+`docs/notes/2026-06-10-phase2-swarm-result.md`.
+
+```bash
+python -m cognitive_society.swarm_experiment    # Phase 0 topology control
+python -m cognitive_society.phase2_experiment   # headline cluster stress test
+python -m cognitive_society.phase2_per_victim   # the demonstrated per-victim result
+```
 
 ---
 
