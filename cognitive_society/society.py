@@ -42,6 +42,8 @@ class SocietyConfig:
     social_base: float = 0.5          # baseline social-gain fraction (even when fully certain)
     social_uncertainty_scale: float = 1.0  # extra social-gain fraction per unit uncertainty
     use_rl_policy: bool = False        # learn the deference multiplier (rl.DeferencePolicy) instead of the fixed gate
+    local_maps: bool = False           # per-agent neighbour-only SUBJECTIVE maps (decentralized swarm)
+    local_obs_trials: int = 200        # observation budget per neighbour when local_maps (< map_trials -> noisier, local)
     map_evidence: tuple = (0.4, 0.6, 0.8)
     map_trials: int = 1500
 
@@ -81,15 +83,36 @@ def cfg_rl(**kw):
                          use_rl_policy=True, **kw)
 
 
+def cfg_swarm(**kw):
+    """cfg_full on a decentralized swarm: per-agent LOCAL cognitive maps — each
+    agent estimates only its neighbours, from its own limited observations, so no
+    agent has a global view. Pass a topology= to Society."""
+    return SocietyConfig(use_social=True, use_trust_weights=True,
+                         use_competence_prior=True, adaptive=True,
+                         local_maps=True, **kw)
+
+
 class Society:
     def __init__(self, agents, config: SocietyConfig = None, sigma: float = 1.0,
-                 rng_seed: int = 0, policy=None):
+                 rng_seed: int = 0, policy=None, topology=None):
         self.agents = agents
         self.K = len(agents)
         self.cfg = config or SocietyConfig()
         self.sigma = sigma
         # Optional rl.DeferencePolicy; used only when cfg.use_rl_policy is set.
         self.policy = policy
+        # Neighbour adjacency: who each agent can hear. Default = complete graph
+        # (the fully-connected society); pass a boolean KxK matrix (topology.py)
+        # for a decentralized swarm where each agent couples only to local
+        # neighbours, so global order must EMERGE from local interaction.
+        if topology is None:
+            self.adj = ~np.eye(self.K, dtype=bool)
+        else:
+            adj = np.asarray(topology, dtype=bool).copy()
+            if adj.shape != (self.K, self.K):
+                raise ValueError(f"topology must be {self.K}x{self.K}, got {adj.shape}")
+            np.fill_diagonal(adj, False)
+            self.adj = adj
         self.rng = np.random.default_rng(rng_seed)
         self.trust = [TrustModel(self.K) for _ in range(self.K)]
         # competence[i, j] = how reliable observer i believes peer j is, in [0,1]
@@ -97,25 +120,43 @@ class Society:
         self.mapped = False
 
     # ---- checkpoint 3: cognitive maps ground trust ----------------------
+    def _observe_competence(self, j, n_trials):
+        """Estimate agent j's accuracy at the mapping evidence levels from
+        n_trials observed decisions (uses self.rng, so repeated observations of
+        the same agent differ -> a noisy, subjective estimate)."""
+        pcs = []
+        for ev in self.cfg.map_evidence:
+            ch, _ = self.agents[j].decide_batch(ev, n_trials, self.rng)
+            pcs.append((ch == (1 if ev > 0 else 0)).mean())
+        return float(np.mean(pcs))
+
     def build_cognitive_maps(self):
-        """Each agent observes the (public) behavior of every peer and infers a
-        competence estimate, then seeds trust from it. Competence = inferred
-        accuracy at the mapping evidence levels."""
-        comp = np.zeros(self.K)
-        for j, target in enumerate(self.agents):
-            pcs = []
-            for ev in self.cfg.map_evidence:
-                ch, _ = target.decide_batch(ev, self.cfg.map_trials, self.rng)
-                truth = 1 if ev > 0 else 0
-                pcs.append((ch == truth).mean())
-            comp[j] = float(np.mean(pcs))
-            # Trust seeding needs only this scalar competence. Richer per-peer
-            # style recovery (boundary/drift/ndt) is available in closed form via
-            # ez_diffusion.recover_from_agent_observations if a downstream use
-            # wants it — not run here so mapping stays cheap.
+        """Each agent infers a competence estimate of its peers and seeds trust.
+
+        GLOBAL (default): one shared, objective competence vector (measured over
+        cfg.map_trials) replicated to every observer.
+        LOCAL (cfg.local_maps): each agent estimates ONLY its neighbours, from its
+        OWN limited observation (cfg.local_obs_trials) -- so estimates are noisier
+        and differ across observers: a true per-agent, decentralized cognitive map
+        where no agent sees the whole. Non-neighbours stay neutral (0.5) and are
+        masked out of coupling anyway.
+        """
+        cfg = self.cfg
+        if cfg.local_maps:
+            self.competence = np.full((self.K, self.K), 0.5)
+            for i in range(self.K):
+                for j in np.nonzero(self.adj[i])[0]:
+                    self.competence[i, j] = self._observe_competence(int(j), cfg.local_obs_trials)
+                if cfg.use_competence_prior:
+                    self.trust[i].set_prior_from_competence(self.competence[i])
+            self.mapped = True
+            return self.competence
+
+        # GLOBAL shared map: measure each agent's competence once, give it to all.
+        comp = np.array([self._observe_competence(j, cfg.map_trials) for j in range(self.K)])
         for i in range(self.K):
             self.competence[i] = comp
-            if self.cfg.use_competence_prior:
+            if cfg.use_competence_prior:
                 self.trust[i].set_prior_from_competence(comp)
         self.mapped = True
         return comp
@@ -143,8 +184,7 @@ class Society:
         final = np.zeros(self.K, dtype=int)
 
         for i, a in enumerate(self.agents):
-            mask = np.ones(self.K, dtype=bool)
-            mask[i] = False
+            mask = self.adj[i]   # this agent's neighbours (self already excluded)
             # uncertainty gate: high when this agent's own decision was split.
             gate = (1.0 - conf[i]) if cfg.adaptive else 0.5
 
