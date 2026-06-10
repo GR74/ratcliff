@@ -106,7 +106,10 @@ docker run -p 7860:7860 ratcliff-ddm
 - [ ] Stage 7 deployment — push to HF Space and verify public URL (user action)
 - [x] Stage 8 — three.js evidence-field viz + decision-trajectory trace + phase diagram
 - [x] Cognitive Society — DDM agents, trust-weighted comms, cognitive mapping, adaptation (checkpoints 1-4 + anchor experiment)
-- [ ] Track B — amortized SBI for the 2D model (MVP script ready: `scripts/sbi_mvp.py`)
+- [x] Track B — amortized SBI for the 2D model, **validated at scale** (N=3000 on H100:
+  20.9% recovery, calibration c2st≈0.50; `scripts/sbi_mvp.py`,
+  `docs/notes/2026-06-10-track-b-sbi-validation.md`). Extensions (vmap gen, real-data,
+  hierarchical) are optional follow-ups.
 - [ ] Methods paper — manuscript draft
 
 ## Tags
