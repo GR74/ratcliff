@@ -150,11 +150,24 @@ LOCAL (per-victim isolation) level** (Phase 2 + 3a) but **small at the COLLECTIV
 (this test). It is fundamentally an **isolation result, not a collective-performance one** — collective
 accuracy is a weak discriminator because honest agents are private-evidence-robust.
 
+**Harder-evidence probe (closes the question):** repeating the tipping test at hard evidence
+(|ev|~0.1–0.15, so honest agents must lean on neighbours) — the one regime where a collective tipping
+could hide — still shows **no collapse** (honest accuracy 77–83% at 50% adversaries). The outcome-trust
+margin is slightly larger and grows with fraction (+1.5% → +3.9% at 50%), and agreement-trust isn't even
+reliably better than no-trust. So the collective near-null is **robust**: there is no tipping point in the
+tested regimes; the mechanism is fundamentally local.
+
+## Final Phase-3 verdict
+
+| level | result | strength |
+|---|---|---|
+| **per-victim (local) isolation** | outcome AUC 1.00, scale-invariant; outcome−agreement gap grows +0.25→+0.56 with N | **strong, scale-amplifying** |
+| **collective (honest-agent accuracy)** | no tipping to 50% adversaries (moderate *or* hard evidence); outcome +2–4pt only | **small, real, un-dramatic** |
+
+The swarm contribution is an **isolation result, not a collective-performance one** — honestly bounded.
+
 ## Next
 
-- **A real tipping point would need a regime where honest agents depend MORE on social info** (harder
-  evidence / stronger coupling), so the cluster's pressure can actually flip them — a principled probe, not
-  win-fishing (report whatever it shows).
-- **Firm up** the per-victim gap-grows-with-N trend (more seeds).
-- **Write-up:** lead with the isolation result (strong, defensible); report the collective near-null
-  honestly as a characterization. Then the Exo bridge.
+- **Write-up:** lead with the isolation result (strong, defensible, scale-free); report the collective
+  near-null honestly as the boundary. Position against the prior art already mapped.
+- *Optional:* firm up the per-victim gap-grows-with-N (more seeds); the Exo bridge (separate).
