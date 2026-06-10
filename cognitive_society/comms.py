@@ -32,9 +32,13 @@ def social_drift(trust_row, leanings, competences, social_gain: float) -> float:
 
     Returns a scalar drift term with |value| <= social_gain (the value passed in).
     """
-    trust_row = np.asarray(trust_row, dtype=float)
+    # Clip to the documented [0,1] range so w = trust*competence is non-negative
+    # -> the normalized weights are a convex combination -> sum(w*leaning) in
+    # [-1,1] -> |return| <= social_gain holds UNCONDITIONALLY, not just when the
+    # caller honors the contract.
+    trust_row = np.clip(np.asarray(trust_row, dtype=float), 0.0, 1.0)
     leanings = np.asarray(leanings, dtype=float)
-    competences = np.asarray(competences, dtype=float)
+    competences = np.clip(np.asarray(competences, dtype=float), 0.0, 1.0)
     w = trust_row * competences
     s = w.sum()
     if s <= 0:

@@ -41,11 +41,19 @@ class SocietyConfig:
     caution_gain: float = 0.6         # how much uncertainty raises the boundary
     social_base: float = 0.5          # baseline social-gain fraction (even when fully certain)
     social_uncertainty_scale: float = 1.0  # extra social-gain fraction per unit uncertainty
+    use_rl_policy: bool = False        # learn the deference multiplier (rl.DeferencePolicy) instead of the fixed gate
     map_evidence: tuple = (0.4, 0.6, 0.8)
     map_trials: int = 1500
 
 
 # Named conditions for experiments.
+def cfg_private(**kw):
+    """No communication at all — each agent decides alone (private-majority
+    baseline). Shows whether social info helps and that cfg_flat isn't a strawman."""
+    return SocietyConfig(use_social=False, use_trust_weights=False,
+                         use_competence_prior=False, adaptive=False, **kw)
+
+
 def cfg_flat(**kw):
     """Flat broadcast: everyone weighted equally, no trust, no adaptation."""
     return SocietyConfig(use_social=True, use_trust_weights=False,
@@ -65,13 +73,23 @@ def cfg_full(**kw):
                          use_competence_prior=True, adaptive=True, **kw)
 
 
+def cfg_rl(**kw):
+    """cfg_full, but the deference multiplier is a learned RL policy (rl.py)
+    instead of the fixed uncertainty gate. Pass a DeferencePolicy to Society."""
+    return SocietyConfig(use_social=True, use_trust_weights=True,
+                         use_competence_prior=True, adaptive=True,
+                         use_rl_policy=True, **kw)
+
+
 class Society:
     def __init__(self, agents, config: SocietyConfig = None, sigma: float = 1.0,
-                 rng_seed: int = 0):
+                 rng_seed: int = 0, policy=None):
         self.agents = agents
         self.K = len(agents)
         self.cfg = config or SocietyConfig()
         self.sigma = sigma
+        # Optional rl.DeferencePolicy; used only when cfg.use_rl_policy is set.
+        self.policy = policy
         self.rng = np.random.default_rng(rng_seed)
         self.trust = [TrustModel(self.K) for _ in range(self.K)]
         # competence[i, j] = how reliable observer i believes peer j is, in [0,1]
@@ -114,10 +132,12 @@ class Society:
             conf[i] = abs(mean - 0.5) * 2.0   # 0 (split) .. 1 (unanimous)
         return leanings, conf
 
-    def round(self, evidence):
+    def round(self, evidence, learn: bool = True):
         cfg = self.cfg
         truth_choice = 1 if evidence > 0 else 0
         outcome = 1 if truth_choice == 1 else -1
+        # RL deference only applies when agents actually listen to peers.
+        use_rl = cfg.use_rl_policy and self.policy is not None and cfg.use_social
 
         leanings, conf = self._private(evidence)
         final = np.zeros(self.K, dtype=int)
@@ -127,17 +147,26 @@ class Society:
             mask[i] = False
             # uncertainty gate: high when this agent's own decision was split.
             gate = (1.0 - conf[i]) if cfg.adaptive else 0.5
-            # Adaptive cap: deference rises with the agent's own uncertainty. sg
-            # spans [social_base, social_base + social_uncertainty_scale] x
-            # social_gain (default [0.5, 1.5]x), so under high uncertainty social
-            # drift can intentionally exceed weak private evidence — bounded,
-            # per-round (not a within-trial feedback loop). See design notes.
-            sg = (cfg.social_gain * (cfg.social_base + cfg.social_uncertainty_scale * gate)
-                  if cfg.adaptive else cfg.social_gain)
 
             if cfg.use_social:
                 t = self.trust[i].trust() if cfg.use_trust_weights else np.ones(self.K)
                 comp = self.competence[i] if cfg.use_competence_prior else np.ones(self.K)
+                if use_rl:
+                    # Learned deference: the policy maps (own uncertainty, mean
+                    # trust in peers, peer consensus) -> a deference multiplier m,
+                    # and sg = social_gain * m. Unlike the fixed gate, this can
+                    # learn to defer LESS when the whole peer group is untrusted.
+                    mean_trust = float(np.mean(t[mask]))
+                    consensus = abs(float(np.mean(leanings[mask])))
+                    phi = self.policy.features(1.0 - conf[i], mean_trust, consensus)
+                    m = self.policy.act(phi) if learn else self.policy.act_greedy(phi)
+                    sg = cfg.social_gain * m
+                else:
+                    # Fixed adaptive cap (see design notes): deference rises with
+                    # the agent's own uncertainty, sg in [social_base, social_base +
+                    # social_uncertainty_scale] x social_gain (default [0.5, 1.5]x).
+                    sg = (cfg.social_gain * (cfg.social_base + cfg.social_uncertainty_scale * gate)
+                          if cfg.adaptive else cfg.social_gain)
                 sd = social_drift(t[mask], leanings[mask], comp[mask], sg)
             else:
                 sd = 0.0
@@ -145,6 +174,17 @@ class Society:
             bscale = 1.0 + (cfg.caution_gain * gate if cfg.adaptive else 0.0)
             ch, _ = a.decide(evidence, self.rng, extra_drift=sd, boundary_scale=bscale)
             final[i] = ch
+
+        # RL credit assignment: reward each agent's deference choice by whether its
+        # own final decision matched the truth, then take one REINFORCE step. In
+        # evaluation (learn=False) we acted greedily and just clear the buffer.
+        if use_rl:
+            if learn:
+                rewards = [1.0 if final[k] == truth_choice else 0.0
+                           for k in range(self.K)]
+                self.policy.update(rewards)
+            else:
+                self.policy.clear()
 
         # Trust update from this round's outcome. Trust accumulators are size K
         # (indexed by global agent id); the self-entry updates harmlessly since
@@ -165,11 +205,13 @@ class Society:
             "correct": majority == truth_choice,
         }
 
-    def run(self, evidences, build_maps: bool = True):
+    def run(self, evidences, build_maps: bool = True, learn: bool = True):
         """Run a sequence of decision problems; return collective accuracy +
-        per-round records. `evidences` is a list of signed evidence values."""
+        per-round records. `evidences` is a list of signed evidence values.
+        `learn` only matters with an RL policy: True keeps it learning online,
+        False acts greedily (evaluation)."""
         if build_maps and self.cfg.use_competence_prior and not self.mapped:
             self.build_cognitive_maps()
-        records = [self.round(ev) for ev in evidences]
+        records = [self.round(ev, learn=learn) for ev in evidences]
         collective_acc = float(np.mean([r["correct"] for r in records]))
         return {"collective_accuracy": collective_acc, "records": records}

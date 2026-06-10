@@ -81,8 +81,15 @@ The `DecisionEngine` protocol (`engine.py`) is the contract: `n_choices`,
 - `Society` — runs the private→social→outcome round loop; `build_cognitive_maps`
   infers peer competence and seeds trust; `round` adds uncertainty-gated caution
   and trust-weighted deference; `run` reports collective accuracy.
-- `SocietyConfig` + `cfg_flat` / `cfg_outcome_trust` / `cfg_full` — the three named
-  conditions the anchor experiment compares.
+- `SocietyConfig` + `cfg_private` / `cfg_flat` / `cfg_outcome_trust` / `cfg_full` /
+  `cfg_rl` — the named conditions the experiments compare.
+
+### `rl.py` — a learned adaptive deference policy (checkpoint 4, RL)
+- `DeferencePolicy` — a small linear-Gaussian REINFORCE policy that maps an agent's
+  context (own uncertainty, mean trust in peers, peer consensus) to a deference
+  multiplier, learning online from whether deferring led to a correct decision.
+  Unlike the fixed gate it can learn to *stop* deferring when the whole group is
+  untrusted. Pure NumPy, no GPU.
 
 ### `experiment.py` — the anchor robustness experiment
 - `build_mixed(n_honest, n_adversary, seed)` — a population seeded with
@@ -105,10 +112,13 @@ The `DecisionEngine` protocol (`engine.py`) is the contract: `n_choices`,
    society loop to seed trust. ✅ done (`society.build_cognitive_maps`).
 4. **Agents adapt** — each agent gauges its own uncertainty (how split its private
    decisions are) and raises its boundary / defers more to trusted peers under
-   uncertainty. ✅ done (`society.round`, adaptive config; 6 society tests).
+   uncertainty. ✅ done (`society.round`, adaptive config; 6 society tests). A
+   **learned RL deference policy** (`rl.py`) goes further: it adapts *how much* to
+   defer online and can drop deference when the peer group turns hostile. ✅ done
+   (`rl.py` + `rl_experiment.py`; 8 RL tests).
 
-Status: checkpoints 1–4 implemented and tested on the 1D path (35 fast tests, no
-GPU). SBI-fitted / RL-tuned defaults for the 2D engine are Track B (future work).
+Status: checkpoints 1–4 implemented and tested on the 1D path (43 fast tests, no
+GPU). SBI-fitted defaults for the 2D engine are Track B (in progress).
 
 ---
 
@@ -123,11 +133,37 @@ mind + uncertainty-triggered adaptation + cognitive-map-grounded trust), so the
 existing collective-DDM literature can't claim the result. Build only what
 answers it.
 
-**Result** (live `python -m cognitive_society.experiment`, 4 honest + 3
-confidently-wrong adversaries, 40 problems, averaged over seeds): collective
-accuracy is **flat 74.2% ± 4.8% → outcome-only-trust 93.0% ± 3.5% →
-cognitive-map-grounded + uncertainty-gated (ours) 96.5% ± 2.0%** — a **+22.3-point**
-gain over flat broadcast. Reproduce with `python -m cognitive_society.experiment`.
+**Result** (`python -m cognitive_society.experiment`, 4 honest + 3 confidently-wrong
+adversaries, 40 problems, 30 seeds):
+
+| condition | collective accuracy |
+|---|---|
+| private (no social) | 68.2% |
+| flat broadcast | 74.2% ± 5.8% |
+| outcome-only trust | 93.8% ± 3.6% |
+| cognitive-map + uncertainty-gated (**ours**) | **97.4% ± 2.1%** |
+
+`flat (74.2%) > private (68.2%)` confirms social info genuinely helps, so `flat` is a
+fair baseline (not a strawman). **Honest decomposition of the +23.3pt gain:** most of
+it is plain trust-learning (`flat → outcome_trust` = **+19.7pt**); the *novel*
+cognitive-map + uncertainty-gating layer adds a real but **modest +3.6pt**
+(`outcome_trust → full`, winning in 22/30 seeds, paired Wilcoxon **p = 0.0003** — small
+but significant). The full-vs-flat gap grows monotonically with the adversary fraction
+— the signature of a genuine adversary-robustness mechanism. An adversarial code review
+(independent 30-seed sweep + a blinded-map ablation) confirmed the result is **real,
+not a ground-truth-leak artifact**. Reproduce: `python -m cognitive_society.experiment`.
+
+### RL: learned deference (checkpoint 4)
+
+`python -m cognitive_society.rl_experiment` stress-tests a *learned* deference policy
+against the hand-tuned gate under a hostile regime shift (an all-honest society where a
+majority then flip to confidently-wrong). Post-shift collective accuracy (12 seeds):
+no-gating **79.7%** → fixed gate **85.9%** → learned gate (RL) **85.6%**. Honest read:
+gating (fixed or learned) is worth **+6pt** here, and the REINFORCE policy *recovers that
+entire benefit from reward alone* — matching the expert gate without being told the rule —
+but does **not** beat it, and is noisier (±7.7%). The hand-tuned gate was already
+near-optimal on this task; a learned policy's edge would show where the fixed rule is
+mis-specified — which motivates richer, per-agent models (the decentralized-swarm direction).
 
 ---
 
