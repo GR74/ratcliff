@@ -105,7 +105,11 @@ docker run -p 7860:7860 ratcliff-ddm
 - [x] Stage 7.C — Dockerfile + HF Space configuration
 - [ ] Stage 7 deployment — push to HF Space and verify public URL (user action)
 - [x] Stage 8 — three.js evidence-field viz + decision-trajectory trace + phase diagram
-- [x] Cognitive Society — DDM agents, trust-weighted comms, cognitive mapping, adaptation (checkpoints 1-4 + anchor experiment)
+- [x] Cognitive Society — DDM agents, trust-weighted comms, cognitive mapping, adaptation (checkpoints 1-4 + anchor experiment + RL deference policy)
+- [~] Decentralized swarm (Phase 0-2) — graph topology + per-agent local maps + faithful
+  Byzantine baselines (W-MSR / A-RepC). **Demonstrated:** per captured victim, outcome-grounded
+  trust isolates a colluding cluster (AUC 1.0) where agreement-trust inverts (AUC ~0.0) once the
+  cluster is the local majority (`docs/notes/2026-06-10-phase2-swarm-result.md`). Phase 3 (scale) next.
 - [x] Track B — amortized SBI for the 2D model, **validated at scale** (N=3000 on H100:
   20.9% recovery, calibration c2st≈0.50; `scripts/sbi_mvp.py`,
   `docs/notes/2026-06-10-track-b-sbi-validation.md`). Extensions (vmap gen, real-data,
