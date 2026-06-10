@@ -11,7 +11,7 @@ import {
 export function PredictTab() {
   const [params, setParams] = useState<number[]>([...DEFAULT_FULL_PARAMS]);
   const [nConditions, setNConditions] = useState(2);
-  const [nsim, setNsim] = useState(1024);
+  const [nsim, setNsim] = useState(256);
   const [result, setResult] = useState<PredictResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

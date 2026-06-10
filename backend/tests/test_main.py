@@ -21,7 +21,9 @@ def reset_jobs():
 def test_health_returns_ok():
     r = client.get("/api/health")
     assert r.status_code == 200
-    assert r.json() == {"status": "ok"}
+    body = r.json()
+    assert body["status"] == "ok"
+    assert "warm" in body  # warm-up flag present
 
 
 # ---- /api/simulate -----------------------------------------------------
@@ -112,4 +114,38 @@ def test_predict_rejects_wrong_param_count():
 def test_predict_rejects_bad_n_conditions():
     params = [200.0] * 13
     r = client.post("/api/predict", json={"params_full": params, "n_conditions": 5})
+    assert r.status_code == 400
+
+
+# ---- /api/field --------------------------------------------------------
+
+def test_field_single_returns_frames():
+    r = client.post(
+        "/api/field",
+        json={"params": DEFAULT_PARAMS, "mode": "single", "n_frames": 8, "grid_stride": 4},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["frames"]) == 8
+    assert body["n"] == 25 and body["m"] == 40   # 100x160 stride 4
+    assert body["nstep"] == 400
+    assert body["threshold"] == DEFAULT_PARAMS["cr"]
+
+
+def test_field_rejects_bad_mode():
+    r = client.post("/api/field", json={"params": DEFAULT_PARAMS, "mode": "nope"})
+    assert r.status_code == 400
+
+
+def test_field_rejects_bad_n_frames():
+    r = client.post(
+        "/api/field",
+        json={"params": DEFAULT_PARAMS, "mode": "single", "n_frames": 999},
+    )
+    assert r.status_code == 400
+
+
+def test_field_missing_param_returns_400():
+    bad = {k: v for k, v in DEFAULT_PARAMS.items() if k != "sig"}
+    r = client.post("/api/field", json={"params": bad, "mode": "single", "n_frames": 4})
     assert r.status_code == 400

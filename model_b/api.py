@@ -13,8 +13,26 @@ import jax.numpy as jnp
 import numpy as np
 
 from model_b import fit as fit_b
+from model_b import grf as grf_circulant
 from model_b import simulate as sim_b
 from model_b.objective import COND_MAP_B, clamp_b
+
+
+# Preview nsim: small enough for snappy slider feedback on CPU. The forward
+# preview is for shape intuition, not publishable numbers — that's what the
+# "Run full" button (nsim=9000) is for.
+PREVIEW_NSIM_CPU = 128
+
+# Tiny LRU cache so a slider returning to a prior value answers instantly.
+_PREVIEW_CACHE_MAXSIZE = 256
+_preview_cache: dict[tuple, dict] = {}
+_preview_cache_order: list[tuple] = []
+
+PARAM_KEYS = ("ter", "st", "cr", "crsd", "sis", "sig", "av1", "av2", "av3")
+
+
+def _preview_cache_key(params: dict, key_seed: int) -> tuple:
+    return (key_seed,) + tuple(round(float(params[k]), 4) for k in PARAM_KEYS)
 
 
 def _get_device_defaults(backend: str | None = None) -> dict:
@@ -26,7 +44,9 @@ def _get_device_defaults(backend: str | None = None) -> dict:
         backend = jax.default_backend()
     if backend == "gpu":
         return {"use_kl": True, "nsim": 9000, "chunk_size": 64}
-    return {"use_kl": False, "nsim": 512, "chunk_size": 4}
+    # CPU: chunk_size=8 halves the lax.map iteration count vs 4 (faster) while
+    # keeping the per-chunk FFT noise tensor well under 1 GB.
+    return {"use_kl": False, "nsim": 512, "chunk_size": 8}
 
 
 def forward_sim_preview(params: dict, key_seed: int = 0) -> dict:
@@ -35,9 +55,17 @@ def forward_sim_preview(params: dict, key_seed: int = 0) -> dict:
     params : dict with keys ter, st, cr, crsd, sis, sig, av1, av2, av3.
              A single condition's worth of drift bumps.
     Returns: {"rt": list[float], "cat": list[int]}, JSON-friendly.
+
+    Cached on rounded params so a slider returning to a prior value answers
+    instantly without re-running the simulator.
     """
+    ck = _preview_cache_key(params, key_seed)
+    hit = _preview_cache.get(ck)
+    if hit is not None:
+        return hit
+
     defaults = _get_device_defaults()
-    nsim_preview = min(defaults["nsim"], 256)
+    nsim_preview = min(defaults["nsim"], PREVIEW_NSIM_CPU)
     chunk_preview = min(defaults["chunk_size"], 4)
 
     key = jax.random.key(key_seed)
@@ -50,10 +78,27 @@ def forward_sim_preview(params: dict, key_seed: int = 0) -> dict:
         nsim=nsim_preview, chunk_size=chunk_preview,
         use_kl=defaults["use_kl"],
     )
-    return {
+    out = {
         "rt": [float(x) for x in np.asarray(rt)],
         "cat": [int(c) for c in np.asarray(cat)],
     }
+    _preview_cache[ck] = out
+    _preview_cache_order.append(ck)
+    if len(_preview_cache_order) > _PREVIEW_CACHE_MAXSIZE:
+        evicted = _preview_cache_order.pop(0)
+        _preview_cache.pop(evicted, None)
+    return out
+
+
+def warmup() -> None:
+    """Trigger JIT compilation of the preview path so the first real request is
+    fast. Safe to call from a background thread at server startup.
+    """
+    forward_sim_preview(
+        {"ter": 200.0, "st": 50.0, "cr": 10.0, "crsd": 2.0,
+         "sis": 12.0, "sig": 10.0, "av1": 15.0, "av2": 10.0, "av3": 8.0},
+        key_seed=0,
+    )
 
 
 def forward_sim_full(params: dict, nsim: int = 9000,
@@ -146,3 +191,79 @@ def predict_from_params(params_full: list[float],
         sub["props"] = [float((cat_arr == c).mean()) for c in (1, 2, 3, 4, 5)]
         out.append(sub)
     return {"by_condition": out}
+
+
+def field_snapshots(params: dict,
+                    mode: str = "single",
+                    n_frames: int = 48,
+                    n_trials_mean: int = 64,
+                    grid_stride: int = 2,
+                    key_seed: int = 0) -> dict:
+    """Generate accumulator-field snapshots for the three.js Field view.
+
+    Returns the evidence field a(i, j, t) — the cumulative demeaned increment
+    that the diffusion model accumulates toward threshold — sampled at n_frames
+    timesteps and downsampled on the spatial grid by grid_stride.
+
+    params : dict with keys ter, st, cr, crsd, sis, sig, av1, av2, av3 (single
+             condition; ter/st/crsd unused here, only the spatial+drift params
+             shape the field).
+    mode   : "single" (one trial, noisy and intuitive) or "mean" (average over
+             n_trials_mean trials, smoother).
+    Returns JSON-friendly dict:
+        {
+          "frames": list of (n_rows, n_cols) float grids, one per sampled step,
+          "steps":  the timestep index of each frame,
+          "threshold": cr (the decision threshold plane height),
+          "n", "m": downsampled grid dimensions,
+          "nstep": total timesteps in the model,
+        }
+    """
+    if mode not in ("single", "mean"):
+        raise ValueError(f"mode must be 'single' or 'mean', got {mode!r}")
+
+    N, M, NSTEP = sim_b.N, sim_b.M, sim_b.NSTEP
+    n_trials = 1 if mode == "single" else int(n_trials_mean)
+
+    LAM = grf_circulant.calc_LAM(s1=params["sig"], s2=params["sig"])
+    v1, v2, v3 = sim_b.drift_bumps(sis=params["sis"])
+    n_pad, m_pad = LAM.shape
+    n_fft = (NSTEP + 1) // 2
+
+    key = jax.random.key(key_seed)
+    _, kg = jax.random.split(key)
+
+    # Generate the GRF path via the same FFT F1/F2 trick the simulator uses.
+    z = jax.random.normal(kg, (n_trials, n_fft, 2, n_pad, m_pad), dtype=jnp.float32)
+    LAM_f32 = LAM.astype(jnp.float32)
+    X = LAM_f32 * (z[:, :, 0, :, :] + 1j * z[:, :, 1, :, :])
+    F = jnp.fft.fft2(X)
+    F1 = F[:, :, :N, :M].real
+    F2 = F[:, :, :N, :M].imag
+    grf_path = jnp.stack([F1, F2], axis=2).reshape(
+        n_trials, n_fft * 2, N, M
+    )[:, :NSTEP, :, :]
+
+    drift_const = (
+        jnp.float32(params["av1"]) * v1.astype(jnp.float32)
+        + jnp.float32(params["av2"]) * v2.astype(jnp.float32)
+        + jnp.float32(params["av3"]) * v3.astype(jnp.float32)
+    )
+    incr = drift_const[None, None, :, :] + grf_path
+    incr = incr - incr.mean(axis=(-2, -1), keepdims=True)
+    a = jnp.cumsum(incr, axis=1)   # (n_trials, NSTEP, N, M)
+
+    field = a[0] if mode == "single" else a.mean(axis=0)   # (NSTEP, N, M)
+
+    step_idx = np.linspace(0, NSTEP - 1, n_frames).astype(int)
+    sampled = np.asarray(field[step_idx])                  # (n_frames, N, M)
+    sampled = sampled[:, ::grid_stride, ::grid_stride]     # downsample grid
+
+    return {
+        "frames": sampled.astype(np.float32).tolist(),
+        "steps": step_idx.tolist(),
+        "threshold": float(params["cr"]),
+        "n": int(sampled.shape[1]),
+        "m": int(sampled.shape[2]),
+        "nstep": int(NSTEP),
+    }

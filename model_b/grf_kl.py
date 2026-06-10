@@ -80,20 +80,26 @@ def _calc_kl_basis_impl(sig: float, n: int, m: int, k_max: int,
     LAM = grf_circulant.calc_LAM(n=n, m=m, s1=sig, s2=sig)
     n_pad, m_pad = LAM.shape
 
-    eigvals = (LAM ** 2).flatten()
-    eigvals_np = np.asarray(eigvals)
+    eigvals_np = np.asarray(LAM ** 2).flatten()
+    total = float(eigvals_np.sum())
+    if total <= 0.0:
+        raise ValueError(
+            f"calc_kl_basis: covariance has non-positive total variance "
+            f"(sum={total:.3e}) at sig={sig}. The embedding may be degenerate; "
+            f"check that sig is in the valid range (see grf.assert_pd_embedding)."
+        )
 
     sort_idx = np.argsort(-eigvals_np)
     sorted_eigvals = eigvals_np[sort_idx]
-    cumvar = np.cumsum(sorted_eigvals) / sorted_eigvals.sum()
+    cumvar = np.cumsum(sorted_eigvals) / total
     K_by_thresh = int(np.searchsorted(cumvar, variance_threshold) + 1)
     K = min(K_by_thresh, k_max)
     variance_captured = float(cumvar[K - 1])
 
     top_idx = sort_idx[:K]
-    i_star = top_idx // m_pad
-    j_star = top_idx % m_pad
-    lam_k = np.sqrt(sorted_eigvals[:K]).astype(np.float32)
+    i_star = top_idx // m_pad           # (K,)
+    j_star = top_idx % m_pad            # (K,)
+    lam_k = np.sqrt(sorted_eigvals[:K]).astype(np.float32)  # √λ_k, (K,)
 
     # NOTE on normalization: the circulant_grf path computes
     #   F = fft2(LAM * z)  (unnormalized forward FFT)
@@ -101,21 +107,26 @@ def _calc_kl_basis_impl(sig: float, n: int, m: int, k_max: int,
     # basis must use the UNNORMALIZED Fourier eigenvectors (no 1/sqrt(N)
     # factor) — those are the actual eigenvectors of the circulant matrix.
     # They're orthogonal but each has norm sqrt(N_pad*M_pad), not unit-norm.
-    n_grid = np.arange(n)[:, None]
-    m_grid = np.arange(m)[None, :]
+    #
+    # Vectorized over all K modes at once instead of a Python loop: build the
+    # (K, n, m) phase tensor by broadcasting, then cos/sin, fold in √λ, and
+    # interleave real/imag into the (n*m, 2K) basis. Materially faster than the
+    # per-mode loop at K≈1325-2000.
+    n_grid = np.arange(n)[None, :, None]          # (1, n, 1)
+    m_grid = np.arange(m)[None, None, :]          # (1, 1, m)
+    ii = i_star[:, None, None]                    # (K, 1, 1)
+    jj = j_star[:, None, None]                    # (K, 1, 1)
+    phase = 2.0 * np.pi * (ii * n_grid / n_pad + jj * m_grid / m_pad)  # (K, n, m)
+    scale = lam_k[:, None, None]
+    re = (np.cos(phase) * scale).reshape(K, n * m).astype(np.float32)
+    im = (np.sin(phase) * scale).reshape(K, n * m).astype(np.float32)
 
     # Pad output to (n*m, 2*k_max) when requested; the extra columns are zeros
     # so any random noise multiplied against them contributes nothing.
     cols = 2 * k_max if pad_to_k_max else 2 * K
     V = np.zeros((n * m, cols), dtype=np.float32)
-    for k in range(K):
-        phase = 2.0 * np.pi * (
-            i_star[k] * n_grid / n_pad + j_star[k] * m_grid / m_pad
-        )
-        re = np.cos(phase).astype(np.float32).flatten()
-        im = np.sin(phase).astype(np.float32).flatten()
-        V[:, 2 * k] = lam_k[k] * re
-        V[:, 2 * k + 1] = lam_k[k] * im
+    V[:, 0 : 2 * K : 2] = re.T        # even columns = real parts
+    V[:, 1 : 2 * K : 2] = im.T        # odd columns  = imag parts
 
     return jnp.asarray(V), K, variance_captured
 

@@ -1,4 +1,5 @@
 import {
+  FieldResponse,
   FitResultResponse,
   FitStatusResponse,
   ParamSet,
@@ -25,7 +26,7 @@ async function jsonOrThrow<T>(r: Response): Promise<T> {
 
 export async function postSimulate(
   params: ParamSet,
-  opts: { keySeed?: number; full?: boolean; nsim?: number } = {},
+  opts: { keySeed?: number; full?: boolean; nsim?: number; signal?: AbortSignal } = {},
 ): Promise<SimulateResponse> {
   const r = await fetch(`${BASE}/simulate`, {
     method: "POST",
@@ -36,8 +37,27 @@ export async function postSimulate(
       full: opts.full ?? false,
       nsim: opts.nsim,
     }),
+    signal: opts.signal,
   });
   return jsonOrThrow<SimulateResponse>(r);
+}
+
+export async function postField(
+  params: ParamSet,
+  opts: { mode?: "single" | "mean"; nFrames?: number; keySeed?: number; signal?: AbortSignal } = {},
+): Promise<FieldResponse> {
+  const r = await fetch(`${BASE}/field`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      params,
+      mode: opts.mode ?? "single",
+      n_frames: opts.nFrames ?? 48,
+      key_seed: opts.keySeed ?? 0,
+    }),
+    signal: opts.signal,
+  });
+  return jsonOrThrow<FieldResponse>(r);
 }
 
 export async function postUpload(file: File): Promise<UploadedData> {

@@ -1,0 +1,92 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Ratcliff DDM" [level=1] [ref=e6]
+      - generic [ref=e7]: 2D spatial diffusion decision model — Stage 7 UI
+    - navigation [ref=e8]:
+      - button "Forward Sim" [ref=e9] [cursor=pointer]
+      - button "Field (3D)" [ref=e10] [cursor=pointer]
+      - button "Fit" [ref=e11] [cursor=pointer]
+      - button "Predict" [ref=e12] [cursor=pointer]
+      - button "Compare" [ref=e13] [cursor=pointer]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - heading "Parameters" [level=3] [ref=e20]
+            - button "Reset" [ref=e21] [cursor=pointer]
+          - generic [ref=e22]:
+            - generic [ref=e23]:
+              - generic "Non-decision time (ms)" [ref=e24]: ter
+              - spinbutton [ref=e25]: "200"
+            - slider "ter" [ref=e26]: "200"
+            - paragraph [ref=e27]: Non-decision time (ms)
+          - generic [ref=e28]:
+            - generic [ref=e29]:
+              - generic "Variability in non-decision time" [ref=e30]: st
+              - spinbutton [ref=e31]: "50"
+            - slider "st" [ref=e32]: "50"
+            - paragraph [ref=e33]: Variability in non-decision time
+          - generic [ref=e34]:
+            - generic [ref=e35]:
+              - generic "Decision threshold" [ref=e36]: cr
+              - spinbutton [ref=e37]: "10"
+            - slider "cr" [ref=e38]: "10"
+            - paragraph [ref=e39]: Decision threshold
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - generic "Threshold variability" [ref=e42]: crsd
+              - spinbutton [ref=e43]: "2"
+            - slider "crsd" [ref=e44]: "2"
+            - paragraph [ref=e45]: Threshold variability
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - generic "Drift bump spatial width" [ref=e48]: sis
+              - spinbutton [ref=e49]: "12"
+            - slider "sis" [ref=e50]: "12"
+            - paragraph [ref=e51]: Drift bump spatial width
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - generic "GRF correlation length" [ref=e54]: sig
+              - spinbutton [ref=e55]: "10"
+            - slider "sig" [ref=e56]: "10"
+            - paragraph [ref=e57]: GRF correlation length
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - generic "Drift bump 1 amplitude" [ref=e60]: av1
+              - spinbutton [ref=e61]: "15"
+            - slider "av1" [ref=e62]: "15"
+            - paragraph [ref=e63]: Drift bump 1 amplitude
+          - generic [ref=e64]:
+            - generic [ref=e65]:
+              - generic "Drift bump 2 amplitude" [ref=e66]: av2
+              - spinbutton [ref=e67]: "10"
+            - slider "av2" [ref=e68]: "10"
+            - paragraph [ref=e69]: Drift bump 2 amplitude
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - generic "Drift bump 3 amplitude" [ref=e72]: av3
+              - spinbutton [ref=e73]: "8"
+            - slider "av3" [ref=e74]: "8"
+            - paragraph [ref=e75]: Drift bump 3 amplitude
+        - generic [ref=e77]:
+          - heading "Saved configs" [level=3] [ref=e78]
+          - generic [ref=e79]:
+            - textbox "config name" [ref=e80]
+            - button "Save" [disabled] [ref=e81]
+          - paragraph [ref=e83]: No saved configs yet.
+          - generic [ref=e84]:
+            - button "Export" [ref=e85] [cursor=pointer]
+            - generic [ref=e86] [cursor=pointer]: Import
+      - generic [ref=e87]:
+        - generic [ref=e88]:
+          - generic [ref=e89]:
+            - heading "Forward simulation" [level=2] [ref=e90]
+            - button "Run full (nsim=9000)" [ref=e92] [cursor=pointer]
+          - generic [ref=e93]: Warming up the simulator (first call compiles, ~1-2 min)...
+        - paragraph [ref=e94]: Drag any slider — the histogram refreshes ~200ms after you stop moving. The preview runs at nsim=128 for instant feedback; "Run full" does production-scale nsim=9000.
+  - contentinfo [ref=e95]:
+    - text: "Powered by JAX + K-L low-rank GRF. Source:"
+    - link "GR74/ratcliff" [ref=e96] [cursor=pointer]:
+      - /url: https://github.com/GR74/ratcliff

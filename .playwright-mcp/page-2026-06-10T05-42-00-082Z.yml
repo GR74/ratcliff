@@ -1,0 +1,87 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - heading "Ratcliff DDM" [level=1] [ref=e6]
+        - generic [ref=e7]: 2D spatial diffusion decision model — Stage 7 UI
+      - navigation [ref=e8]:
+        - button "Forward Sim" [ref=e9] [cursor=pointer]
+        - button "Field (3D)" [active] [ref=e10] [cursor=pointer]
+        - button "Fit" [ref=e11] [cursor=pointer]
+        - button "Predict" [ref=e12] [cursor=pointer]
+        - button "Compare" [ref=e13] [cursor=pointer]
+    - main [ref=e14]:
+      - generic [ref=e179]:
+        - generic [ref=e180]:
+          - generic [ref=e181]:
+            - heading "Evidence field" [level=3] [ref=e182]
+            - generic [ref=e183]:
+              - button "Single trial" [ref=e184] [cursor=pointer]
+              - button "Mean field" [ref=e185] [cursor=pointer]
+            - button "Generate field" [ref=e186] [cursor=pointer]
+          - generic [ref=e188]:
+            - generic [ref=e189]:
+              - heading "Parameters" [level=3] [ref=e190]
+              - button "Reset" [ref=e191] [cursor=pointer]
+            - generic [ref=e192]:
+              - generic [ref=e193]:
+                - generic "Non-decision time (ms)" [ref=e194]: ter
+                - spinbutton [ref=e195]: "200"
+              - slider "ter" [ref=e196]: "200"
+              - paragraph [ref=e197]: Non-decision time (ms)
+            - generic [ref=e198]:
+              - generic [ref=e199]:
+                - generic "Variability in non-decision time" [ref=e200]: st
+                - spinbutton [ref=e201]: "50"
+              - slider "st" [ref=e202]: "50"
+              - paragraph [ref=e203]: Variability in non-decision time
+            - generic [ref=e204]:
+              - generic [ref=e205]:
+                - generic "Decision threshold" [ref=e206]: cr
+                - spinbutton [ref=e207]: "10"
+              - slider "cr" [ref=e208]: "10"
+              - paragraph [ref=e209]: Decision threshold
+            - generic [ref=e210]:
+              - generic [ref=e211]:
+                - generic "Threshold variability" [ref=e212]: crsd
+                - spinbutton [ref=e213]: "2"
+              - slider "crsd" [ref=e214]: "2"
+              - paragraph [ref=e215]: Threshold variability
+            - generic [ref=e216]:
+              - generic [ref=e217]:
+                - generic "Drift bump spatial width" [ref=e218]: sis
+                - spinbutton [ref=e219]: "12"
+              - slider "sis" [ref=e220]: "12"
+              - paragraph [ref=e221]: Drift bump spatial width
+            - generic [ref=e222]:
+              - generic [ref=e223]:
+                - generic "GRF correlation length" [ref=e224]: sig
+                - spinbutton [ref=e225]: "10"
+              - slider "sig" [ref=e226]: "10"
+              - paragraph [ref=e227]: GRF correlation length
+            - generic [ref=e228]:
+              - generic [ref=e229]:
+                - generic "Drift bump 1 amplitude" [ref=e230]: av1
+                - spinbutton [ref=e231]: "15"
+              - slider "av1" [ref=e232]: "15"
+              - paragraph [ref=e233]: Drift bump 1 amplitude
+            - generic [ref=e234]:
+              - generic [ref=e235]:
+                - generic "Drift bump 2 amplitude" [ref=e236]: av2
+                - spinbutton [ref=e237]: "10"
+              - slider "av2" [ref=e238]: "10"
+              - paragraph [ref=e239]: Drift bump 2 amplitude
+            - generic [ref=e240]:
+              - generic [ref=e241]:
+                - generic "Drift bump 3 amplitude" [ref=e242]: av3
+                - spinbutton [ref=e243]: "8"
+              - slider "av3" [ref=e244]: "8"
+              - paragraph [ref=e245]: Drift bump 3 amplitude
+        - generic [ref=e247]:
+          - heading "3D accumulator surface" [level=2] [ref=e249]
+          - generic [ref=e250]: Click "Generate field" to render the evidence accumulator surface.
+    - contentinfo [ref=e95]:
+      - text: "Powered by JAX + K-L low-rank GRF. Source:"
+      - link "GR74/ratcliff" [ref=e96] [cursor=pointer]:
+        - /url: https://github.com/GR74/ratcliff
+  - img [ref=e177]

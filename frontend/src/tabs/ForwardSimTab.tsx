@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ConfigSidebar } from "../components/ConfigSidebar";
 import { ParamSliders } from "../components/ParamSliders";
 import { RTHistogram } from "../components/RTHistogram";
 import { postSimulate } from "../lib/api";
-import { ParamSet, SimulateResponse } from "../lib/types";
+import { SimulateResponse } from "../lib/types";
 import { useAppStore } from "../store";
 
 export function ForwardSimTab() {
@@ -12,57 +12,56 @@ export function ForwardSimTab() {
   const [result, setResult] = useState<SimulateResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [tick, setTick] = useState(0); // bumped by debounce timer to trigger refetch
 
-  // Debounced effect: ~200ms after the last param change, refetch.
+  const abortRef = useRef<AbortController | null>(null);
+  const timerRef = useRef<number | null>(null);
+
+  // Debounced preview: 200ms after the last param change, fire a request,
+  // cancelling any in-flight one so rapid slider drags don't queue stale calls.
   useEffect(() => {
-    const id = window.setTimeout(() => setTick((t) => t + 1), 200);
-    return () => window.clearTimeout(id);
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
+      abortRef.current?.abort();
+      const ac = new AbortController();
+      abortRef.current = ac;
+      setLoading(true);
+      setError(null);
+      postSimulate(params, { signal: ac.signal })
+        .then((r) => setResult(r))
+        .catch((e: Error) => {
+          if (e.name !== "AbortError") setError(e.message);
+        })
+        .finally(() => {
+          // Only clear loading if this is still the active request.
+          if (abortRef.current === ac) setLoading(false);
+        });
+    }, 200);
+    return () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
   }, [params]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    postSimulate(params)
-      .then((r) => {
-        if (!cancelled) setResult(r);
-      })
-      .catch((e: Error) => {
-        if (!cancelled) setError(e.message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // tick changes ⇒ refetch with the most recent params
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick]);
-
   const runFull = async () => {
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
     setLoading(true);
     setError(null);
     try {
-      const r = await postSimulate(params, { full: true, nsim: 9000 });
+      const r = await postSimulate(params, { full: true, nsim: 9000, signal: ac.signal });
       setResult(r);
     } catch (e) {
-      setError((e as Error).message);
+      if ((e as Error).name !== "AbortError") setError((e as Error).message);
     } finally {
-      setLoading(false);
+      if (abortRef.current === ac) setLoading(false);
     }
   };
-
-  // The "onChange" optional callback is for components that want immediate notification;
-  // we already react via useEffect on the `params` zustand slice above.
-  const _noop = (_p: ParamSet) => {};
 
   return (
     <div className="grid grid-cols-12 gap-4 p-4">
       <div className="col-span-3 space-y-6">
         <div className="bg-white border rounded p-4">
-          <ParamSliders onChange={_noop} />
+          <ParamSliders />
         </div>
         <div className="bg-white border rounded p-4">
           <ConfigSidebar />
@@ -88,14 +87,14 @@ export function ForwardSimTab() {
             <RTHistogram rt={result.rt} cat={result.cat} />
           ) : (
             <div className="h-96 flex items-center justify-center text-slate-400 text-sm italic">
-              Waiting for first simulation...
+              Warming up the simulator (first call compiles, ~1-2 min)...
             </div>
           )}
         </div>
         <p className="text-xs text-slate-500">
-          Tip: drag any slider — the histogram refreshes ~200ms after you stop moving.
-          The preview runs at nsim=256 for instant feedback; click "Run full" for
-          production-scale numbers.
+          Drag any slider — the histogram refreshes ~200ms after you stop moving.
+          The preview runs at nsim=128 for instant feedback; "Run full" does
+          production-scale nsim=9000.
         </p>
       </div>
     </div>

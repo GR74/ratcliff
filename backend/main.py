@@ -18,6 +18,7 @@ Static React bundle is served from /  when it exists at frontend/dist.
 import jax
 jax.config.update("jax_enable_x64", True)
 
+import threading
 from pathlib import Path
 from typing import Optional
 
@@ -29,7 +30,24 @@ from backend import jobs, parsers, byo_gpu
 from model_b import api as model_api
 
 
-app = FastAPI(title="Ratcliff DDM API", version="0.7.0")
+app = FastAPI(title="Ratcliff DDM API", version="0.8.0")
+
+# Warm-up state: the first simulate call JIT-compiles for minutes on CPU. We
+# kick that off in a background thread at startup so the first real user request
+# hits a warm cache instead of waiting.
+_WARM = {"ready": False, "error": None}
+
+
+@app.on_event("startup")
+def _prewarm() -> None:
+    def _run():
+        try:
+            model_api.warmup()
+            _WARM["ready"] = True
+        except Exception as e:  # pragma: no cover - defensive
+            _WARM["error"] = str(e)
+
+    threading.Thread(target=_run, daemon=True).start()
 
 # CORS for local dev (Vite at 5173 talking to backend at 8000). In production
 # the same FastAPI process serves both the API and the static bundle, so this
@@ -46,7 +64,7 @@ app.add_middleware(
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"status": "ok"}
+    return {"status": "ok", "warm": _WARM["ready"], "warm_error": _WARM["error"]}
 
 
 # ---- /api/simulate -----------------------------------------------------
@@ -219,6 +237,40 @@ def predict(req: PredictRequest) -> PredictResponse:
     except Exception as e:
         raise HTTPException(500, f"predict failed: {e}") from e
     return PredictResponse(**out)
+
+
+# ---- /api/field --------------------------------------------------------
+
+class FieldRequest(BaseModel):
+    params: dict
+    mode: str = "single"        # "single" or "mean"
+    n_frames: int = 48
+    n_trials_mean: int = 64
+    grid_stride: int = 2
+    key_seed: int = 0
+
+
+@app.post("/api/field")
+def field(req: FieldRequest) -> dict:
+    if req.mode not in ("single", "mean"):
+        raise HTTPException(400, "mode must be 'single' or 'mean'")
+    if not (1 <= req.n_frames <= 120):
+        raise HTTPException(400, "n_frames must be in 1..120")
+    try:
+        return model_api.field_snapshots(
+            req.params,
+            mode=req.mode,
+            n_frames=req.n_frames,
+            n_trials_mean=req.n_trials_mean,
+            grid_stride=req.grid_stride,
+            key_seed=req.key_seed,
+        )
+    except KeyError as e:
+        raise HTTPException(400, f"missing required param: {e}") from e
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
+    except Exception as e:
+        raise HTTPException(500, f"field failed: {e}") from e
 
 
 # ---- Static React bundle (mounted last so it doesn't shadow /api/*) ----

@@ -186,3 +186,45 @@ def test_predict_from_params_returns_per_condition():
         assert "rt" in cond and "cat" in cond and "props" in cond
         assert len(cond["props"]) == 5
         assert abs(sum(cond["props"]) - 1.0) < 1e-9
+
+
+# ---- 8.2: field_snapshots -----------------------------------------------
+
+def test_field_snapshots_single_shape():
+    """Single-trial field returns n_frames downsampled grids."""
+    out = model_api.field_snapshots(DEFAULT_PARAMS, mode="single",
+                                    n_frames=12, grid_stride=2, key_seed=0)
+    assert len(out["frames"]) == 12
+    assert len(out["steps"]) == 12
+    # 100x160 grid at stride 2 → 50x80
+    assert out["n"] == 50 and out["m"] == 80
+    assert len(out["frames"][0]) == 50
+    assert len(out["frames"][0][0]) == 80
+    assert out["nstep"] == 400
+    assert out["threshold"] == DEFAULT_PARAMS["cr"]
+
+
+def test_field_snapshots_mean_shape():
+    """Mean-field over a few trials returns the same shape as single."""
+    out = model_api.field_snapshots(DEFAULT_PARAMS, mode="mean",
+                                    n_frames=8, n_trials_mean=4,
+                                    grid_stride=4, key_seed=0)
+    assert len(out["frames"]) == 8
+    # 100x160 at stride 4 → 25x40
+    assert out["n"] == 25 and out["m"] == 40
+
+
+def test_field_snapshots_accumulates_over_time():
+    """Field magnitude should grow over timesteps (cumulative accumulation)."""
+    import numpy as np
+    out = model_api.field_snapshots(DEFAULT_PARAMS, mode="single",
+                                    n_frames=10, grid_stride=2, key_seed=0)
+    first = np.abs(np.array(out["frames"][0])).max()
+    last = np.abs(np.array(out["frames"][-1])).max()
+    assert last > first, "accumulator field should grow over time"
+
+
+def test_field_snapshots_rejects_bad_mode():
+    import pytest
+    with pytest.raises(ValueError, match="mode must be"):
+        model_api.field_snapshots(DEFAULT_PARAMS, mode="bogus")

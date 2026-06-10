@@ -30,8 +30,8 @@ export function CompareTab() {
     setLoading(true);
     try {
       const [rA, rB] = await Promise.all([
-        postSimulate(a.params, { full: true, nsim: 2048 }),
-        postSimulate(b.params, { full: true, nsim: 2048 }),
+        postSimulate(a.params, { full: true, nsim: 512 }),
+        postSimulate(b.params, { full: true, nsim: 512 }),
       ]);
       setResA(rA);
       setResB(rB);

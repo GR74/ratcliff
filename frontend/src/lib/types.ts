@@ -83,6 +83,15 @@ export interface PredictResponse {
   }[];
 }
 
+export interface FieldResponse {
+  frames: number[][][]; // [frame][row][col]
+  steps: number[];
+  threshold: number;
+  n: number;
+  m: number;
+  nstep: number;
+}
+
 /** A 13-parameter vector used for fits + predictions. Indices match Ratcliff:
  *  [ter, st, cr, crsd, sis, sig, sv, av1c1, av2c1, av3c1, av1c2, av2c2, av3c2]
  */
