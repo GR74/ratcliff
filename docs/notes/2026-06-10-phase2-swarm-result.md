@@ -134,11 +134,27 @@ harder), so the outcome-vs-agreement gap grows +0.25 → +0.56. *Honest caveat:*
 small (4–9/N), so the gap-grows-with-N trend is suggestive (more seeds to firm up); the robust claim is
 the flat outcome = 1.00.
 
+## Phase 3 (scale) — collective tipping test: an honest near-null
+
+`python -m cognitive_society.phase3_tipping` measures HONEST-agent accuracy (do the honest agents resist
+the cluster's pull?) vs adversary fraction, for no-trust / agreement / outcome, at N=40 and 80.
+
+**There is no tipping point in this regime.** Honest accuracy stays ~89–95% for *every* method up to 50%
+adversaries — nothing collapses. There is a **consistent but small** ordering (outcome > agreement >
+no-trust, ~2–4pt, widening modestly with fraction and N; largest +4pt at 50% / N=80), directionally right
+but not dramatic. Reason: honest agents are **floored by their own private evidence** (individually
+~85–90% correct, bounded social drift), so the cluster can't drag them off regardless of trust rule.
+
+**Honest synthesis of the swarm result:** the mechanism is **strong, clean, and scale-amplifying at the
+LOCAL (per-victim isolation) level** (Phase 2 + 3a) but **small at the COLLECTIVE (honest-accuracy) level**
+(this test). It is fundamentally an **isolation result, not a collective-performance one** — collective
+accuracy is a weak discriminator because honest agents are private-evidence-robust.
+
 ## Next
 
-- **Firm up** the decisive-n (more seeds → tighten the gap-grows-with-N trend).
-- **Collective scale (decisive):** the *tipping-fraction* test — does outcome-grounded trust raise the
-  adversary-cluster fraction that flips the swarm's consensus vs agreement/no-trust, and does that margin
-  hold/grow with N (Centola tipping point + Golub–Jackson influence→0)? This is where *collective* accuracy
-  separates (near the tipping point, unlike the saturated minority-cluster regime).
-- **Write-up / Exo bridge** once firmed.
+- **A real tipping point would need a regime where honest agents depend MORE on social info** (harder
+  evidence / stronger coupling), so the cluster's pressure can actually flip them — a principled probe, not
+  win-fishing (report whatever it shows).
+- **Firm up** the per-victim gap-grows-with-N trend (more seeds).
+- **Write-up:** lead with the isolation result (strong, defensible); report the collective near-null
+  honestly as a characterization. Then the Exo bridge.
