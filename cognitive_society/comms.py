@@ -8,8 +8,13 @@ meta-accumulator: it rises when a peer's leaning matched the outcome, falls when
 it didn't.
 
 Stability (coupled accumulators can diverge / echo-chamber): the social drift is
-trust-normalized and capped by `social_gain`, so social evidence can never
-dominate an agent's own private evidence. Trust evidence is bounded.
+trust-normalized and gain-capped, and trust evidence is bounded. The cap is the
+`social_gain` passed in per round; the society raises it with the agent's own
+uncertainty (up to ~1.5x the base gain), so under high uncertainty social
+evidence *can* intentionally outweigh weak private evidence — bounded deference,
+not a runaway loop. The non-pathology guarantees are: bounded {-1,+1} leanings,
+a finite per-round (not within-trial) gain cap, and OUTCOME-driven (not
+agreement-driven) trust. See docs/notes/2026-06-05-ddm-coupled-comms-design-notes.md.
 """
 import numpy as np
 
@@ -21,9 +26,11 @@ def social_drift(trust_row, leanings, competences, social_gain: float) -> float:
     leanings    : (K,) each peer's signed decision direction, in {-1, +1}.
     competences : (K,) each peer's believed reliability, in [0, 1] (from the
                   cognitive map; uniform before the map is built).
-    social_gain : cap on total social influence (keeps it from dominating).
+    social_gain : cap on this round's social influence. The society may pass an
+                  uncertainty-boosted gain (up to ~1.5x the configured base) so
+                  deference rises when the agent is unsure — see Society.round.
 
-    Returns a scalar drift term with |value| <= social_gain.
+    Returns a scalar drift term with |value| <= social_gain (the value passed in).
     """
     trust_row = np.asarray(trust_row, dtype=float)
     leanings = np.asarray(leanings, dtype=float)
@@ -51,7 +58,9 @@ class TrustModel:
         self.bound = bound
 
     def trust(self) -> np.ndarray:
-        return 1.0 / (1.0 + np.exp(-self.e))
+        # Clip the logit before the logistic so trust() is overflow-safe for any
+        # e, independent of the [-bound, bound] clamp applied in update()/prior.
+        return 1.0 / (1.0 + np.exp(-np.clip(self.e, -30.0, 30.0)))
 
     def set_prior_from_competence(self, competences, gain: float = 3.0):
         """Seed trust evidence from cognitive-map competence (in [0,1]).
@@ -66,9 +75,10 @@ class TrustModel:
 
     def update(self, peer_leanings, outcome: int):
         """Update trust from one round. outcome in {-1, +1} (the true/consensus
-        direction); peer_leanings in {-1, +1}."""
+        direction); peer_leanings in {-1, +1}. outcome == 0 (no signed outcome)
+        is treated as 'no information' and leaves trust unchanged."""
         leanings = np.sign(np.asarray(peer_leanings, dtype=float))
-        agree = leanings * np.sign(outcome)  # +1 agreed, -1 disagreed
+        agree = leanings * np.sign(outcome)  # +1 agreed, -1 disagreed, 0 no-op
         self.e = np.clip(self.e + self.lr * agree, -self.bound, self.bound)
 
 

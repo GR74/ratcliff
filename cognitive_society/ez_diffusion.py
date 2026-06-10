@@ -27,7 +27,9 @@ def ez_recover(choices, rts, evidence, sigma: float = 1.0) -> dict:
     sigma    : within-trial noise sd (must match the generating model)
 
     Returns dict: drift, boundary, ndt, plus diagnostics (Pc, MRT, VRT).
-    Recovery degrades gracefully at chance (returns near-zero drift).
+    Raises ValueError when the batch is too small, has too few correct responses,
+    or has ~zero correct-RT variance (degenerate / censored) — so a caller never
+    consumes a silently-wrong recovery (recover_from_agent_observations skips it).
     """
     choices = np.asarray(choices)
     rts = np.asarray(rts, dtype=float)
@@ -47,12 +49,24 @@ def ez_recover(choices, rts, evidence, sigma: float = 1.0) -> dict:
     if abs(Pc - 0.5) < 1e-6:
         Pc = 0.5 + 1.0 / (2 * n)
 
-    # Use correct-response RTs (standard EZ). Fall back to all RTs if too few.
-    rt_correct = rts[correct] if correct.sum() >= 5 else rts
+    # Standard EZ uses CORRECT-response RT moments. Too few correct responses
+    # (near-chance / adversarial) or ~zero RT variance (e.g. censored RTs pinned
+    # to the MAX_STEPS ceiling) make the recovery wildly unreliable — raise so the
+    # pooling caller skips this batch rather than consuming a silently-bad estimate.
+    n_correct = int(correct.sum())
+    if n_correct < 10:
+        raise ValueError(
+            f"ez_recover: only {n_correct} correct responses — too few for a "
+            "stable correct-RT estimate (near-chance / adversarial regime)"
+        )
+    rt_correct = rts[correct]
     MRT = float(rt_correct.mean())
     VRT = float(rt_correct.var())
-    if VRT <= 0:
-        VRT = 1e-6
+    if VRT < 1e-5:
+        raise ValueError(
+            f"ez_recover: degenerate correct-RT variance ({VRT:.2e}); likely "
+            "censored / pinned RTs — recovery would be wildly off"
+        )
 
     s = sigma
     s2 = s * s

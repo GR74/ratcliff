@@ -1,6 +1,5 @@
 """Checkpoint 1 tests — DDM agents decide sensibly. Pure NumPy, runs in <1s."""
 import numpy as np
-import pytest
 
 from cognitive_society.agent import DDMAgent, DDMParams, make_population
 

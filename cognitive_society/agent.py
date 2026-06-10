@@ -19,6 +19,10 @@ import numpy as np
 
 # Simulation granularity. DT small enough for stable accumulation; MAX_STEPS is a
 # hard cap so every trial terminates (a non-crossing trial commits to its sign).
+# NOTE: Euler at DT=0.01 with end-of-step RT slightly overshoots the boundary,
+# which inflates recovered boundary magnitude by ~5% (partially self-cancelling
+# in EZ). Kept for speed (pure-NumPy, ~3s suite); lower DT if absolute magnitudes
+# matter more than the cheap, fast many-agent decisions this primitive is for.
 DT = 0.01
 MAX_STEPS = 2000
 
@@ -117,10 +121,12 @@ class DDMAgent:
         return choice, rt
 
 
-def make_population(styles, rng_seed: int = 0):
-    """Build a list of agents from (style_name, DDMParams) pairs or DDMParams.
+def make_population(styles):
+    """Build a list of agents from (label, DDMParams) pairs or bare DDMParams.
 
-    Convenience for assembling a heterogeneous society.
+    Each item is either a DDMParams or a (label, DDMParams) tuple; the optional
+    label is decorative — an agent's displayed style comes from its boundary via
+    DDMParams.style(). Convenience for assembling a heterogeneous society.
     """
     agents = []
     for i, item in enumerate(styles):

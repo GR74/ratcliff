@@ -2,7 +2,6 @@
 its observed behavior. Pure NumPy, fast. This is the 'infer a peer's style'
 engine for the society (1D closed form; the 2D model needs SBI instead)."""
 import numpy as np
-import pytest
 
 from cognitive_society.agent import DDMAgent, DDMParams
 from cognitive_society.ez_diffusion import ez_recover, recover_from_agent_observations

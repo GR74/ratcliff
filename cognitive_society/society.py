@@ -4,7 +4,8 @@ Ties the pieces together:
   - agents decide (checkpoint 1)
   - DDM-coupled communication + trust (checkpoint 2, comms.py)
   - cognitive maps ground trust (checkpoint 3): agents infer peers' competence
-    from observed behavior (EZ) and seed trust from it
+    from observed behavior (accuracy at the mapping evidence levels; EZ-diffusion
+    can recover full style) and seed trust from it
   - adaptation (checkpoint 4): each agent gauges its own uncertainty on a problem
     (how split its private decisions are); under high uncertainty it (a) raises
     its boundary (gathers more evidence) and (b) defers more to trusted peers
@@ -22,12 +23,11 @@ A round:
 Config flags let experiments compare conditions (flat broadcast vs outcome-only
 trust vs cognitive-map-grounded + uncertainty-gated trust).
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
 
 from cognitive_society.comms import TrustModel, leaning, social_drift
-from cognitive_society.ez_diffusion import recover_from_agent_observations
 
 
 @dataclass
@@ -37,8 +37,10 @@ class SocietyConfig:
     use_trust_weights: bool = True    # weight peers by outcome-driven trust
     use_competence_prior: bool = True # seed trust + weight by inferred competence (cognitive map)
     adaptive: bool = True             # uncertainty gates caution + deference
-    n_private: int = 21               # internal samples for the private leaning/conf
+    n_private: int = 21               # internal samples for the private leaning/conf (odd -> no ties)
     caution_gain: float = 0.6         # how much uncertainty raises the boundary
+    social_base: float = 0.5          # baseline social-gain fraction (even when fully certain)
+    social_uncertainty_scale: float = 1.0  # extra social-gain fraction per unit uncertainty
     map_evidence: tuple = (0.4, 0.6, 0.8)
     map_trials: int = 1500
 
@@ -83,18 +85,16 @@ class Society:
         accuracy at the mapping evidence levels."""
         comp = np.zeros(self.K)
         for j, target in enumerate(self.agents):
-            obs, pcs = [], []
+            pcs = []
             for ev in self.cfg.map_evidence:
-                ch, rt = target.decide_batch(ev, self.cfg.map_trials, self.rng)
+                ch, _ = target.decide_batch(ev, self.cfg.map_trials, self.rng)
                 truth = 1 if ev > 0 else 0
                 pcs.append((ch == truth).mean())
-                obs.append((ch, rt, ev))
             comp[j] = float(np.mean(pcs))
-            # (recovered params available via EZ too, if needed downstream)
-            try:
-                recover_from_agent_observations(obs, sigma=target.params.sigma)
-            except Exception:
-                pass
+            # Trust seeding needs only this scalar competence. Richer per-peer
+            # style recovery (boundary/drift/ndt) is available in closed form via
+            # ez_diffusion.recover_from_agent_observations if a downstream use
+            # wants it — not run here so mapping stays cheap.
         for i in range(self.K):
             self.competence[i] = comp
             if self.cfg.use_competence_prior:
@@ -127,7 +127,13 @@ class Society:
             mask[i] = False
             # uncertainty gate: high when this agent's own decision was split.
             gate = (1.0 - conf[i]) if cfg.adaptive else 0.5
-            sg = cfg.social_gain * (0.5 + gate) if cfg.adaptive else cfg.social_gain
+            # Adaptive cap: deference rises with the agent's own uncertainty. sg
+            # spans [social_base, social_base + social_uncertainty_scale] x
+            # social_gain (default [0.5, 1.5]x), so under high uncertainty social
+            # drift can intentionally exceed weak private evidence — bounded,
+            # per-round (not a within-trial feedback loop). See design notes.
+            sg = (cfg.social_gain * (cfg.social_base + cfg.social_uncertainty_scale * gate)
+                  if cfg.adaptive else cfg.social_gain)
 
             if cfg.use_social:
                 t = self.trust[i].trust() if cfg.use_trust_weights else np.ones(self.K)
@@ -140,9 +146,13 @@ class Society:
             ch, _ = a.decide(evidence, self.rng, extra_drift=sd, boundary_scale=bscale)
             final[i] = ch
 
-        # trust update from this round's outcome. Trust accumulators are size K
+        # Trust update from this round's outcome. Trust accumulators are size K
         # (indexed by global agent id); the self-entry updates harmlessly since
-        # self-trust is masked out of the social drift.
+        # self-trust is masked out of the social drift. NOTE: every observer i is
+        # updated with the same global leanings + outcome, so trust is currently a
+        # shared, truth-driven (objective) reliability estimate replicated per
+        # agent, not a per-observer subjective belief — a deliberate simplification
+        # (per-observer subjective trust is a noted extension; see design notes).
         for i in range(self.K):
             self.trust[i].update(leanings, outcome)
 

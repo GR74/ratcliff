@@ -32,9 +32,13 @@ opinion dynamics) says naive *additive coupling on raw, unbounded accumulators* 
 
 1. **Bounded peer signal** — we inject `leaning ∈ {−1,+1}` (a committed, bounded stance), never a raw
    live accumulator. Coupling on a bounded signal cannot blow up.
-2. **Row-normalized, gain-capped social drift** — `|social_drift| ≤ social_gain`, so social evidence
-   can never dominate an agent's own private evidence. Round-based (not continuous within-trial), so
-   there is no positive-feedback integration loop.
+2. **Row-normalized, gain-capped social drift** — `|social_drift| ≤ sg`, the per-round social gain.
+   It is finite and round-based (not continuous within-trial), so there is no positive-feedback
+   integration loop. NOTE: in adaptive mode the society scales `sg` with the agent's own uncertainty,
+   `sg = social_gain·(social_base + social_uncertainty_scale·gate)` (default `[0.5, 1.5]·social_gain`),
+   so under *high uncertainty* social drift can intentionally exceed weak private evidence — bounded,
+   confidence-gated deference, not the runaway regime. The non-pathology property is the *finite,
+   round-based* cap; the earlier "social can never dominate private" phrasing overstated it.
 3. **Outcome-driven trust, not agreement-driven** — `TrustModel.update` keys on `sign(leaning) ×
    sign(outcome)` (did the peer match *ground truth*), **not** on whether the peer agreed with the
    observer. The panel flags agreement-driven trust as *the* mechanism that produces echo chambers
@@ -73,6 +77,11 @@ Claim *only* at that resolution.
 - **Trust decay / exploration floor.** To avoid permanently locking a peer in/out, a small trust
   decay-to-prior or exploration noise is worth adding (panel suggestion). Currently trust is bounded but
   not decayed — a candidate improvement.
+- **Trust is currently global, not per-observer-subjective.** Every observer's `TrustModel` is updated
+  with the same global leanings + outcome (and `competence[i]` is the same vector for all `i`), so the
+  cognitive map is one shared, truth-driven reliability estimate replicated per agent. Per-observer
+  subjective trust — rows that differ because agents observe each other through their own noise /
+  confidence — is a clean extension, not yet implemented. State the current behavior as objective trust.
 
 ## Bottom line
 
