@@ -88,7 +88,9 @@ def main():
     import torch
     from sbi.inference import SNPE
     from sbi.utils import BoxUniform
-    from sbi.analysis import run_sbc, check_sbc
+    # NOTE: run_sbc/check_sbc live in sbi.diagnostics (moved from sbi.analysis in
+    # sbi>=0.23). Imported lazily inside the SBC try-block below so any further API
+    # drift there can't kill the run -- the recovery numbers are the core result.
 
     print(f"\nGenerating {N_TRAIN} training datasets (nsim={NSIM}, chunk={CHUNK}) ...")
     print("  (first call compiles the FFT path — 1-3 min — then it's fast)")
@@ -129,13 +131,20 @@ def main():
     # --- Simulation-based calibration ---
     print("\nSimulation-based calibration (SBC) — ranks should be ~uniform:")
     try:
+        from sbi.diagnostics import run_sbc, check_sbc  # sbi>=0.23 location
         ranks, dap = run_sbc(
             torch.tensor(theta_test), torch.tensor(x_test), posterior,
-            num_posterior_samples=500,
+            num_posterior_samples=500, use_batched_sampling=False,
         )
         stats = check_sbc(ranks, torch.tensor(theta_test), dap, num_posterior_samples=500)
-        print(f"  c2st (closer to 0.5 = better): {float(stats['c2st'].mean()):.3f}")
-        print(f"  ks p-values (want > 0.05): {[f'{float(p):.2f}' for p in stats['ks_pvals']]}")
+        # check_sbc return-keys have drifted across sbi versions; print whatever
+        # it returns rather than hard-coding 'c2st'/'ks_pvals'.
+        for k, v in stats.items():
+            try:
+                val = float(np.asarray(v, dtype=float).mean())
+                print(f"  {k}: mean={val:.3f}")
+            except Exception:
+                print(f"  {k}: {v}")
     except Exception as e:
         print(f"  SBC step error (non-fatal): {e}")
 
