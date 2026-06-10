@@ -1,10 +1,26 @@
-import { CompareTab } from "./tabs/CompareTab";
-import { FieldTab } from "./tabs/FieldTab";
-import { FitTab } from "./tabs/FitTab";
-import { ForwardSimTab } from "./tabs/ForwardSimTab";
-import { PhaseTab } from "./tabs/PhaseTab";
-import { PredictTab } from "./tabs/PredictTab";
+import { lazy, Suspense } from "react";
+
 import { useAppStore } from "./store";
+
+// Lazy-load each tab so the heavy deps (Plotly ~3 MB, three.js ~1 MB) only
+// download when a tab that uses them is first opened. Keeps the initial load
+// light — the Forward Sim tab is interactive before Phase/Field code arrives.
+const ForwardSimTab = lazy(() =>
+  import("./tabs/ForwardSimTab").then((m) => ({ default: m.ForwardSimTab })),
+);
+const FieldTab = lazy(() =>
+  import("./tabs/FieldTab").then((m) => ({ default: m.FieldTab })),
+);
+const PhaseTab = lazy(() =>
+  import("./tabs/PhaseTab").then((m) => ({ default: m.PhaseTab })),
+);
+const FitTab = lazy(() => import("./tabs/FitTab").then((m) => ({ default: m.FitTab })));
+const PredictTab = lazy(() =>
+  import("./tabs/PredictTab").then((m) => ({ default: m.PredictTab })),
+);
+const CompareTab = lazy(() =>
+  import("./tabs/CompareTab").then((m) => ({ default: m.CompareTab })),
+);
 
 const TABS = [
   { id: "sim", label: "Forward Sim" },
@@ -25,7 +41,7 @@ export function App() {
         <div className="flex items-baseline gap-6 px-4 py-3">
           <h1 className="text-lg font-semibold">Ratcliff DDM</h1>
           <span className="text-xs text-slate-500">
-            2D spatial diffusion decision model — Stage 7 UI
+            2D spatial diffusion decision model
           </span>
         </div>
         <nav className="px-4 flex gap-2 border-t">
@@ -46,12 +62,18 @@ export function App() {
         </nav>
       </header>
       <main className="flex-1">
-        {currentTab === "sim" && <ForwardSimTab />}
-        {currentTab === "field" && <FieldTab />}
-        {currentTab === "phase" && <PhaseTab />}
-        {currentTab === "fit" && <FitTab />}
-        {currentTab === "predict" && <PredictTab />}
-        {currentTab === "compare" && <CompareTab />}
+        <Suspense
+          fallback={
+            <div className="p-8 text-sm text-slate-400 italic">Loading…</div>
+          }
+        >
+          {currentTab === "sim" && <ForwardSimTab />}
+          {currentTab === "field" && <FieldTab />}
+          {currentTab === "phase" && <PhaseTab />}
+          {currentTab === "fit" && <FitTab />}
+          {currentTab === "predict" && <PredictTab />}
+          {currentTab === "compare" && <CompareTab />}
+        </Suspense>
       </main>
       <footer className="border-t bg-white py-2 px-4 text-xs text-slate-500">
         Powered by JAX + K-L low-rank GRF. Source:{" "}

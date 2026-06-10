@@ -65,6 +65,34 @@ def test_forward_sim_preview_output_is_json_serializable():
     json.dumps(out)  # raises if non-JSON types present
 
 
+# ---- param validation (robustness) --------------------------------------
+
+def test_validate_rejects_sig_above_pd_ceiling():
+    """sig past the positive-definite ceiling raises a clear error, not silent
+    garbage."""
+    bad = dict(DEFAULT_PARAMS, sig=25.0)
+    with pytest.raises(ValueError, match="sig"):
+        model_api.forward_sim_preview(bad)
+
+
+def test_validate_rejects_nonpositive_sis():
+    bad = dict(DEFAULT_PARAMS, sis=0.0)
+    with pytest.raises(ValueError, match="sis"):
+        model_api.forward_sim_preview(bad)
+
+
+def test_validate_rejects_low_cr():
+    bad = dict(DEFAULT_PARAMS, cr=0.5)
+    with pytest.raises(ValueError, match="cr"):
+        model_api.forward_sim_preview(bad)
+
+
+def test_validate_accepts_valid_params():
+    """Boundary sig values are accepted."""
+    model_api._validate_params(dict(DEFAULT_PARAMS, sig=17.0))
+    model_api._validate_params(dict(DEFAULT_PARAMS, sig=0.2))
+
+
 # ---- 7.A.3: forward_sim_full --------------------------------------------
 
 def test_forward_sim_full_respects_nsim():

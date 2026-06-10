@@ -30,6 +30,36 @@ _preview_cache_order: list[tuple] = []
 
 PARAM_KEYS = ("ter", "st", "cr", "crsd", "sis", "sig", "av1", "av2", "av3")
 
+# sig (GRF correlation length) must stay below the positive-definite-embedding
+# ceiling (~17.95 at 100x160). Above it, calc_LAM silently clips negative
+# spectral values to zero and returns a degenerate field — silently wrong
+# output, which is worse than an error. clamp_b uses 17.0; we validate to 17.5.
+SIG_MAX = 17.5
+
+
+def _validate_params(params: dict) -> None:
+    """Raise ValueError with a clear message if any param is out of valid range.
+
+    Catches the silently-wrong cases (notably sig past the PD ceiling) so the
+    API returns an actionable 400 instead of a degenerate result.
+    """
+    missing = [k for k in PARAM_KEYS if k not in params]
+    if missing:
+        raise ValueError(f"missing params: {missing}")
+    sig = float(params["sig"])
+    if not (0.2 <= sig <= SIG_MAX):
+        raise ValueError(
+            f"sig (GRF correlation length) must be in [0.2, {SIG_MAX}]; got {sig}. "
+            f"Above ~17.95 the circulant embedding is not positive-definite."
+        )
+    if float(params["sis"]) <= 0:
+        raise ValueError(f"sis (drift bump width) must be > 0; got {params['sis']}")
+    if float(params["cr"]) < 1:
+        raise ValueError(f"cr (threshold) must be >= 1; got {params['cr']}")
+    for k in ("av1", "av2", "av3"):
+        if float(params[k]) < 0:
+            raise ValueError(f"{k} (drift amplitude) must be >= 0; got {params[k]}")
+
 
 def _preview_cache_key(params: dict, key_seed: int) -> tuple:
     return (key_seed,) + tuple(round(float(params[k]), 4) for k in PARAM_KEYS)
@@ -59,6 +89,7 @@ def forward_sim_preview(params: dict, key_seed: int = 0) -> dict:
     Cached on rounded params so a slider returning to a prior value answers
     instantly without re-running the simulator.
     """
+    _validate_params(params)
     ck = _preview_cache_key(params, key_seed)
     hit = _preview_cache.get(ck)
     if hit is not None:
@@ -105,6 +136,7 @@ def forward_sim_full(params: dict, nsim: int = 9000,
                      chunk_size: int | None = None,
                      key_seed: int = 0) -> dict:
     """Production-scale single-condition simulation."""
+    _validate_params(params)
     defaults = _get_device_defaults()
     cs = chunk_size if chunk_size is not None else defaults["chunk_size"]
 
@@ -221,6 +253,7 @@ def field_snapshots(params: dict,
     """
     if mode not in ("single", "mean"):
         raise ValueError(f"mode must be 'single' or 'mean', got {mode!r}")
+    _validate_params(params)
 
     N, M, NSTEP = sim_b.N, sim_b.M, sim_b.NSTEP
     n_trials = 1 if mode == "single" else int(n_trials_mean)

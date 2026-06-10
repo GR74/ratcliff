@@ -1,3 +1,4 @@
+# Python
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -7,5 +8,28 @@ venv/
 *.egg-info/
 build/
 dist/
+
+# Node / frontend build
+node_modules/
+frontend/dist/
+frontend/node_modules/
+frontend/*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+
+# Playwright MCP artifacts (regenerated each run)
+.playwright-mcp/
+
+# Local benchmark outputs + screenshots (regenerated; not source)
+stage*.png
+page-*.png
+h100_section4.txt
+h100_results*.txt
+h100_stage6_kl*.txt
+
+# OS / editor
 .DS_Store
 *.log
+.idea/
+.vscode/
+*.swp
