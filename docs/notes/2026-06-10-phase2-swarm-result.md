@@ -104,6 +104,12 @@ locally dominant it is.
 - **Regime-specific.** Contiguous cluster, small-world graph, low degree; the effect is fundamentally
   about *local majority capture*.
 - **Toy substrate.** 1D NumPy DDM agents, not scaled. This is a mechanism demonstration.
+- **The inversion is near-analytic, not an empirical surprise.** Agreement-trust targets the local-majority
+  sign and a "majority-captured victim" is *defined* as an adversary-majority neighbourhood, so AUC→0 is
+  close to forced by the two definitions (symmetrically AUC→1 for outcome-trust, adversaries being
+  confidently-wrong by construction). It is the known RepTrap/BRS reputation-inversion restated on a DeGroot
+  substrate — frame it as **demonstrating** a recognized distinction at the exact f-local breakdown point,
+  **not discovering** a phenomenon.
 
 ## What it is, and isn't
 
@@ -185,22 +191,39 @@ possible v2 in `2026-06-05-ddm-coupled-comms-design-notes.md`), T=20 steps/probl
 **stubborn, confidently-wrong, contiguous cluster** that can drag the swarm via a cascade. Trust
 gates the propagation; we compare no-trust / agreement / outcome.
 
-**The result (N=60, deg=4, 6 seeds, honest-agent accuracy):**
+**The result at the timid-honest setting (honest_conf=0.25, adv_conf=0.9; N=60, deg=4, 6 seeds,
+honest-agent accuracy):**
 
 | | sanity (all-honest) | 20% | 30% | 40% | 45% | 50% |
 |---|---|---|---|---|---|---|
 | no-trust | 99.5% | 37.2% | 12.7% | 6.1% | 5.5% | 4.7% |
 | agreement | 99.5% | 42.8% | 12.7% | 5.7% | 6.7% | 4.4% |
 | **outcome** | 99.5% | **99.0%** | **97.4%** | **77.3%** | **64.5%** | **49.2%** |
-| gap (out−best-other) | — | +56.2% | +84.7% | +71.2% | +57.8% | +44.5% |
 
 **The all-honest sanity control sits at 99.5% for every method** (locked as a test) — so the gap is
-not a bug. With propagation, **no-trust and agreement collapse to *below chance* even at a 20%
-cluster** — the stubborn cluster cascades and drags the whole swarm to the wrong answer.
-**Outcome-grounded trust prevents the collapse entirely** (holding 97–99% to 30%, 77% at 40%, still
-65% at 45%). It roughly **doubles the swarm's adversary tolerance** — from a tip at **<20%** to
-holding well above chance at **~45%**. At 50% (cluster = half the graph) even outcome falls to chance
-(49%), but still does not *collapse* like the others (49% vs ~5%).
+not a bug.
+
+> **CORRECTION (adversarial self-review, 2026-06-11).** An adversarial novelty/soundness assessment
+> (8 agents, web-grounded) re-ran this code and showed the *magnitude* of the collapse above is
+> **load-bearing on the confidence-asymmetry knob**, not purely on the local-majority bound. The table
+> above is the single most adversary-favourable corner: a *timid* honest majority (conf 0.25) shouted
+> down by a *loud* confident cluster (conf 0.9). Sweeping it (frac=30%, 6 seeds):
+>
+> | honest/adv conf | no-trust | agreement | outcome |
+> |---|---|---|---|
+> | 0.25 / 0.9 (timid honest) | 12.7% | 12.7% | 97.4% |
+> | 0.9 / 0.9 (equal) | 54.2% | **67.8%** | 100% |
+> | 0.9 / 0.5 (quiet adversaries) | 84.4% | **93.7%** | 100% |
+>
+> So **"agreement collapses *below chance*" and "outcome *doubles* adversary tolerance" are specific to
+> the timid-honest regime** — at symmetric confidence agreement recovers to ~68%. The earlier framing
+> overstated a tuned cascade as the bound-breaking effect.
+
+**The robust, defensible collective claim** (what survives the sweep): **outcome-grounded trust holds
+97–100% accuracy across *every* confidence regime** — it always wins and never collapses. Agreement-
+and no-trust *degrade* relative to it, **dramatically** (below chance) only when honest agents are
+timid relative to a confident cluster, **modestly** (68–94%) at symmetric confidence. The *direction*
+(outcome > agreement ≥ no-trust) is robust; the *headline magnitude* is regime-dependent.
 
 **Honest positioning (loud).**
 - **The cascade itself is a KNOWN effect** — stubborn agents / zealots dominating a naive consensus
@@ -215,14 +238,19 @@ holding well above chance at **~45%**. At 50% (cluster = half the graph) even ou
   *separate, complementary* collective result on the iterative variant.
 - **Outcome-trust needs OBSERVABLE outcomes** (the standing assumption; in outcome-free settings it
   degrades toward agreement-driven dynamics — stated in the design notes).
-- **The collapse magnitude depends on the confidence asymmetry** (confident adversaries vs uncertain
-  honest agents) — realistic, but a modelling choice; 6 seeds, not a large sweep.
+- **The collapse magnitude is load-bearing on the confidence asymmetry** (see CORRECTION box) — the
+  robust quantity is the *direction* and outcome-trust's flat 97–100%, not the "doubling" magnitude.
+- **6 seeds, N≤144, toy 1D substrate; outcome-trust requires observable ground truth.** The adversary
+  is a stationary, perfectly-wrong zealot — the easiest case for outcome-trust; a reputation-laundering
+  adversary (correct on cheap rounds, defects on the decisive one) is untested and is the obvious attack.
 
 **Revised collective verdict.** The Phase-3 "collective near-null" was **regime-specific to one-shot
-communication**, not a property of outcome-trust. With **propagation** — the realistic regime for echo
-chambers / opinion cascades — the collective result is **dramatic**: outcome-grounded trust is the
-difference between a swarm that resists a confidently-wrong cluster and one that the cluster captures
-wholesale.
+communication**, not a property of outcome-trust. With **propagation**, outcome-grounded trust is
+**robustly the best rule across all confidence regimes (97–100%)** where agreement- and no-trust
+degrade. The *direction* is solid and reproducible; the dramatic "below-chance / doubling" magnitude is
+specific to the timid-honest corner (CORRECTION box) and should not be the headline. The honest framing
+is a **clarifying demonstration** that outcome-grounding is the robust trust signal under propagation —
+not a discovery of a new collapse phenomenon.
 
 ## Next
 
