@@ -166,6 +166,64 @@ tested regimes; the mechanism is fundamentally local.
 
 The swarm contribution is an **isolation result, not a collective-performance one** — honestly bounded.
 
+## Phase 4 (iterative communication) — the collective result the one-shot model couldn't show
+
+`python -m cognitive_society.phase4_consensus` · tests: `cognitive_society/tests/test_phase4.py`
+
+**Why Phase 3's collective result was near-null — the real reason.** Phase 3 diagnosed the
+collective near-null as "honest agents floored by private evidence." That was a *symptom*. The
+**structural** cause: the Phase-2/3 society has **one-shot communication** — a single
+trust-weighted social-drift injection per round — so opinions cannot **propagate**. Without
+propagation there is no cascade, and a small cluster's wrong opinion physically cannot spread.
+Cranking the one-shot coupling strength (`social_gain` 0.3→4.0) confirms this: it does **not**
+manufacture a cascade — it slightly *helps everyone* (more honest-neighbour reinforcement),
+outcome margin staying +0.9 to +2.5pt. **Strength was never the missing ingredient — iteration was.**
+
+**The model.** Phase 4 adds the missing mechanism: **iterative trust-weighted belief propagation**
+on the graph (DeGroot / Laplacian, mean-removing — exactly the "difference form" flagged as a
+possible v2 in `2026-06-05-ddm-coupled-comms-design-notes.md`), T=20 steps/problem, with a
+**stubborn, confidently-wrong, contiguous cluster** that can drag the swarm via a cascade. Trust
+gates the propagation; we compare no-trust / agreement / outcome.
+
+**The result (N=60, deg=4, 6 seeds, honest-agent accuracy):**
+
+| | sanity (all-honest) | 20% | 30% | 40% | 45% | 50% |
+|---|---|---|---|---|---|---|
+| no-trust | 99.5% | 37.2% | 12.7% | 6.1% | 5.5% | 4.7% |
+| agreement | 99.5% | 42.8% | 12.7% | 5.7% | 6.7% | 4.4% |
+| **outcome** | 99.5% | **99.0%** | **97.4%** | **77.3%** | **64.5%** | **49.2%** |
+| gap (out−best-other) | — | +56.2% | +84.7% | +71.2% | +57.8% | +44.5% |
+
+**The all-honest sanity control sits at 99.5% for every method** (locked as a test) — so the gap is
+not a bug. With propagation, **no-trust and agreement collapse to *below chance* even at a 20%
+cluster** — the stubborn cluster cascades and drags the whole swarm to the wrong answer.
+**Outcome-grounded trust prevents the collapse entirely** (holding 97–99% to 30%, 77% at 40%, still
+65% at 45%). It roughly **doubles the swarm's adversary tolerance** — from a tip at **<20%** to
+holding well above chance at **~45%**. At 50% (cluster = half the graph) even outcome falls to chance
+(49%), but still does not *collapse* like the others (49% vs ~5%).
+
+**Honest positioning (loud).**
+- **The cascade itself is a KNOWN effect** — stubborn agents / zealots dominating a naive consensus
+  (Mobilia; Acemoglu et al.). Not our contribution. The **iterative coupling** is Srivastava–Leonard
+  structure — also not novel.
+- **The contribution is the GATING:** outcome-grounded trust kills the cascade; agreement-based trust
+  (the SOTA flavour) cannot — near the cluster the local consensus *is* the cluster, so it trusts the
+  zealots. This is the **empirical demonstration** of the echo-chamber claim the 2026-06-05 design notes
+  asserted only *by construction*.
+- **It is a richer model than the one-shot DDM society** — the missing mechanism, added on purpose
+  after the gap was identified. The Phase-2/3 isolation results stand on the original society; this is a
+  *separate, complementary* collective result on the iterative variant.
+- **Outcome-trust needs OBSERVABLE outcomes** (the standing assumption; in outcome-free settings it
+  degrades toward agreement-driven dynamics — stated in the design notes).
+- **The collapse magnitude depends on the confidence asymmetry** (confident adversaries vs uncertain
+  honest agents) — realistic, but a modelling choice; 6 seeds, not a large sweep.
+
+**Revised collective verdict.** The Phase-3 "collective near-null" was **regime-specific to one-shot
+communication**, not a property of outcome-trust. With **propagation** — the realistic regime for echo
+chambers / opinion cascades — the collective result is **dramatic**: outcome-grounded trust is the
+difference between a swarm that resists a confidently-wrong cluster and one that the cluster captures
+wholesale.
+
 ## Next
 
 - **Write-up:** lead with the isolation result (strong, defensible, scale-free); report the collective
