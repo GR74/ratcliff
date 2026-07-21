@@ -44,7 +44,7 @@ def private_read(theta, kappa, n_samples, rng, bias=0.0, conf_gain=1.0):
 
 def belief_loop(kappas, adj, n_problems, T=6, coupling=0.5, gate="confidence",
                 conf_gains=None, biases=None, n_samples=20, seed=0, ema=0.05,
-                bound_precision=False):
+                bound_precision=False, homeostatic=False, target_spread=0.35):
     """Iterated precision-weighted belief loop on graph `adj`. Returns collective + honest RMSE
     and the mean collective precision (to expose confident-but-wrong consensus).
 
@@ -59,7 +59,7 @@ def belief_loop(kappas, adj, n_problems, T=6, coupling=0.5, gate="confidence",
     rng = np.random.default_rng(seed)
     A = adj.astype(float)
     mse_hat = np.ones(K)                       # outcome-trust: learned realized MSE per agent
-    col_sq, hon_sq, col_prec = [], [], []
+    col_sq, hon_sq, col_prec, col_spr = [], [], [], []
     for _ in range(n_problems):
         theta = float(rng.uniform(-1.0, 1.0))
         e_priv = np.zeros(K); p_priv = np.zeros(K)
@@ -75,20 +75,33 @@ def belief_loop(kappas, adj, n_problems, T=6, coupling=0.5, gate="confidence",
             else:                             # outcome-trust: realized precision replaces self-report
                 eff = 1.0 / np.maximum(mse_hat, 1e-9)
             Weff = A * eff[None, :]
-            num = p_priv * e_priv + coupling * (Weff @ b)
-            den = p_priv + coupling * Weff.sum(1)
+            if homeostatic:
+                # RSL-style set-point control: as an agent's LOCAL consensus tightens below the
+                # diversity set-point, it turns DOWN social coupling (holds its own view) -> a
+                # "doubter" reflex that keeps the population from collapsing to unanimity, with
+                # NO outcomes needed. (This is the belief-loop analog of RSL synaptic scaling.)
+                deg = np.maximum(A.sum(1), 1.0)
+                nb_mean = (A @ b) / deg
+                local_spread = np.sqrt(np.maximum((A @ (b ** 2)) / deg - nb_mean ** 2, 0.0))
+                c = coupling * np.minimum(local_spread / target_spread, 1.0)
+            else:
+                c = coupling
+            num = p_priv * e_priv + c * (Weff @ b)
+            den = p_priv + c * Weff.sum(1)
             b = num / den
             pi = np.minimum(den, info_ceiling) if bound_precision else den
         collective = float(np.sum(pi * b) / np.sum(pi))
         col_sq.append((collective - theta) ** 2)
         hon_sq.append(float(np.mean((b[honest] - theta) ** 2)) if honest.any() else np.nan)
         col_prec.append(float(pi.mean()))
+        col_spr.append(float(np.std(b[honest])) if honest.any() else np.nan)
         mse_hat = (1 - ema) * mse_hat + ema * (b - theta) ** 2      # learn from revealed outcome
     half = n_problems // 2
     return {
         "collective_rmse": float(np.sqrt(np.mean(col_sq[half:]))),
         "honest_rmse": float(np.sqrt(np.nanmean(hon_sq[half:]))),
         "mean_precision": float(np.mean(col_prec[half:])),
+        "belief_spread": float(np.nanmean(col_spr[half:])),
     }
 
 
@@ -99,9 +112,10 @@ def main():
     kappas = rng0.uniform(0.5, 3.0, K)
     adj = topo.watts_strogatz(K, deg, 0.3, np.random.default_rng(1))
 
-    def avg(gate, T, conf_gains=None, biases=None, bound=False):
+    def avg(gate, T, conf_gains=None, biases=None, bound=False, homeo=False):
         outs = [belief_loop(kappas, adj, N_PROB, T=T, gate=gate, conf_gains=conf_gains,
-                            biases=biases, bound_precision=bound, seed=s) for s in range(N_SEEDS)]
+                            biases=biases, bound_precision=bound, homeostatic=homeo, seed=s)
+                for s in range(N_SEEDS)]
         return {k: float(np.mean([o[k] for o in outs])) for k in outs[0]}
 
     print("=" * 68)
@@ -138,6 +152,22 @@ def main():
     print("       off-truth with HIGH precision (a confident-but-wrong consensus / echo chamber).")
     print("       Outcome-trust keeps honest agents accurate: it catches that the deluded cluster's")
     print("       confidence does not predict truth. (Caveat: needs observable outcomes.)")
+
+    # --- Part C: HOMEOSTATIC diversity — the outcome-free defense (ported from RSL) ----
+    print("\n  PART C — homeostatic diversity ('always doubters'): defend WITHOUT outcomes")
+    print("  8/24 deluded cluster; RSL set-point principle ported to the belief loop")
+    cg2, bs2 = np.ones(K), np.zeros(K)
+    cg2[:8], bs2[:8] = 10.0, 0.8
+    print(f"    {'setup':>32s} {'honest RMSE':>12s} {'belief spread':>14s}")
+    for label, kw in (("confidence (no defense)", dict(gate="confidence")),
+                      ("confidence + homeostasis", dict(gate="confidence", homeo=True)),
+                      ("outcome-trust (needs outcomes)", dict(gate="outcome-trust"))):
+        r = avg(T=6, conf_gains=cg2, biases=bs2, **kw)
+        print(f"    {label:>32s} {r['honest_rmse']:>12.4f} {r['belief_spread']:>14.4f}")
+    print("    -> homeostasis keeps a diversity 'gap' (doubters persist) and blunts the delusion")
+    print("       with NO outcome signal — the RSL set-point principle: don't collapse to unanimity.")
+    print("       Outcome-trust defends harder but needs observable outcomes; homeostasis is the")
+    print("       outcome-FREE complement. Health = maintained doubt.")
     print("=" * 68)
 
 

@@ -27,6 +27,20 @@ def test_precision_bound_fixes_double_counting_overconfidence():
     assert bnd["collective_rmse"] < unb["collective_rmse"] * 1.2  # accuracy preserved
 
 
+def test_homeostasis_maintains_diversity_and_blunts_delusion():
+    """The RSL set-point principle ported to the belief loop: homeostatic coupling keeps a
+    diversity 'gap' (doubters) and partially resists the delusion WITHOUT any outcome signal."""
+    kappas, adj = _setup(24)
+    K = len(kappas)
+    cg, bs = np.ones(K), np.zeros(K)
+    cg[:8], bs[:8] = 10.0, 0.8
+    plain = belief_loop(kappas, adj, 800, gate="confidence", conf_gains=cg, biases=bs, seed=0)
+    homeo = belief_loop(kappas, adj, 800, gate="confidence", conf_gains=cg, biases=bs,
+                        homeostatic=True, seed=0)
+    assert homeo["belief_spread"] > plain["belief_spread"]   # doubters persist (diversity kept)
+    assert homeo["honest_rmse"] < plain["honest_rmse"]       # delusion blunted, outcome-free
+
+
 def test_delusion_propagates_and_outcome_trust_defends():
     """The loop lets a deluded cluster PROPAGATE into a confident-but-wrong consensus (echo
     chamber) under confidence-gating; outcome-trust keeps honest agents accurate."""
