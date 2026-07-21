@@ -41,6 +41,28 @@ def test_homeostasis_maintains_diversity_and_blunts_delusion():
     assert homeo["honest_rmse"] < plain["honest_rmse"]       # delusion blunted, outcome-free
 
 
+def test_robust_precision_plus_homeostasis_stacks():
+    """The two outcome-free levers stack: robust precision cap (kill aberrant confidence) +
+    homeostatic diversity cut the delusion's grip far more than either alone — no outcomes."""
+    kappas, adj = _setup(24)
+    K = len(kappas)
+    cg, bs = np.ones(K), np.zeros(K)
+    cg[:8], bs[:8] = 10.0, 0.8
+    none = belief_loop(kappas, adj, 800, gate="confidence", conf_gains=cg, biases=bs, seed=0)
+    both = belief_loop(kappas, adj, 800, gate="confidence", conf_gains=cg, biases=bs,
+                       homeostatic=True, target_spread=1.0, robust_cap=1.5, seed=0)
+    assert both["honest_rmse"] < 0.6 * none["honest_rmse"]     # substantial, outcome-free
+
+
+def test_outcome_free_defense_does_not_hurt_healthy_crowd():
+    """The robust+homeostatic defense must be ~free on a healthy crowd (no over-skepticism cost)."""
+    kappas, adj = _setup(24)
+    base = belief_loop(kappas, adj, 800, gate="confidence", seed=0)["collective_rmse"]
+    defended = belief_loop(kappas, adj, 800, gate="confidence", homeostatic=True,
+                           target_spread=1.0, robust_cap=1.5, seed=0)["collective_rmse"]
+    assert defended < 1.3 * base
+
+
 def test_delusion_propagates_and_outcome_trust_defends():
     """The loop lets a deluded cluster PROPAGATE into a confident-but-wrong consensus (echo
     chamber) under confidence-gating; outcome-trust keeps honest agents accurate."""

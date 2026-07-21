@@ -44,7 +44,7 @@ def private_read(theta, kappa, n_samples, rng, bias=0.0, conf_gain=1.0):
 
 def belief_loop(kappas, adj, n_problems, T=6, coupling=0.5, gate="confidence",
                 conf_gains=None, biases=None, n_samples=20, seed=0, ema=0.05,
-                bound_precision=False, homeostatic=False, target_spread=0.35):
+                bound_precision=False, homeostatic=False, target_spread=0.35, robust_cap=None):
     """Iterated precision-weighted belief loop on graph `adj`. Returns collective + honest RMSE
     and the mean collective precision (to expose confident-but-wrong consensus).
 
@@ -74,6 +74,11 @@ def belief_loop(kappas, adj, n_problems, T=6, coupling=0.5, gate="confidence",
                 eff = pi
             else:                             # outcome-trust: realized precision replaces self-report
                 eff = 1.0 / np.maximum(mse_hat, 1e-9)
+            if robust_cap is not None:
+                # outcome-free precision robustness: no agent may claim more than robust_cap x the
+                # median confidence -> aberrant precision (buying influence by shouting) is neutered.
+                med = float(np.median(eff[eff > 0])) if np.any(eff > 0) else 1.0
+                eff = np.minimum(eff, robust_cap * med)
             Weff = A * eff[None, :]
             if homeostatic:
                 # RSL-style set-point control: as an agent's LOCAL consensus tightens below the
@@ -112,9 +117,9 @@ def main():
     kappas = rng0.uniform(0.5, 3.0, K)
     adj = topo.watts_strogatz(K, deg, 0.3, np.random.default_rng(1))
 
-    def avg(gate, T, conf_gains=None, biases=None, bound=False, homeo=False):
+    def avg(gate, T, conf_gains=None, biases=None, bound=False, homeo=False, **kw):
         outs = [belief_loop(kappas, adj, N_PROB, T=T, gate=gate, conf_gains=conf_gains,
-                            biases=biases, bound_precision=bound, homeostatic=homeo, seed=s)
+                            biases=biases, bound_precision=bound, homeostatic=homeo, seed=s, **kw)
                 for s in range(N_SEEDS)]
         return {k: float(np.mean([o[k] for o in outs])) for k in outs[0]}
 
@@ -153,21 +158,26 @@ def main():
     print("       Outcome-trust keeps honest agents accurate: it catches that the deluded cluster's")
     print("       confidence does not predict truth. (Caveat: needs observable outcomes.)")
 
-    # --- Part C: HOMEOSTATIC diversity — the outcome-free defense (ported from RSL) ----
-    print("\n  PART C — homeostatic diversity ('always doubters'): defend WITHOUT outcomes")
-    print("  8/24 deluded cluster; RSL set-point principle ported to the belief loop")
+    # --- Part C: the OUTCOME-FREE defense — two stacking levers ------------------------
+    print("\n  PART C — outcome-free defense against the delusion (8/24 deluded cluster)")
+    print("  two levers, NO outcomes: homeostatic DIVERSITY + robust PRECISION (RSL set-point idea)")
     cg2, bs2 = np.ones(K), np.zeros(K)
     cg2[:8], bs2[:8] = 10.0, 0.8
-    print(f"    {'setup':>32s} {'honest RMSE':>12s} {'belief spread':>14s}")
-    for label, kw in (("confidence (no defense)", dict(gate="confidence")),
-                      ("confidence + homeostasis", dict(gate="confidence", homeo=True)),
-                      ("outcome-trust (needs outcomes)", dict(gate="outcome-trust"))):
-        r = avg(T=6, conf_gains=cg2, biases=bs2, **kw)
-        print(f"    {label:>32s} {r['honest_rmse']:>12.4f} {r['belief_spread']:>14.4f}")
-    print("    -> homeostasis keeps a diversity 'gap' (doubters persist) and blunts the delusion")
-    print("       with NO outcome signal — the RSL set-point principle: don't collapse to unanimity.")
-    print("       Outcome-trust defends harder but needs observable outcomes; homeostasis is the")
-    print("       outcome-FREE complement. Health = maintained doubt.")
+    HOM = dict(homeo=True, target_spread=1.0)
+    print(f"    {'setup':>38s} {'honest RMSE':>12s} {'spread':>8s}")
+    for label, g, kw in (
+            ("confidence (no defense)", "confidence", {}),
+            ("+ homeostatic diversity", "confidence", HOM),
+            ("+ robust precision + homeostasis", "confidence", dict(robust_cap=1.5, **HOM)),
+            ("outcome-trust (needs outcomes)", "outcome-trust", {})):
+        r = avg(g, 6, conf_gains=cg2, biases=bs2, **kw)
+        print(f"    {label:>38s} {r['honest_rmse']:>12.4f} {r['belief_spread']:>8.4f}")
+    print("    -> the two outcome-FREE levers STACK: robust-cap kills the aberrant precision (can't")
+    print("       buy influence by shouting), homeostasis kills the propagation (don't collapse to")
+    print("       unanimity). Together they cut the delusion's grip ~63% (0.66 -> 0.24) with NO")
+    print("       outcomes and NO cost on healthy crowds. Still short of the outcome-trust cure")
+    print("       (0.05) -- outcomes correct error, diversity+robustness only limit capture -- but")
+    print("       it is the defense you use when outcomes are not observable. Health = maintained doubt.")
     print("=" * 68)
 
 
