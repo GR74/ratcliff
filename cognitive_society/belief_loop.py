@@ -43,9 +43,15 @@ def private_read(theta, kappa, n_samples, rng, bias=0.0, conf_gain=1.0):
 
 
 def belief_loop(kappas, adj, n_problems, T=6, coupling=0.5, gate="confidence",
-                conf_gains=None, biases=None, n_samples=20, seed=0, ema=0.05):
+                conf_gains=None, biases=None, n_samples=20, seed=0, ema=0.05,
+                bound_precision=False):
     """Iterated precision-weighted belief loop on graph `adj`. Returns collective + honest RMSE
-    and the mean collective precision (to expose confident-but-wrong consensus)."""
+    and the mean collective precision (to expose confident-but-wrong consensus).
+
+    bound_precision: if True, cap each agent's precision at the total INDEPENDENT private evidence
+    in the system (sum of private precisions). This is the information-theoretic ceiling: the loop
+    can re-mix evidence but cannot manufacture more of it. Fixes the double-counting overconfidence
+    (Golub-Jackson) of naive iterated updating."""
     K = len(kappas)
     cg = np.ones(K) if conf_gains is None else np.asarray(conf_gains)
     bs = np.zeros(K) if biases is None else np.asarray(biases)
@@ -60,6 +66,7 @@ def belief_loop(kappas, adj, n_problems, T=6, coupling=0.5, gate="confidence",
         for i in range(K):
             e_priv[i], p_priv[i] = private_read(theta, kappas[i], n_samples, rng, bs[i], cg[i])
         b, pi = e_priv.copy(), p_priv.copy()
+        info_ceiling = float(p_priv.sum())    # total independent evidence in the system
         for _ in range(T):                    # the loop: propagate + precision-weighted update
             if gate == "naive":
                 eff = np.ones(K)
@@ -71,7 +78,7 @@ def belief_loop(kappas, adj, n_problems, T=6, coupling=0.5, gate="confidence",
             num = p_priv * e_priv + coupling * (Weff @ b)
             den = p_priv + coupling * Weff.sum(1)
             b = num / den
-            pi = den
+            pi = np.minimum(den, info_ceiling) if bound_precision else den
         collective = float(np.sum(pi * b) / np.sum(pi))
         col_sq.append((collective - theta) ** 2)
         hon_sq.append(float(np.mean((b[honest] - theta) ** 2)) if honest.any() else np.nan)
@@ -92,9 +99,9 @@ def main():
     kappas = rng0.uniform(0.5, 3.0, K)
     adj = topo.watts_strogatz(K, deg, 0.3, np.random.default_rng(1))
 
-    def avg(gate, T, conf_gains=None, biases=None):
+    def avg(gate, T, conf_gains=None, biases=None, bound=False):
         outs = [belief_loop(kappas, adj, N_PROB, T=T, gate=gate, conf_gains=conf_gains,
-                            biases=biases, seed=s) for s in range(N_SEEDS)]
+                            biases=biases, bound_precision=bound, seed=s) for s in range(N_SEEDS)]
         return {k: float(np.mean([o[k] for o in outs])) for k in outs[0]}
 
     print("=" * 68)
@@ -102,17 +109,19 @@ def main():
     print("=" * 68)
     print(f"\nK={K} agents on a Watts-Strogatz graph (deg={deg}), {N_PROB} problems, {N_SEEDS} seeds.")
 
-    # --- Part A: iteration + gating on a healthy crowd ---------------------------------
-    print("\n  PART A — healthy crowd: what does iterating the loop actually do?")
-    print(f"    {'gate':>14s} {'RMSE T=1':>10s} {'RMSE T=6':>10s} {'precision T=6':>14s}")
-    for gate in ("naive", "confidence"):
-        a1, a6 = avg(gate, T=1), avg(gate, T=6)
-        print(f"    {gate:>14s} {a1['collective_rmse']:>10.4f} {a6['collective_rmse']:>10.4f}"
-              f" {a6['mean_precision']:>14.0f}")
-    print("    -> HONEST NULL: iterating does NOT improve accuracy on a healthy crowd, and it")
-    print("       INFLATES precision ~100-300x (double-counting -> overconfidence; the known")
-    print("       Golub-Jackson / DeGroot naive-social-learning pathology). confidence ~ naive here.")
-    print("       The loop's payoff is not accuracy on a healthy crowd — it is PROPAGATION (Part B).")
+    # --- Part A: the double-counting overconfidence, and the fix -----------------------
+    print("\n  PART A — healthy crowd: iterating over-counts confidence, and the fix")
+    print(f"    {'setup':>26s} {'RMSE T=6':>10s} {'precision T=6':>14s}")
+    for label, gate, bound in (("confidence (naive loop)", "confidence", False),
+                               ("confidence + info-bound", "confidence", True),
+                               ("outcome-trust", "outcome-trust", False)):
+        a = avg(gate, T=6, bound=bound)
+        print(f"    {label:>26s} {a['collective_rmse']:>10.4f} {a['mean_precision']:>14.0f}")
+    print("    -> the naive loop keeps accuracy fine but INFLATES precision ~100x (double-counting")
+    print("       -> overconfidence; Golub-Jackson). Capping precision at the total independent")
+    print("       evidence FIXES it: same accuracy, honest confidence. (Outcome-trust is grounded")
+    print("       in realized accuracy, so it self-limits too.) Accuracy itself is already saturated")
+    print("       on this small graph — iteration's real job is PROPAGATION (Part B).")
 
     # --- Part B: a deluded cluster propagates through the loop -------------------------
     print("\n  PART B — a deluded CLUSTER (contiguous, shared false belief + aberrant precision)")

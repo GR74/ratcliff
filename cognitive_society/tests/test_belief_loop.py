@@ -17,6 +17,16 @@ def test_healthy_loop_is_finite_and_accurate():
     assert np.isfinite(r["collective_rmse"]) and r["collective_rmse"] < 0.2
 
 
+def test_precision_bound_fixes_double_counting_overconfidence():
+    """Bounding precision at the total independent evidence removes the naive loop's double-
+    counting overconfidence WITHOUT costing accuracy (Golub-Jackson fix)."""
+    kappas, adj = _setup(24)
+    unb = belief_loop(kappas, adj, 800, gate="confidence", bound_precision=False, seed=0)
+    bnd = belief_loop(kappas, adj, 800, gate="confidence", bound_precision=True, seed=0)
+    assert bnd["mean_precision"] < unb["mean_precision"] / 3      # overconfidence tamed
+    assert bnd["collective_rmse"] < unb["collective_rmse"] * 1.2  # accuracy preserved
+
+
 def test_delusion_propagates_and_outcome_trust_defends():
     """The loop lets a deluded cluster PROPAGATE into a confident-but-wrong consensus (echo
     chamber) under confidence-gating; outcome-trust keeps honest agents accurate."""
