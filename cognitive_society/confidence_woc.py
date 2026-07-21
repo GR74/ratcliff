@@ -49,32 +49,34 @@ def agent_read(theta, kappa, n_samples, rng, conf_gain=1.0, bias=0.0):
     return est, max(conf, 1e-9), true_prec
 
 
-AGGREGATORS = ("simple mean", "median", "confidence-weighted", "oracle (true precision)")
+AGGREGATORS = ("simple mean", "median", "confidence-weighted",
+               "outcome-trust (learned)", "oracle (true precision)")
 
 
-def aggregate(est, conf, prec):
-    est, conf, prec = np.asarray(est), np.asarray(conf), np.asarray(prec)
-    return {
-        "simple mean": float(est.mean()),
-        "median": float(np.median(est)),
-        "confidence-weighted": float(np.sum(conf * est) / np.sum(conf)),
-        "oracle (true precision)": float(np.sum(prec * est) / np.sum(prec)),
-    }
-
-
-def run(kappas, n_problems, n_samples=20, conf_gains=None, biases=None, seed=0):
+def run(kappas, n_problems, n_samples=20, conf_gains=None, biases=None, seed=0, ema=0.05):
     """Run a crowd over many spectrum-estimation problems.
 
     kappas: per-agent competence (len K). conf_gains: per-agent confidence miscalibration
-    (default all 1.0 = calibrated). biases: per-agent systematic false belief (default 0).
-    Returns dict with per-method RMSE and the calibration stats.
+    (default 1.0 = calibrated). biases: per-agent systematic false belief (default 0).
+
+    Aggregators compared each problem:
+      - simple mean / median         — the naive wisdom-of-crowds baselines.
+      - confidence-weighted          — weight by SELF-REPORTED confidence (needs no outcomes).
+      - outcome-trust (learned)      — weight by REALIZED precision learned online from revealed
+                                       outcomes (EMA of 1/error^2). Needs observable outcomes, but
+                                       is immune to miscalibrated self-report. This is the same
+                                       outcome-vs-self-report distinction as the swarm work.
+      - oracle (true precision)      — the unattainable inverse-variance ceiling.
+
+    RMSE is reported over the SECOND HALF of problems, so the online meta-trust has warmed up
+    (the stationary methods are unaffected by the split). Returns per-method RMSE + calibration.
     """
     K = len(kappas)
     conf_gains = np.ones(K) if conf_gains is None else np.asarray(conf_gains)
     biases = np.zeros(K) if biases is None else np.asarray(biases)
     rng = np.random.default_rng(seed)
     sq_err = {m: [] for m in AGGREGATORS}
-    # for the calibration check: pair each agent's per-problem |error| with its confidence
+    mse_hat = np.ones(K)          # running realized MSE per agent (outcome-grounded), neutral start
     all_conf, all_abserr = [], []
     for _ in range(n_problems):
         theta = float(rng.uniform(-1.0, 1.0))
@@ -82,16 +84,22 @@ def run(kappas, n_problems, n_samples=20, conf_gains=None, biases=None, seed=0):
         for i in range(K):
             est[i], conf[i], prec[i] = agent_read(theta, kappas[i], n_samples, rng,
                                                   conf_gains[i], biases[i])
-        agg = aggregate(est, conf, prec)
+        ot_w = 1.0 / np.maximum(mse_hat, 1e-9)     # outcome-trust weight = learned precision
+        agg = {
+            "simple mean": float(est.mean()),
+            "median": float(np.median(est)),
+            "confidence-weighted": float(np.sum(conf * est) / np.sum(conf)),
+            "outcome-trust (learned)": float(np.sum(ot_w * est) / np.sum(ot_w)),
+            "oracle (true precision)": float(np.sum(prec * est) / np.sum(prec)),
+        }
         for m in AGGREGATORS:
             sq_err[m].append((agg[m] - theta) ** 2)
+        mse_hat = (1 - ema) * mse_hat + ema * (est - theta) ** 2   # learn from revealed outcome
         all_conf.append(conf.copy())
         all_abserr.append(np.abs(est - theta))
-    rmse = {m: float(np.sqrt(np.mean(sq_err[m]))) for m in AGGREGATORS}
-    # calibration: does higher confidence => lower error? (Spearman on pooled agent-problems)
-    conf_flat = np.concatenate(all_conf)
-    err_flat = np.concatenate(all_abserr)
-    calib = _spearman(conf_flat, err_flat)
+    half = n_problems // 2
+    rmse = {m: float(np.sqrt(np.mean(sq_err[m][half:]))) for m in AGGREGATORS}
+    calib = _spearman(np.concatenate(all_conf), np.concatenate(all_abserr))
     return {"rmse": rmse, "calibration_spearman": calib}
 
 
@@ -135,6 +143,7 @@ def main():
     print(f"\n  -> confidence-weighting captures "
           f"{100*(base-cw)/(base-orc):.0f}% of the oracle's gain over simple mean,")
     print(f"     WITHOUT anyone knowing the true variances — the confidence supplies the weights.")
+    print(f"     (When everyone is calibrated, outcome-trust ~= confidence — you don't NEED outcomes.)")
 
     # --- Part B: dose-response — a DELUSION spreads through the crowd -------------------
     # Delusion (predictive-processing account): a SHARED false belief (bias) held with aberrant
@@ -144,18 +153,19 @@ def main():
     print("  PART B — dose-response: a DELUSION spreads (shared false belief + aberrant precision)")
     print("  deluded agents: estimate biased +0.8 toward a false belief, confidence inflated x10")
     order = np.argsort(kappas)          # spread weakest-first (delusion isn't about competence)
-    print(f"    {'#deluded':>9s} {'mean':>8s} {'median':>8s} {'conf-wtd':>9s}   verdict")
+    print(f"    {'#deluded':>9s} {'mean':>8s} {'median':>8s} {'conf-wtd':>9s} {'outcome-trust':>14s}")
     for n_bad in (0, 2, 4, 6, 8):
         cg, bs = np.ones(K), np.zeros(K)
         idx = order[:n_bad]
         cg[idx], bs[idx] = 10.0, 0.8
         r, _ = avg_run(conf_gains=cg, biases=bs)
         sm, md, cw = r["simple mean"], r["median"], r["confidence-weighted"]
-        verdict = ("conf-wtd WORST (captured)" if cw >= max(sm, md)
-                   else "conf-wtd still best" if cw <= min(sm, md) else "eroding")
-        print(f"    {n_bad:>7d}/{K} {sm:>8.4f} {md:>8.4f} {cw:>9.4f}   {verdict}")
-    print("    -> as the shared delusion spreads, confidence-weighting is captured by the")
-    print("       loud-and-wrong faster than mean or (robust) median — it goes from best to WORST.")
+        ot = r["outcome-trust (learned)"]
+        print(f"    {n_bad:>7d}/{K} {sm:>8.4f} {md:>8.4f} {cw:>9.4f} {ot:>14.4f}")
+    print("    -> confidence-weighting is captured by the loud-and-wrong (best -> WORST), but")
+    print("       OUTCOME-TRUST — learned from revealed outcomes — stays robust: it catches the")
+    print("       deluded because their confidence does not predict their accuracy. The defense.")
+    print("       (Caveat: outcome-trust needs OBSERVABLE outcomes — the standing assumption.)")
     print("       A false belief held with aberrant precision poisons collective wisdom:")
     print("       the computational-psychiatry hook, in miniature.")
     print("=" * 68)
