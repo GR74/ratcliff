@@ -78,9 +78,21 @@ immune** (0.93). The calibration trap for LLM routers.
 add confident-but-careless annotators and confidence-weighting is **poisoned below majority**
 (0.94→0.65) while gold-grounded track-record stays robust. The training-data calibration trap.
 
-### `router_bench.py` — real-LLM routing on RouterBench  [pending]
-Validates model routing on **real frontier-LLM outputs** (RouterBench). Being produced by a separate
-agent; lands in a follow-up commit.
+### `router_bench.py` — real-LLM routing on RouterBench  [real]
+Validates model routing on **real frontier-LLM outputs**: `withmartian/routerbench` — 11 real LLMs ×
+36,497 queries × 86 task categories, with per-query correctness **and per-query dollar cost**.
+**Results (honest):**
+- **Accuracy, all 11 models:** routing **ties** best-single (0.7818 vs 0.7814, GPT-4) — because one
+  generalist (GPT-4) dominates 32/35 big categories, so track-record degenerates to "always GPT-4".
+- **Accuracy, open peers (no GPT-4):** routing **beats** the best single peer by **+3.8pt** (0.685 vs
+  0.647, Yi-34B) — division of labor shows up precisely when no model dominates. The MoE win is a
+  *comparable-peers* phenomenon, not a free lunch when a generalist exists.
+- **THE HEADLINE — cost axis:** cost-aware track-record routing **matches GPT-4's quality for ~15%
+  less** (\$0.00280 vs \$0.00329), or comes within ~1pt at **~60% cheaper** (\$0.00132). On frontier
+  LLMs the real win is **Pareto (same answers, cheaper)**, not a raw-accuracy bump.
+- **Calibration trap:** *untestable here* — RouterBench ships no confidence/logprob. The module
+  includes a clearly-labeled **simulated** mechanism demo only (not a real measurement).
+Run: `python -m cognitive_society.router_bench` (needs the HF dataset).
 
 ---
 
