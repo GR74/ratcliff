@@ -37,7 +37,7 @@ def main(args):
     if not args.allow_cpu and (jax.default_backend() != "gpu"
                               or "H100" not in jax.devices()[0].device_kind):
         raise RuntimeError("this GPU experiment requires an H100; --allow-cpu is smoke only")
-    rows = json.loads((source / "results.json").read_text())
+    rows = json.loads((source / "results.json").read_text(encoding="utf-8"))
     variants = set(args.variants.split(","))
     fits = [r for r in rows if r["status"] == "completed" and r["action"] == "fit"
             and r["variant"] in variants]
@@ -47,7 +47,8 @@ def main(args):
               "fit_results_sha256": hashlib.sha256((source / "results.json").read_bytes()).hexdigest(),
               "source_data_sha256": {},
               "planned_scores": len(fits) * len(seeds), "completed_scores": 0,
-              "cpu_smoke_only": args.allow_cpu}
+              "actual_scorer_calls": 0, "cpu_smoke_only": args.allow_cpu}
+    cache = {}
     for model in ("a", "b"):
         if model == "a":
             from model_a.objective import fofs_new as evaluate
@@ -71,11 +72,21 @@ def main(args):
                 if time.monotonic() >= deadline - 20:
                     break
                 started = time.monotonic()
-                loss = float(evaluate(jnp.asarray(fitted["params"]), data,
-                                      jax.random.key(seed), nsim=args.nsim,
-                                      time_block_size=0, **options))
-                case["scores"].append({"seed": seed, "g2": loss,
-                                       "seconds_including_first_compilation": time.monotonic() - started})
+                identity = (model, tuple(fitted["params"]), seed, args.nsim)
+                if identity in cache:
+                    saved = cache[identity]
+                    score = {"seed": seed, "g2": saved["g2"],
+                             "seconds_including_first_compilation": None,
+                             "reused_from": saved["case"]}
+                else:
+                    loss = float(evaluate(jnp.asarray(fitted["params"]), data,
+                                          jax.random.key(seed), nsim=args.nsim,
+                                          time_block_size=0, **options))
+                    score = {"seed": seed, "g2": loss,
+                             "seconds_including_first_compilation": time.monotonic() - started}
+                    cache[identity] = {"g2": loss, "case": [model, fitted["variant"], fitted["seed"]]}
+                    result["actual_scorer_calls"] += 1
+                case["scores"].append(score)
                 result["completed_scores"] += 1
                 bench.write_json(output, result)
             print("SCORED", model, fitted["variant"], fitted["seed"],
