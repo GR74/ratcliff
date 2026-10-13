@@ -131,6 +131,9 @@ def worker(args):
                     maxiter=args.maxiter, tol=1e-5, on_update=update, **options, **cfg)
                 result.update(converged=fitted.converged, n_iters=fitted.n_iters,
                               n_evals=fitted.n_evals)
+                # Preserve the driver's returned estimate, including any
+                # tied minimum selected by scipy's final simplex ordering.
+                best.update(loss=float(fitted.loss), params=np.asarray(fitted.params).copy())
             except FitDeadline:
                 result.update(status="fit_time_limit", converged=False,
                               n_iters=None, n_evals=best["eval"])
