@@ -285,6 +285,8 @@ def analyse(out, rows, args):
         by_variant = {v: {r["seed"]: r for r in fits if r["variant"] == v}
                       for v in VARIANTS}
         for reference, candidate in (("legacy", "combined"),
+                                      ("legacy", "early_stop"),
+                                      ("early_stop", "combined"),
                                       ("blocked_full", "early_stop"),
                                       ("blocked_full", "staged"),
                                       ("blocked_full", "combined")):
@@ -361,6 +363,11 @@ def main(args):
         raise ValueError("pilot fitting needs fit_iters >= 4 and final_nsim >= 4")
     if not set(args.models.split(",")) <= {"a", "b"}:
         raise ValueError("models must be a, b, or a,b")
+    fit_variants = args.fit_variants.split(",")
+    if not fit_variants or not set(fit_variants) <= set(VARIANTS):
+        raise ValueError("fit variants must name supported simulation/fitting paths")
+    if len(set(fit_variants)) != len(fit_variants):
+        raise ValueError("fit variants must not be repeated")
     if min(args.sim_seeds, args.timing_repeats, args.recovery_seeds) < 1:
         raise ValueError("seed and timing counts must be positive")
     if min(args.sim_nsim, args.data_nsim, args.score_nsim,
@@ -385,10 +392,12 @@ def main(args):
     models = args.models.split(",")
     for model in models:
         jobs += [("data", model, "legacy", 0)]
-        jobs += [("micro", model, v, 0) for v in ("legacy", "blocked_full", "early_stop")]
+        if not args.skip_micro:
+            jobs += [("micro", model, v, 0) for v in ("legacy", "blocked_full", "early_stop")]
     # Pair starting points and rotate variant order to reduce order confounding.
     for seed in range(args.recovery_seeds):
-        variants = VARIANTS[seed % len(VARIANTS):] + VARIANTS[:seed % len(VARIANTS)]
+        offset = seed % len(fit_variants)
+        variants = fit_variants[offset:] + fit_variants[:offset]
         for model in models:
             jobs += [("fit", model, v, seed) for v in variants]
     for action, model, variant, seed in jobs:
@@ -444,6 +453,8 @@ def parser():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--output", default=".benchmark-results/h100-speedups")
     p.add_argument("--models", default="a,b")
+    p.add_argument("--fit-variants", default=",".join(VARIANTS))
+    p.add_argument("--skip-micro", action="store_true", help="fit-only follow-up after simulator screening")
     p.add_argument("--budget-seconds", type=int, default=2700)
     p.add_argument("--finish-reserve-seconds", type=int, default=30)
     p.add_argument("--worker-timeout", type=int, default=480)

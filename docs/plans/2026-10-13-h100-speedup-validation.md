@@ -17,8 +17,9 @@ fitting defaults remain the control until H100 measurements support a change.
 
 ## Comparison and budget
 
-The user authorized up to one hour of H100 runtime for the first pass. No pod
-has been deployed yet. Prefer one available H100 NVL; measure all comparisons
+The user initially authorized one hour, then extended the rental limit to two
+hours from deployment. The H100 NVL ran out of capacity; this experiment uses
+one Secure Cloud H100 SXM (80 GB) deployed on October 13. Measure all comparisons
 on the same GPU. Do not interpret differences from June's H100 records as
 changes due only to this implementation.
 
@@ -62,7 +63,7 @@ needed to reproduce them after the GPU experiment completes.
 
 On the H100 pod, use `bash scripts/run_h100_speedup_validation.sh`. The wrapper
 caps installation, testing and benchmarking together at 55 minutes; reserve
-the remaining five minutes to download results and stop GPU billing. Stopping
+five minutes to download results and stop GPU billing. Stopping
 the benchmark process alone does not stop the pod. Use a fresh output folder
 for each run so interrupted or old results cannot be mistaken for new ones.
 
@@ -75,3 +76,10 @@ active parameter error increasing by at most two percentage points, and
 independent G2 increasing by at most ten percent. Sparse RT categories remain
 unscored. Bootstrap intervals describe this pilot's timing samples, not all
 machines or data. Inspect incomplete cases and convergence flags in the report.
+
+With the extended rental, use a separate follow-up directory for selected
+full-budget comparisons: `--skip-micro --fit-variants legacy,early_stop,combined
+--data-nsim 9000 --final-nsim 9000 --fit-iters 100`. Keep three paired starts,
+the same independent scoring seed, and an explicit deadline based on time left
+in the two-hour rental. Finish as many complete paired comparisons as that
+deadline allows; incomplete comparisons must remain labelled incomplete.
