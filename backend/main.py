@@ -96,6 +96,8 @@ def simulate(req: SimulateRequest) -> SimulateResponse:
             out = model_api.forward_sim_preview(req.params, key_seed=req.key_seed)
     except KeyError as e:
         raise HTTPException(400, f"missing required param: {e}") from e
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
     except Exception as e:
         raise HTTPException(500, f"simulate failed: {e}") from e
     return SimulateResponse(**out)
