@@ -71,7 +71,8 @@ def condition_g2_vectorized(rt, cat, obs_prop, obs_count, obs_quant):
     return contribs.sum()
 
 
-def fofs_new(params, data, key, nsim=4000, chunk_size=256):
+def fofs_new(params, data, key, nsim=4000, chunk_size=256,
+             time_block_size=0, stop_early=True, compact=True):
     """
     Vectorized G² objective summed across 4 conditions.
 
@@ -94,13 +95,22 @@ def fofs_new(params, data, key, nsim=4000, chunk_size=256):
 
     # vmap simulate over (key, cr, av); other params are condition-invariant.
     # simulate signature: (key, ter, st, cr, crsd, si, sig, av, nsim, chunk_size)
-    sim_vmap = jax.vmap(
-        sim_new.simulate,
-        in_axes=(0, None, None, 0, None, None, None, 0, None, None),
-    )
-    rts, cats = sim_vmap(
-        cond_keys, ter, st, boundaries, sa, si, sig, drifts, nsim, chunk_size
-    )
+    if time_block_size:
+        # vmap over dynamic predicates can execute every compaction branch.
+        outputs = [sim_new.simulate_blocked(
+            cond_keys[ci], ter, st, boundaries[ci], sa, si, sig, drifts[ci],
+            nsim, chunk_size, time_block_size, stop_early, compact,
+        ) for ci in range(4)]
+        rts = jnp.stack([out[0] for out in outputs])
+        cats = jnp.stack([out[1] for out in outputs])
+    else:
+        sim_vmap = jax.vmap(
+            sim_new.simulate,
+            in_axes=(0, None, None, 0, None, None, None, 0, None, None),
+        )
+        rts, cats = sim_vmap(
+            cond_keys, ter, st, boundaries, sa, si, sig, drifts, nsim, chunk_size
+        )
     # rts, cats: (4, nsim)
 
     # vmap condition_g2 over the 4 (rts[ci], cats[ci], data[ci, :])

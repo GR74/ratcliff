@@ -16,6 +16,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from model_a import objective, objective_smooth
+from shared.staged_fit import minimize_staged
 
 
 @dataclass
@@ -25,28 +26,30 @@ class FitResult:
     n_iters: int
     converged: bool
     optimizer: str
+    n_evals: int = 0
+    stages: list[dict] | None = None
 
 
 def fit_simplex(data, key, x0, nsim: int = 256, maxiter: int = 2000,
-                tol: float = 1e-7, chunk_size: int = 256):
+                tol: float = 1e-7, chunk_size: int = 256,
+                trial_schedule=None, time_block_size=0, stop_early=True,
+                compact=True, on_update=None, on_stage=None):
     """Scipy Nelder-Mead simplex on the discrete `fofs_new`."""
-    from scipy.optimize import minimize
-
-    def loss_np(p_np):
+    def loss_np(p_np, stage_nsim):
         p = jnp.asarray(p_np)
-        return float(objective.fofs_new(p, data, key, nsim=nsim, chunk_size=chunk_size))
+        return objective.fofs_new(
+            p, data, key, nsim=stage_nsim, chunk_size=chunk_size,
+            time_block_size=time_block_size, stop_early=stop_early, compact=compact,
+        )
 
-    res = minimize(
-        loss_np, np.asarray(x0),
-        method="Nelder-Mead",
-        options={"maxiter": maxiter, "xatol": tol, "fatol": tol, "disp": False},
+    res = minimize_staged(
+        loss_np, x0, nsim=nsim, maxiter=maxiter, tol=tol,
+        schedule=trial_schedule, on_update=on_update, on_stage=on_stage,
     )
     return FitResult(
-        params=jnp.asarray(res.x),
-        loss=float(res.fun),
-        n_iters=int(res.nit),
-        converged=bool(res.success),
-        optimizer="simplex",
+        params=jnp.asarray(res.params), loss=res.loss, n_iters=res.n_iters,
+        converged=res.converged, optimizer="simplex", n_evals=res.n_evals,
+        stages=res.stages,
     )
 
 

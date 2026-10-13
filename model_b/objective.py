@@ -88,7 +88,8 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
     return jnp.array([per_cat(i) for i in range(MC)]).sum()
 
 
-def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False):
+def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
+                time_block_size=0, stop_early=True, compact=True):
     """
     Vectorized G2 objective for Model B, summed across 2 conditions.
 
@@ -125,15 +126,26 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False):
 
     # vmap simulate_b over (key, av1, av2, av3) — others are condition-invariant.
     # simulate_b signature: (key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim, chunk_size, use_kl)
-    sim_vmap = jax.vmap(
-        sim_b.simulate_b,
-        in_axes=(0, None, None, None, None, 0, 0, 0, None, None, None, None, None, None),
-    )
-    rts, cats = sim_vmap(
-        cond_keys, ter, st, cr, crsd,
-        avs[:, 0], avs[:, 1], avs[:, 2],
-        sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
-    )
+    if time_block_size:
+        # Preserve runtime branch selection; vmap can evaluate all branches.
+        outputs = [sim_b.simulate_b_blocked(
+            cond_keys[ci], ter, st, cr, crsd,
+            avs[ci, 0], avs[ci, 1], avs[ci, 2],
+            sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
+            time_block_size, stop_early, compact,
+        ) for ci in range(2)]
+        rts = jnp.stack([out[0] for out in outputs])
+        cats = jnp.stack([out[1] for out in outputs])
+    else:
+        sim_vmap = jax.vmap(
+            sim_b.simulate_b,
+            in_axes=(0, None, None, None, None, 0, 0, 0, None, None, None, None, None, None),
+        )
+        rts, cats = sim_vmap(
+            cond_keys, ter, st, cr, crsd,
+            avs[:, 0], avs[:, 1], avs[:, 2],
+            sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
+        )
     # rts, cats: (2, nsim)
 
     # vmap condition_g2_b over (rts[ci], cats[ci], data[ci, :])

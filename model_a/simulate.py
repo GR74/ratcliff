@@ -14,7 +14,7 @@ from functools import partial
 import jax
 import jax.numpy as jnp
 
-from shared import prng
+from shared import blocked, prng
 
 # ----------------------------------------------------------------------
 # Fixed model structure (mirrors jax_port.py exactly)
@@ -120,3 +120,54 @@ def simulate(key, ter, st, cr, crsd, si, sig, av, nsim, chunk_size=256):
 
     rts, cats = jax.lax.map(run_chunk, keys)            # (n_chunks, chunk_size) each
     return rts.reshape(-1)[:nsim], cats.reshape(-1)[:nsim]
+
+
+@partial(jax.jit, static_argnums=(8, 9, 10, 11, 12))
+def simulate_blocked_with_work(key, ter, st, cr, crsd, si, sig, av, nsim,
+                               chunk_size=256, time_block_size=32,
+                               stop_early=True, compact=True):
+    """Optional blocked simulator, plus actual allocated trial-steps.
+
+    stop_early=False is the paired full-horizon control. Noise is indexed by
+    absolute trial ID and block ID, so the same trials persist when nsim grows.
+    The Model A no-crossing fallback (position 1) is preserved.
+    """
+    if nsim < 1 or chunk_size < 1:
+        raise ValueError("nsim and chunk_size must be positive")
+    L = chol_factor(sig)
+    drift = drift_profile(av, si)
+    n_chunks = (nsim + chunk_size - 1) // chunk_size
+
+    def sample_noise(keys):
+        z = blocked.normal_blocks(keys, time_block_size, N, drift.dtype)
+        return 5.0 * (z @ L.T)
+
+    def run_chunk(chunk_index):
+        indices = chunk_index * chunk_size + jnp.arange(chunk_size)
+        u, noise_keys = blocked.trial_inputs(key, indices, jnp.float64)
+        thresholds = cr + crsd * (u[:, 4] - 0.5)
+        ndt = (ter + st * (0.5 - u[:, 9])) / E
+        result = blocked.first_passage(
+            noise_keys, thresholds, drift, indices < nsim, sample_noise,
+            n_steps=NSTEP, block_size=time_block_size,
+            stop_early=stop_early, compact=compact,
+        )
+        pos = result.positions + 1
+        cat = jnp.where((pos > IPA) & (pos < IPB), 1,
+              jnp.where((pos <= IPC) | (pos >= IPD), 3, 2))
+        rt = (result.steps + ndt) * E
+        return rt, cat, result.computed_trial_steps
+
+    rts, cats, work = jax.lax.map(run_chunk, jnp.arange(n_chunks))
+    return rts.reshape(-1)[:nsim], cats.reshape(-1)[:nsim], work.sum()
+
+
+def simulate_blocked(key, ter, st, cr, crsd, si, sig, av, nsim,
+                     chunk_size=256, time_block_size=32,
+                     stop_early=True, compact=True):
+    """Same RT/category interface as simulate; legacy defaults are unchanged."""
+    rt, cat, _work = simulate_blocked_with_work(
+        key, ter, st, cr, crsd, si, sig, av, nsim, chunk_size,
+        time_block_size, stop_early, compact,
+    )
+    return rt, cat

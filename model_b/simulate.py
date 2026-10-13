@@ -17,7 +17,7 @@ import jax.numpy as jnp
 
 from model_b import grf
 from model_b import grf_kl
-from shared import prng
+from shared import blocked, prng
 
 # Model B field dimensions
 N = 100
@@ -307,3 +307,80 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
         key, ter, st, cr, crsd, av1, av2, av3,
         sis, sig, si, nsim, chunk_size,
     )
+
+
+@partial(jax.jit, static_argnums=(8, 9, 10, 11, 12, 13))
+def _simulate_b_blocked_core(key, ter, st, cr, crsd, drift, k_zone, basis,
+                             nsim, chunk_size, time_block_size,
+                             stop_early, compact, use_kl):
+    n_chunks = (nsim + chunk_size - 1) // chunk_size
+
+    def sample_noise(keys):
+        if use_kl:
+            z = blocked.normal_blocks(keys, time_block_size, basis.shape[1],
+                                       jnp.float32)
+            return jnp.einsum("bsk,Nk->bsN", z, basis)
+        n_pad, m_pad = basis.shape
+        n_fft = (time_block_size + 1) // 2
+        z = jax.vmap(lambda k: jax.random.normal(
+            k, (n_fft, 2, n_pad, m_pad), dtype=jnp.float32,
+        ))(keys)
+        fields = jnp.fft.fft2(basis * (z[:, :, 0] + 1j * z[:, :, 1]))
+        paired = jnp.stack([fields[:, :, :N, :M].real,
+                            fields[:, :, :N, :M].imag], axis=2)
+        return paired.reshape(len(keys), n_fft * 2, N * M)[:, :time_block_size]
+
+    def run_chunk(chunk_index):
+        indices = chunk_index * chunk_size + jnp.arange(chunk_size)
+        u, noise_keys = blocked.trial_inputs(key, indices, jnp.float64)
+        thresholds = (cr + crsd * (u[:, 4] - 0.5)).astype(jnp.float32)
+        ndt = (ter + st * (0.5 - u[:, 9])) / E
+        result = blocked.first_passage(
+            noise_keys, thresholds, drift, indices < nsim, sample_noise,
+            n_steps=NSTEP, block_size=time_block_size,
+            stop_early=stop_early, compact=compact,
+        )
+        cat = jnp.where(result.crossed, k_zone[result.positions], 5)
+        rt = (result.steps.astype(jnp.float64) + ndt) * E
+        return rt, cat, result.computed_trial_steps
+
+    rts, cats, work = jax.lax.map(run_chunk, jnp.arange(n_chunks))
+    return rts.reshape(-1)[:nsim], cats.reshape(-1)[:nsim], work.sum()
+
+
+def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
+                                 sis, sig, si, nsim, chunk_size=64,
+                                 use_kl=True, time_block_size=32,
+                                 stop_early=True, compact=True):
+    """Optional blocked Model B with unchanged FFT/K-L covariance/categories.
+
+    stop_early=False is the paired full-horizon control. Keep time_block_size
+    fixed in paired comparisons: another block size changes the noise layout.
+    """
+    if nsim < 1 or chunk_size < 1:
+        raise ValueError("nsim and chunk_size must be positive")
+    v1, v2, v3 = drift_bumps(sis=sis)
+    drift = (jnp.asarray(av1, dtype=jnp.float32) * v1.astype(jnp.float32)
+             + jnp.asarray(av2, dtype=jnp.float32) * v2.astype(jnp.float32)
+             + jnp.asarray(av3, dtype=jnp.float32) * v3.astype(jnp.float32))
+    if use_kl:
+        basis, _k, _variance = grf_kl.calc_kl_basis(
+            sig=float(sig), n=N, m=M, pad_to_k_max=True,
+        )
+    else:
+        basis = grf.calc_LAM(s1=sig, s2=sig).astype(jnp.float32)
+    return _simulate_b_blocked_core(
+        key, ter, st, cr, crsd, drift.reshape(-1), zone_array(si).reshape(-1),
+        basis, nsim, chunk_size, time_block_size, stop_early, compact, use_kl,
+    )
+
+
+def simulate_b_blocked(key, ter, st, cr, crsd, av1, av2, av3,
+                       sis, sig, si, nsim, chunk_size=64, use_kl=True,
+                       time_block_size=32, stop_early=True, compact=True):
+    """RT/category-only interface for optional time blocking."""
+    rt, cat, _work = simulate_b_blocked_with_work(
+        key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim,
+        chunk_size, use_kl, time_block_size, stop_early, compact,
+    )
+    return rt, cat

@@ -11,6 +11,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from model_b import objective as obj_b
+from shared.staged_fit import minimize_staged
 
 
 @dataclass
@@ -19,11 +20,14 @@ class FitResult:
     loss: float
     n_iters: int
     converged: bool
+    n_evals: int = 0
+    stages: list[dict] | None = None
 
 
 def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
                   tol: float = 1e-7, chunk_size: int = 4, use_kl: bool = False,
-                  on_update=None):
+                  on_update=None, trial_schedule=None, time_block_size=0,
+                  stop_early=True, compact=True, on_stage=None):
     """
     Scipy Nelder-Mead simplex fit for Model B.
 
@@ -41,28 +45,18 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
 
     Returns FitResult.
     """
-    from scipy.optimize import minimize
-
-    n_evals = [0]
-
-    def loss_numpy(p_np):
-        n_evals[0] += 1
+    def loss_numpy(p_np, stage_nsim):
         p = jnp.asarray(p_np)
-        val = obj_b.fofs_b_new(p, data, key, nsim=nsim,
-                                chunk_size=chunk_size, use_kl=use_kl)
-        val_f = float(val)
-        if on_update is not None:
-            on_update(n_evals[0], val_f, p_np.copy())
-        return val_f
+        return obj_b.fofs_b_new(
+            p, data, key, nsim=stage_nsim, chunk_size=chunk_size, use_kl=use_kl,
+            time_block_size=time_block_size, stop_early=stop_early, compact=compact,
+        )
 
-    res = minimize(
-        loss_numpy, np.asarray(x0),
-        method="Nelder-Mead",
-        options={"maxiter": maxiter, "xatol": tol, "fatol": tol, "disp": False},
+    res = minimize_staged(
+        loss_numpy, x0, nsim=nsim, maxiter=maxiter, tol=tol,
+        schedule=trial_schedule, on_update=on_update, on_stage=on_stage,
     )
     return FitResult(
-        params=jnp.asarray(res.x),
-        loss=float(res.fun),
-        n_iters=int(res.nit),
-        converged=bool(res.success),
+        params=jnp.asarray(res.params), loss=res.loss, n_iters=res.n_iters,
+        converged=res.converged, n_evals=res.n_evals, stages=res.stages,
     )

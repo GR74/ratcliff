@@ -21,6 +21,7 @@ frontend/vite.config.d.ts
 .playwright-mcp/
 
 # Local benchmark outputs + screenshots (regenerated; not source)
+.benchmark-results/
 stage*.png
 page-*.png
 h100_section4.txt
