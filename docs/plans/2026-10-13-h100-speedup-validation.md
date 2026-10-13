@@ -18,7 +18,9 @@ fitting defaults remain the control until H100 measurements support a change.
 ## Comparison and budget
 
 The user initially authorized one hour, then extended the rental limit to two
-hours from deployment. The H100 NVL ran out of capacity; this experiment uses
+and finally three hours from deployment to test ideas 3–5. See
+`2026-10-13-model-b-extension-tests.md` for the full plan and shutdown deadline.
+The H100 NVL ran out of capacity; this experiment uses
 one Secure Cloud H100 SXM (80 GB) deployed on October 13. Measure all comparisons
 on the same GPU. Do not interpret differences from June's H100 records as
 changes due only to this implementation.

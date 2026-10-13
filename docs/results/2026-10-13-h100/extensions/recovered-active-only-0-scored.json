@@ -1,0 +1,125 @@
+{
+  "experiment": "active_only",
+  "seed": 0,
+  "fit_completed_from_trace": true,
+  "validated_completed_cases": [
+    "control",
+    "bucketed",
+    "cumulative",
+    "all_three"
+  ],
+  "params": [
+    204.98056991286913,
+    48.23017326807514,
+    9.519437431091283,
+    1.7997519218231315,
+    12.43380821592149,
+    10.810640890043278,
+    0.510663577576718,
+    15.821151600604564,
+    10.20093897804406,
+    8.676060216019472,
+    14.760832196768522,
+    10.052584516550331,
+    9.567012111530783
+  ],
+  "x0": [
+    205.47846749285821,
+    47.6978671376387,
+    9.08194704787239,
+    1.8066110542114118,
+    12.751848574080654,
+    10.825511154555445,
+    0.510663577576718,
+    15.688489682951994,
+    10.087249982930846,
+    8.69611587806043,
+    14.88438995154029,
+    9.906024700374326,
+    9.643327697857625
+  ],
+  "n_iters": 40,
+  "n_evals": 79,
+  "converged": false,
+  "fit_seconds_lower_bound": 276.5947916805744,
+  "trace_sha256": "a1100a85c8f810d43649abc0e24ee9986377427d77a91b0ae6365f69250522e6",
+  "data_sha256": "c0f4406643b4521ad1010bb2b37d4be59c54f822e2b888d4337a915275f0197d",
+  "timing_note": "Original worker timed out; exact duration is unavailable.",
+  "packages": {
+    "numpy": "2.5.4",
+    "scipy": "1.18.1"
+  },
+  "scores": [
+    {
+      "seed": 999,
+      "g2": 96.88919184977833
+    },
+    {
+      "seed": 5001,
+      "g2": 105.34247580891753
+    },
+    {
+      "seed": 5002,
+      "g2": 110.89587883475431
+    },
+    {
+      "seed": 5003,
+      "g2": 125.40407416184182
+    },
+    {
+      "seed": 5004,
+      "g2": 123.17101198682187
+    },
+    {
+      "seed": 5005,
+      "g2": 118.3880636920427
+    }
+  ],
+  "mean_relative_parameter_error": 0.057376208470419264,
+  "metadata": {
+    "utc": "2026-10-13T18:12:09.269393+00:00",
+    "commit": "5e633c26e65a3d7f251885eef8d81973c1a68a9d",
+    "implementation_sha256": "860ce135058e257fb569cc62d06e698e5c42b655c46d8a74c7426155e620e68a",
+    "hashed_files": [
+      "shared/blocked.py",
+      "shared/staged_fit.py",
+      "shared/benchmark_stats.py",
+      "model_a/simulate.py",
+      "model_a/objective.py",
+      "model_a/fit.py",
+      "model_b/simulate.py",
+      "model_b/objective.py",
+      "model_b/fit.py",
+      "scripts/benchmark_speedups.py"
+    ],
+    "backend": "gpu",
+    "python": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+    "packages": {
+      "jax": "0.10.2",
+      "jaxlib": "0.10.2",
+      "jax-cuda12-plugin": "0.10.2",
+      "jax-cuda12-pjrt": "0.10.2",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1"
+    },
+    "devices": [
+      "cuda:0"
+    ],
+    "device_kind": "NVIDIA H100 80GB HBM3",
+    "nvidia_smi": "NVIDIA H100 80GB HBM3, 580.126.09, 81559 MiB",
+    "matmul_precision": "default",
+    "device_allocator_memory": {
+      "num_allocs": 9329,
+      "bytes_in_use": 268695040,
+      "peak_bytes_in_use": 8783808000,
+      "largest_alloc_size": 4130031360,
+      "bytes_limit": 63763906560,
+      "bytes_reserved": 0,
+      "peak_bytes_reserved": 0,
+      "largest_free_block_bytes": 0,
+      "pool_bytes": 11280580608,
+      "peak_pool_bytes": 11280580608
+    },
+    "memory_note": "Allocator peak includes warm-up and the entire worker process."
+  }
+}

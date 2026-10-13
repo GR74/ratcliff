@@ -1,0 +1,93 @@
+{
+  "branch": "feat/h100-blocked-staged-fitting",
+  "repository": "https://github.com/anik1617/Ratcliff",
+  "archives": [
+    {
+      "file": "pilot-h100.tar.gz",
+      "bytes": 3930908,
+      "sha256": "186db93aeb7a8ae9c24680ebc4a544261b49a3ae6b4f15d3804268d67146977a",
+      "source_commit": "b4172448654b6d105714e364c4291c47ed7f3ac0",
+      "purpose": "Pilot samples, observations, fit traces, logs and original results",
+      "archive_roots": [
+        "h100-20261013"
+      ],
+      "members": 133,
+      "profile_counts": {
+        ".pstats": 0,
+        ".lprof": 0
+      }
+    },
+    {
+      "file": "full-results-h100.tar.gz",
+      "bytes": 15325327,
+      "sha256": "6fedb1010cc669da5b97384591b0bfcb6ee527af8847e7fccf11fad36f66e90e",
+      "source_commit": "a33b8d321a2c23d9d75fdf491d6f9feddb7c6a0a",
+      "purpose": "Completed 9000-trial baseline pass and 90 additional held-out scores",
+      "archive_roots": [
+        "h100-full-budget"
+      ],
+      "members": 150,
+      "profile_counts": {
+        ".pstats": 0,
+        ".lprof": 0
+      }
+    },
+    {
+      "file": "extensions-final.tar.gz",
+      "bytes": 4320217,
+      "sha256": "77cd7c1083d5825706334f572d7956d9f0ceb86d776fe14d46a5d3c4170b3884",
+      "source_commit": "5e633c26e65a3d7f251885eef8d81973c1a68a9d",
+      "purpose": "Ideas 3-5 samples, observations, fit traces, logs, additional scores and trace recovery",
+      "archive_roots": [
+        "h100-b-extensions"
+      ],
+      "members": 102,
+      "profile_counts": {
+        ".pstats": 0,
+        ".lprof": 0
+      }
+    },
+    {
+      "file": "profiles-h100.tar.gz",
+      "bytes": 488943,
+      "sha256": "3e9c1a93c88a33e69ce11141d95d370761dd0aa983c50a239b2947099bc81d7b",
+      "source_commit": "a33b8d321a2c23d9d75fdf491d6f9feddb7c6a0a",
+      "purpose": "Small-budget A/B cProfile and line_profiler binary/text outputs",
+      "archive_roots": [
+        "profile-h100",
+        "profile-h100-a"
+      ],
+      "members": 82,
+      "profile_counts": {
+        ".pstats": 16,
+        ".lprof": 16
+      }
+    },
+    {
+      "file": "profile-h100-production.tar.gz",
+      "bytes": 368344,
+      "sha256": "c00467d8d04b8e4e2385515029b87d39fab5d87b3628e2885a827c3d37d9b7a7",
+      "source_commit": "a33b8d321a2c23d9d75fdf491d6f9feddb7c6a0a",
+      "purpose": "9000-trial A/B cProfile and line_profiler binary/text outputs",
+      "archive_roots": [
+        "profile-h100-production"
+      ],
+      "members": 71,
+      "profile_counts": {
+        ".pstats": 14,
+        ".lprof": 14
+      }
+    }
+  ],
+  "pod": {
+    "id": "yri7cc29v3asvy",
+    "name": "ratcliff-h100-speedups-20261013",
+    "created_utc": "2026-10-13T15:21:35.832Z",
+    "stop_verified_utc": "2026-10-13T18:14:36.158677+00:00",
+    "desired_status": "EXITED",
+    "runtime_status": "stopped",
+    "authorized_max_hours": 3
+  },
+  "exclusions": "Account credentials, SSH keys, local CLI binaries, environments and transient control files",
+  "note": "Original archives retained unchanged. Compact reports may include subsequent local analysis."
+}

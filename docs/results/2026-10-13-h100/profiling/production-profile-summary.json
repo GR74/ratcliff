@@ -1,0 +1,648 @@
+[
+  {
+    "model": "a",
+    "variant": "combined",
+    "noise": "kl",
+    "status": "completed",
+    "settings": {
+      "models": "b,a",
+      "variants": "legacy,combined",
+      "model": "a",
+      "variant": "combined",
+      "noise": "kl",
+      "output": "/workspace/ratcliff-speedups/.benchmark-results/profile-h100-production\r/a-combined",
+      "nsim": 9000,
+      "data_nsim": 9000,
+      "chunk_a": 256,
+      "chunk_b": 64,
+      "block_size": 32,
+      "repeats": 2,
+      "fit_iters": 0,
+      "seed": 321,
+      "matmul_precision": "default",
+      "budget_seconds": 250,
+      "worker_timeout": 110,
+      "allow_cpu": false,
+      "worker": true
+    },
+    "limitations": [
+      "cProfile and line_profiler measure the Python host; they do not time individual XLA/GPU kernels.",
+      "Every workload waits for JAX results. A wait can absorb earlier asynchronous work, so its line is not a kernel location.",
+      "JIT bodies execute as compiled code after tracing; zero line hits there do not mean zero compute cost.",
+      "Unwrapping JIT functions only registers source mappings; this script never invokes their eager versions.",
+      "Compilation/first calls are separate from steady-state passes. New shapes or basis operations during a fit can still compile.",
+      "Instrumented durations include profiler overhead and are not speedup evidence; use benchmark_speedups.py for comparisons.",
+      "Basis cold means an empty Python K-L basis cache, not an empty XLA or operating-system cache.",
+      "Cumulative function times overlap and must not be added together.",
+      "Fits use synthetic data, fixed seeds and a small iteration budget; these are bottleneck diagnostics, not convergence/recovery tests."
+    ],
+    "setup": {
+      "basis_first_call": {
+        "seconds": 1.035224149003625,
+        "result": {
+          "shape": [
+            72,
+            72
+          ],
+          "dtype": "float64"
+        }
+      },
+      "synthetic_data_generation": {
+        "seconds": 3.401499453932047,
+        "result": {
+          "data_trials_per_condition": 9000
+        }
+      },
+      "simulation_first_call": {
+        "seconds": 7.706758763641119,
+        "result": {
+          "trials": 36000,
+          "mean_rt": 524.490565578578,
+          "category_counts": [
+            22741,
+            3787,
+            9472
+          ]
+        }
+      },
+      "objective_first_call": {
+        "seconds": 3.006175484508276,
+        "result": {
+          "loss": 54.54985077753318
+        }
+      },
+      "unprofiled_warmup_seconds": 0.21755687333643436,
+      "first_call_note": "Includes execution and any compilation/cache preparation remaining at this point; not a compiler-only timer."
+    },
+    "metadata": {
+      "utc": "2026-10-13T17:16:02.062185+00:00",
+      "python": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+      "commit": "b4172448654b6d105714e364c4291c47ed7f3ac0",
+      "packages": {
+        "jax": "0.10.2",
+        "jaxlib": "0.10.2",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "line_profiler": "5.0.2",
+        "jax-cuda12-plugin": "0.10.2",
+        "jax-cuda12-pjrt": "0.10.2"
+      },
+      "backend": "gpu",
+      "device_kind": "NVIDIA H100 80GB HBM3",
+      "x64": true,
+      "matmul_precision": "default",
+      "nvidia_smi": "NVIDIA H100 80GB HBM3, 580.126.09, 81559 MiB",
+      "source_sha256": {
+        "model_a/fit.py": "99c88f4f5e96cd9f587a67321a0e2bd50c96ca30337c815692347f16b95776a1",
+        "model_a/objective.py": "9ed2f360270a300e32c5eea4b36030bd4d1a05d5e421726667bc6e7b01a8c2da",
+        "model_a/simulate.py": "ce80679c77739b3c717a39b0dd1f057c6abdc60cd6494974e6e0d1b9b718557c",
+        "shared/blocked.py": "1874f36bbdcc843355a1bdc931a113b525a270a3b1fe6a9558d4bd114f598ba4",
+        "shared/staged_fit.py": "c58bffd365d45aabc5e9945e4e90b5bde3c8c0c5e8d2b9267aff4d818cf8e71b",
+        "scripts/profile_speedups.py": "fee9c63b171e4e896b980fa9fd9592956dfad9dde93f46ce7acfc9e346dcbfb2"
+      }
+    },
+    "phases": [
+      {
+        "phase": "simulation",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 0.12542035803198814,
+        "cprofile_seconds": 0.13349393010139465,
+        "line_profiler_seconds": 0.13938624784350395,
+        "result": {
+          "trials": 36000,
+          "mean_rt": 524.490565578578,
+          "category_counts": [
+            22741,
+            3787,
+            9472
+          ]
+        },
+        "identical_results_across_passes": true
+      },
+      {
+        "phase": "objective",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 0.3103043045848608,
+        "cprofile_seconds": 0.41326286271214485,
+        "line_profiler_seconds": 0.5153539050370455,
+        "result": {
+          "loss": 54.54985077753318
+        },
+        "identical_results_across_passes": true
+      },
+      {
+        "phase": "basis_factor",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 0.00485936738550663,
+        "cprofile_seconds": 0.004140160977840424,
+        "line_profiler_seconds": 0.005748964846134186,
+        "result": {
+          "shape": [
+            72,
+            72
+          ],
+          "dtype": "float64"
+        },
+        "identical_results_across_passes": true
+      }
+    ]
+  },
+  {
+    "model": "a",
+    "variant": "legacy",
+    "noise": "kl",
+    "status": "completed",
+    "settings": {
+      "models": "b,a",
+      "variants": "legacy,combined",
+      "model": "a",
+      "variant": "legacy",
+      "noise": "kl",
+      "output": "/workspace/ratcliff-speedups/.benchmark-results/profile-h100-production\r/a-legacy",
+      "nsim": 9000,
+      "data_nsim": 9000,
+      "chunk_a": 256,
+      "chunk_b": 64,
+      "block_size": 32,
+      "repeats": 2,
+      "fit_iters": 0,
+      "seed": 321,
+      "matmul_precision": "default",
+      "budget_seconds": 250,
+      "worker_timeout": 110,
+      "allow_cpu": false,
+      "worker": true
+    },
+    "limitations": [
+      "cProfile and line_profiler measure the Python host; they do not time individual XLA/GPU kernels.",
+      "Every workload waits for JAX results. A wait can absorb earlier asynchronous work, so its line is not a kernel location.",
+      "JIT bodies execute as compiled code after tracing; zero line hits there do not mean zero compute cost.",
+      "Unwrapping JIT functions only registers source mappings; this script never invokes their eager versions.",
+      "Compilation/first calls are separate from steady-state passes. New shapes or basis operations during a fit can still compile.",
+      "Instrumented durations include profiler overhead and are not speedup evidence; use benchmark_speedups.py for comparisons.",
+      "Basis cold means an empty Python K-L basis cache, not an empty XLA or operating-system cache.",
+      "Cumulative function times overlap and must not be added together.",
+      "Fits use synthetic data, fixed seeds and a small iteration budget; these are bottleneck diagnostics, not convergence/recovery tests."
+    ],
+    "setup": {
+      "basis_first_call": {
+        "seconds": 0.95018539018929,
+        "result": {
+          "shape": [
+            72,
+            72
+          ],
+          "dtype": "float64"
+        }
+      },
+      "synthetic_data_generation": {
+        "seconds": 3.3255852703005075,
+        "result": {
+          "data_trials_per_condition": 9000
+        }
+      },
+      "simulation_first_call": {
+        "seconds": 0.057163309305906296,
+        "result": {
+          "trials": 36000,
+          "mean_rt": 523.2345669761389,
+          "category_counts": [
+            22778,
+            3827,
+            9395
+          ]
+        }
+      },
+      "objective_first_call": {
+        "seconds": 5.791677538305521,
+        "result": {
+          "loss": -6.451401379223491
+        }
+      },
+      "unprofiled_warmup_seconds": 0.2740406207740307,
+      "first_call_note": "Includes execution and any compilation/cache preparation remaining at this point; not a compiler-only timer."
+    },
+    "metadata": {
+      "utc": "2026-10-13T17:15:47.311946+00:00",
+      "python": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+      "commit": "b4172448654b6d105714e364c4291c47ed7f3ac0",
+      "packages": {
+        "jax": "0.10.2",
+        "jaxlib": "0.10.2",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "line_profiler": "5.0.2",
+        "jax-cuda12-plugin": "0.10.2",
+        "jax-cuda12-pjrt": "0.10.2"
+      },
+      "backend": "gpu",
+      "device_kind": "NVIDIA H100 80GB HBM3",
+      "x64": true,
+      "matmul_precision": "default",
+      "nvidia_smi": "NVIDIA H100 80GB HBM3, 580.126.09, 81559 MiB",
+      "source_sha256": {
+        "model_a/fit.py": "99c88f4f5e96cd9f587a67321a0e2bd50c96ca30337c815692347f16b95776a1",
+        "model_a/objective.py": "9ed2f360270a300e32c5eea4b36030bd4d1a05d5e421726667bc6e7b01a8c2da",
+        "model_a/simulate.py": "ce80679c77739b3c717a39b0dd1f057c6abdc60cd6494974e6e0d1b9b718557c",
+        "shared/blocked.py": "1874f36bbdcc843355a1bdc931a113b525a270a3b1fe6a9558d4bd114f598ba4",
+        "shared/staged_fit.py": "c58bffd365d45aabc5e9945e4e90b5bde3c8c0c5e8d2b9267aff4d818cf8e71b",
+        "scripts/profile_speedups.py": "fee9c63b171e4e896b980fa9fd9592956dfad9dde93f46ce7acfc9e346dcbfb2"
+      }
+    },
+    "phases": [
+      {
+        "phase": "simulation",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 0.1166987493634224,
+        "cprofile_seconds": 0.13921816274523735,
+        "line_profiler_seconds": 0.13266483880579472,
+        "result": {
+          "trials": 36000,
+          "mean_rt": 523.2345669761389,
+          "category_counts": [
+            22778,
+            3827,
+            9395
+          ]
+        },
+        "identical_results_across_passes": true
+      },
+      {
+        "phase": "objective",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 0.3282144647091627,
+        "cprofile_seconds": 0.4243045784533024,
+        "line_profiler_seconds": 0.482336588203907,
+        "result": {
+          "loss": -6.451401379223491
+        },
+        "identical_results_across_passes": true
+      },
+      {
+        "phase": "basis_factor",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 0.004231099039316177,
+        "cprofile_seconds": 0.003993898630142212,
+        "line_profiler_seconds": 0.005013918504118919,
+        "result": {
+          "shape": [
+            72,
+            72
+          ],
+          "dtype": "float64"
+        },
+        "identical_results_across_passes": true
+      }
+    ]
+  },
+  {
+    "model": "b",
+    "variant": "combined",
+    "noise": "kl",
+    "status": "completed",
+    "settings": {
+      "models": "b,a",
+      "variants": "legacy,combined",
+      "model": "b",
+      "variant": "combined",
+      "noise": "kl",
+      "output": "/workspace/ratcliff-speedups/.benchmark-results/profile-h100-production\r/b-combined",
+      "nsim": 9000,
+      "data_nsim": 9000,
+      "chunk_a": 256,
+      "chunk_b": 64,
+      "block_size": 32,
+      "repeats": 2,
+      "fit_iters": 0,
+      "seed": 321,
+      "matmul_precision": "default",
+      "budget_seconds": 250,
+      "worker_timeout": 110,
+      "allow_cpu": false,
+      "worker": true
+    },
+    "limitations": [
+      "cProfile and line_profiler measure the Python host; they do not time individual XLA/GPU kernels.",
+      "Every workload waits for JAX results. A wait can absorb earlier asynchronous work, so its line is not a kernel location.",
+      "JIT bodies execute as compiled code after tracing; zero line hits there do not mean zero compute cost.",
+      "Unwrapping JIT functions only registers source mappings; this script never invokes their eager versions.",
+      "Compilation/first calls are separate from steady-state passes. New shapes or basis operations during a fit can still compile.",
+      "Instrumented durations include profiler overhead and are not speedup evidence; use benchmark_speedups.py for comparisons.",
+      "Basis cold means an empty Python K-L basis cache, not an empty XLA or operating-system cache.",
+      "Cumulative function times overlap and must not be added together.",
+      "Fits use synthetic data, fixed seeds and a small iteration budget; these are bottleneck diagnostics, not convergence/recovery tests."
+    ],
+    "setup": {
+      "basis_first_call": {
+        "seconds": 3.6350923497229815,
+        "result": {
+          "shape": [
+            16000,
+            4000
+          ],
+          "dtype": "float32",
+          "complex_modes": 1325,
+          "variance_captured": 0.9900387952538491
+        }
+      },
+      "synthetic_data_generation": {
+        "seconds": 7.4385908003896475,
+        "result": {
+          "data_trials_per_condition": 9000
+        }
+      },
+      "simulation_first_call": {
+        "seconds": 5.962176065891981,
+        "result": {
+          "trials": 18000,
+          "mean_rt": 292.25908382551165,
+          "category_counts": [
+            2323,
+            3775,
+            3154,
+            2158,
+            6590
+          ]
+        }
+      },
+      "objective_first_call": {
+        "seconds": 3.3078578487038612,
+        "result": {
+          "loss": 49.153839590984184
+        }
+      },
+      "unprofiled_warmup_seconds": 0.9041354209184647,
+      "first_call_note": "Includes execution and any compilation/cache preparation remaining at this point; not a compiler-only timer."
+    },
+    "metadata": {
+      "utc": "2026-10-13T17:15:14.366583+00:00",
+      "python": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+      "commit": "b4172448654b6d105714e364c4291c47ed7f3ac0",
+      "packages": {
+        "jax": "0.10.2",
+        "jaxlib": "0.10.2",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "line_profiler": "5.0.2",
+        "jax-cuda12-plugin": "0.10.2",
+        "jax-cuda12-pjrt": "0.10.2"
+      },
+      "backend": "gpu",
+      "device_kind": "NVIDIA H100 80GB HBM3",
+      "x64": true,
+      "matmul_precision": "default",
+      "nvidia_smi": "NVIDIA H100 80GB HBM3, 580.126.09, 81559 MiB",
+      "source_sha256": {
+        "model_b/fit.py": "1f45afb6a6907a403ac4e5027251ee7bb693041c7207d3b78a3397515d65e1a3",
+        "model_b/objective.py": "4d2737efdd6b98a715f6ced86fa9514c7144bf8daa7a6f5173c9cf42aabba279",
+        "model_b/simulate.py": "93aa6a2d2e0438e267ebe5d6c3e13d9dd3e51bacb15ac511c6d5ac3fb3e5960f",
+        "model_b/grf.py": "43bd704356a29b9bd916f711776245e53c9c3ca31b1a102b2e8096f51928315a",
+        "model_b/grf_kl.py": "ea9ded6e303d32adc003c1565551ea0047f94d538dc8980fbdaafaebffac59c4",
+        "shared/blocked.py": "1874f36bbdcc843355a1bdc931a113b525a270a3b1fe6a9558d4bd114f598ba4",
+        "shared/staged_fit.py": "c58bffd365d45aabc5e9945e4e90b5bde3c8c0c5e8d2b9267aff4d818cf8e71b",
+        "scripts/profile_speedups.py": "fee9c63b171e4e896b980fa9fd9592956dfad9dde93f46ce7acfc9e346dcbfb2"
+      }
+    },
+    "phases": [
+      {
+        "phase": "simulation",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 0.7271518781781197,
+        "cprofile_seconds": 0.7378860991448164,
+        "line_profiler_seconds": 0.754232594743371,
+        "result": {
+          "trials": 18000,
+          "mean_rt": 292.25908382551165,
+          "category_counts": [
+            2323,
+            3775,
+            3154,
+            2158,
+            6590
+          ]
+        },
+        "identical_results_across_passes": true
+      },
+      {
+        "phase": "objective",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 1.0285298209637403,
+        "cprofile_seconds": 1.249712748453021,
+        "line_profiler_seconds": 1.4032586086541414,
+        "result": {
+          "loss": 49.153839590984184
+        },
+        "identical_results_across_passes": true
+      },
+      {
+        "phase": "basis_cold",
+        "calls_per_pass": 1,
+        "uninstrumented_seconds": 0.8760852422565222,
+        "cprofile_seconds": 0.8722289521247149,
+        "line_profiler_seconds": 0.9119898211210966,
+        "result": {
+          "shape": [
+            16000,
+            4000
+          ],
+          "dtype": "float32",
+          "complex_modes": 1325,
+          "variance_captured": 0.9900387952538491
+        },
+        "identical_results_across_passes": true
+      },
+      {
+        "phase": "basis_cache_hit",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 0.002700112760066986,
+        "cprofile_seconds": 0.00132845900952816,
+        "line_profiler_seconds": 0.0020434390753507614,
+        "result": {
+          "shape": [
+            16000,
+            4000
+          ],
+          "dtype": "float32",
+          "complex_modes": 1325,
+          "variance_captured": 0.9900387952538491
+        },
+        "identical_results_across_passes": true
+      }
+    ]
+  },
+  {
+    "model": "b",
+    "variant": "legacy",
+    "noise": "kl",
+    "status": "completed",
+    "settings": {
+      "models": "b,a",
+      "variants": "legacy,combined",
+      "model": "b",
+      "variant": "legacy",
+      "noise": "kl",
+      "output": "/workspace/ratcliff-speedups/.benchmark-results/profile-h100-production\r/b-legacy",
+      "nsim": 9000,
+      "data_nsim": 9000,
+      "chunk_a": 256,
+      "chunk_b": 64,
+      "block_size": 32,
+      "repeats": 2,
+      "fit_iters": 0,
+      "seed": 321,
+      "matmul_precision": "default",
+      "budget_seconds": 250,
+      "worker_timeout": 110,
+      "allow_cpu": false,
+      "worker": true
+    },
+    "limitations": [
+      "cProfile and line_profiler measure the Python host; they do not time individual XLA/GPU kernels.",
+      "Every workload waits for JAX results. A wait can absorb earlier asynchronous work, so its line is not a kernel location.",
+      "JIT bodies execute as compiled code after tracing; zero line hits there do not mean zero compute cost.",
+      "Unwrapping JIT functions only registers source mappings; this script never invokes their eager versions.",
+      "Compilation/first calls are separate from steady-state passes. New shapes or basis operations during a fit can still compile.",
+      "Instrumented durations include profiler overhead and are not speedup evidence; use benchmark_speedups.py for comparisons.",
+      "Basis cold means an empty Python K-L basis cache, not an empty XLA or operating-system cache.",
+      "Cumulative function times overlap and must not be added together.",
+      "Fits use synthetic data, fixed seeds and a small iteration budget; these are bottleneck diagnostics, not convergence/recovery tests."
+    ],
+    "setup": {
+      "basis_first_call": {
+        "seconds": 3.7076591923832893,
+        "result": {
+          "shape": [
+            16000,
+            4000
+          ],
+          "dtype": "float32",
+          "complex_modes": 1325,
+          "variance_captured": 0.9900387952538491
+        }
+      },
+      "synthetic_data_generation": {
+        "seconds": 7.432181159034371,
+        "result": {
+          "data_trials_per_condition": 9000
+        }
+      },
+      "simulation_first_call": {
+        "seconds": 3.914730064570904,
+        "result": {
+          "trials": 18000,
+          "mean_rt": 292.29570074381843,
+          "category_counts": [
+            2350,
+            3702,
+            3182,
+            2262,
+            6504
+          ]
+        }
+      },
+      "objective_first_call": {
+        "seconds": 10.150246895849705,
+        "result": {
+          "loss": -5.367356012851864
+        }
+      },
+      "unprofiled_warmup_seconds": 7.8921633288264275,
+      "first_call_note": "Includes execution and any compilation/cache preparation remaining at this point; not a compiler-only timer."
+    },
+    "metadata": {
+      "utc": "2026-10-13T17:13:47.710820+00:00",
+      "python": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+      "commit": "b4172448654b6d105714e364c4291c47ed7f3ac0",
+      "packages": {
+        "jax": "0.10.2",
+        "jaxlib": "0.10.2",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "line_profiler": "5.0.2",
+        "jax-cuda12-plugin": "0.10.2",
+        "jax-cuda12-pjrt": "0.10.2"
+      },
+      "backend": "gpu",
+      "device_kind": "NVIDIA H100 80GB HBM3",
+      "x64": true,
+      "matmul_precision": "default",
+      "nvidia_smi": "NVIDIA H100 80GB HBM3, 580.126.09, 81559 MiB",
+      "source_sha256": {
+        "model_b/fit.py": "1f45afb6a6907a403ac4e5027251ee7bb693041c7207d3b78a3397515d65e1a3",
+        "model_b/objective.py": "4d2737efdd6b98a715f6ced86fa9514c7144bf8daa7a6f5173c9cf42aabba279",
+        "model_b/simulate.py": "93aa6a2d2e0438e267ebe5d6c3e13d9dd3e51bacb15ac511c6d5ac3fb3e5960f",
+        "model_b/grf.py": "43bd704356a29b9bd916f711776245e53c9c3ca31b1a102b2e8096f51928315a",
+        "model_b/grf_kl.py": "ea9ded6e303d32adc003c1565551ea0047f94d538dc8980fbdaafaebffac59c4",
+        "shared/blocked.py": "1874f36bbdcc843355a1bdc931a113b525a270a3b1fe6a9558d4bd114f598ba4",
+        "shared/staged_fit.py": "c58bffd365d45aabc5e9945e4e90b5bde3c8c0c5e8d2b9267aff4d818cf8e71b",
+        "scripts/profile_speedups.py": "fee9c63b171e4e896b980fa9fd9592956dfad9dde93f46ce7acfc9e346dcbfb2"
+      }
+    },
+    "phases": [
+      {
+        "phase": "simulation",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 7.86107861250639,
+        "cprofile_seconds": 7.900004582479596,
+        "line_profiler_seconds": 7.904280234128237,
+        "result": {
+          "trials": 18000,
+          "mean_rt": 292.29570074381843,
+          "category_counts": [
+            2350,
+            3702,
+            3182,
+            2262,
+            6504
+          ]
+        },
+        "identical_results_across_passes": true
+      },
+      {
+        "phase": "objective",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 7.965617869049311,
+        "cprofile_seconds": 8.016780860722065,
+        "line_profiler_seconds": 8.21858629398048,
+        "result": {
+          "loss": -5.367356012851864
+        },
+        "identical_results_across_passes": true
+      },
+      {
+        "phase": "basis_cold",
+        "calls_per_pass": 1,
+        "uninstrumented_seconds": 0.8958666194230318,
+        "cprofile_seconds": 0.8630339596420527,
+        "line_profiler_seconds": 0.8708514776080847,
+        "result": {
+          "shape": [
+            16000,
+            4000
+          ],
+          "dtype": "float32",
+          "complex_modes": 1325,
+          "variance_captured": 0.9900387952538491
+        },
+        "identical_results_across_passes": true
+      },
+      {
+        "phase": "basis_cache_hit",
+        "calls_per_pass": 2,
+        "uninstrumented_seconds": 0.003045402467250824,
+        "cprofile_seconds": 0.0012498833239078522,
+        "line_profiler_seconds": 0.0019464194774627686,
+        "result": {
+          "shape": [
+            16000,
+            4000
+          ],
+          "dtype": "float32",
+          "complex_modes": 1325,
+          "variance_captured": 0.9900387952538491
+        },
+        "identical_results_across_passes": true
+      }
+    ]
+  }
+]

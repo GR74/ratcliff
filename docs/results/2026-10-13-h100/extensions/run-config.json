@@ -1,0 +1,32 @@
+{
+  "data_source": "/workspace/ratcliff-followup/.benchmark-results/h100-full-budget/data-b.npz",
+  "output": ".benchmark-results/h100-b-extensions",
+  "nsim": 9000,
+  "sim_seeds": 6,
+  "timing_repeats": 7,
+  "recovery_seeds": 3,
+  "fit_iters": 40,
+  "chunk_b": 64,
+  "budget_seconds": 3136,
+  "worker_timeout": 300,
+  "finish_reserve_seconds": 90,
+  "allow_cpu": false,
+  "data_sha256": "c0f4406643b4521ad1010bb2b37d4be59c54f822e2b888d4337a915275f0197d",
+  "features": {
+    "control": [],
+    "active_only": [
+      "--optimize-active-only"
+    ],
+    "bucketed": [
+      "--kl-bucketed"
+    ],
+    "cumulative": [
+      "--cumulative-kl"
+    ],
+    "all_three": [
+      "--optimize-active-only",
+      "--kl-bucketed",
+      "--cumulative-kl"
+    ]
+  }
+}

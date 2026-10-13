@@ -1,0 +1,945 @@
+{
+  "purpose": "Repeat held-out G2 scoring of saved fits; never change fitted parameters.\n\nThis diagnostic retains the original single-seed screening result and reports\nadditional independent random seeds separately. It is not human-data validation\nor a significance test. Run only while other GPU workers are stopped.\n",
+  "settings": {
+    "source": ".benchmark-results/h100-full-budget",
+    "output": ".benchmark-results/h100-full-budget/score-robustness.json",
+    "nsim": 9000,
+    "seeds": "5001,5002,5003,5004,5005",
+    "chunk_a": 256,
+    "chunk_b": 64,
+    "budget_seconds": 300,
+    "allow_cpu": false
+  },
+  "cases": [
+    {
+      "model": "a",
+      "variant": "legacy",
+      "start_seed": 0,
+      "params": [
+        204.25118674738434,
+        48.96078319852968,
+        48.5091180572356,
+        8.998286102372077,
+        4.244885859523947,
+        5.444264631428901,
+        0.7229612950412714,
+        21.122650000129127,
+        10.2451485526977,
+        58.74386947095975
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 91.76585050518214,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 68.83602409451689,
+          "seconds_including_first_compilation": 6.564485888928175
+        },
+        {
+          "seed": 5002,
+          "g2": 84.98609889400393,
+          "seconds_including_first_compilation": 0.19292750023305416
+        },
+        {
+          "seed": 5003,
+          "g2": 85.60291146603737,
+          "seconds_including_first_compilation": 0.15019193477928638
+        },
+        {
+          "seed": 5004,
+          "g2": 74.56436590814536,
+          "seconds_including_first_compilation": 0.15797396190464497
+        },
+        {
+          "seed": 5005,
+          "g2": 70.20467346187746,
+          "seconds_including_first_compilation": 0.15489904582500458
+        }
+      ]
+    },
+    {
+      "model": "a",
+      "variant": "early_stop",
+      "start_seed": 0,
+      "params": [
+        204.96953414526288,
+        48.33029886447372,
+        48.85355548952447,
+        9.216527851071184,
+        4.233493898267698,
+        5.3642787342831655,
+        0.72420222002266,
+        21.321932825608457,
+        10.49816823107947,
+        58.022817460911135
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 79.12893863892907,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 68.82878560312618,
+          "seconds_including_first_compilation": 0.14990966767072678
+        },
+        {
+          "seed": 5002,
+          "g2": 91.56253640612714,
+          "seconds_including_first_compilation": 0.1476943213492632
+        },
+        {
+          "seed": 5003,
+          "g2": 101.3336666343202,
+          "seconds_including_first_compilation": 0.13907123915851116
+        },
+        {
+          "seed": 5004,
+          "g2": 87.05701071991115,
+          "seconds_including_first_compilation": 0.13922628574073315
+        },
+        {
+          "seed": 5005,
+          "g2": 78.45545108094403,
+          "seconds_including_first_compilation": 0.14485102891921997
+        }
+      ]
+    },
+    {
+      "model": "a",
+      "variant": "combined",
+      "start_seed": 0,
+      "params": [
+        201.83238885546766,
+        50.72779319627135,
+        48.942667036687226,
+        9.545714214118053,
+        4.297131041739201,
+        5.325536301794601,
+        0.7845427325198835,
+        21.579436189720585,
+        10.404570996135792,
+        58.56043652392343
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 74.45813224566086,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 51.40093155249967,
+          "seconds_including_first_compilation": 0.14628788270056248
+        },
+        {
+          "seed": 5002,
+          "g2": 72.62456777002075,
+          "seconds_including_first_compilation": 0.14480167627334595
+        },
+        {
+          "seed": 5003,
+          "g2": 78.14853013780642,
+          "seconds_including_first_compilation": 0.14427168294787407
+        },
+        {
+          "seed": 5004,
+          "g2": 64.4886352882157,
+          "seconds_including_first_compilation": 0.1486065424978733
+        },
+        {
+          "seed": 5005,
+          "g2": 60.0253705836166,
+          "seconds_including_first_compilation": 0.15474659204483032
+        }
+      ]
+    },
+    {
+      "model": "a",
+      "variant": "early_stop",
+      "start_seed": 1,
+      "params": [
+        204.2037423816315,
+        51.72315703163433,
+        48.93871858550722,
+        11.213170489991032,
+        3.852518693738391,
+        5.105640180632995,
+        0.6786600818953064,
+        19.67427911269565,
+        9.749926232613902,
+        59.407343657947074
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 93.69066716602569,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 65.28963213643279,
+          "seconds_including_first_compilation": 0.1559346504509449
+        },
+        {
+          "seed": 5002,
+          "g2": 85.81499517302677,
+          "seconds_including_first_compilation": 0.1510363481938839
+        },
+        {
+          "seed": 5003,
+          "g2": 76.16624795944887,
+          "seconds_including_first_compilation": 0.15245037339627743
+        },
+        {
+          "seed": 5004,
+          "g2": 82.36100753730568,
+          "seconds_including_first_compilation": 0.15102765336632729
+        },
+        {
+          "seed": 5005,
+          "g2": 75.56812853688928,
+          "seconds_including_first_compilation": 0.15747839771211147
+        }
+      ]
+    },
+    {
+      "model": "a",
+      "variant": "combined",
+      "start_seed": 1,
+      "params": [
+        209.29333610231015,
+        54.82801239447491,
+        48.257831699233925,
+        10.999733161792097,
+        3.931097073786874,
+        5.243431110623838,
+        0.6921837301076275,
+        19.80164213506395,
+        9.748240283818419,
+        58.21767824482259
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 104.23975877900068,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 76.67919766445928,
+          "seconds_including_first_compilation": 0.1550502609461546
+        },
+        {
+          "seed": 5002,
+          "g2": 84.40643458955105,
+          "seconds_including_first_compilation": 0.15264113247394562
+        },
+        {
+          "seed": 5003,
+          "g2": 95.16268491706657,
+          "seconds_including_first_compilation": 0.14980221167206764
+        },
+        {
+          "seed": 5004,
+          "g2": 76.21566342606269,
+          "seconds_including_first_compilation": 0.1550525650382042
+        },
+        {
+          "seed": 5005,
+          "g2": 77.79363245005618,
+          "seconds_including_first_compilation": 0.1500263772904873
+        }
+      ]
+    },
+    {
+      "model": "a",
+      "variant": "legacy",
+      "start_seed": 1,
+      "params": [
+        199.0792374171968,
+        55.282761733659854,
+        49.94693440461379,
+        10.976921440600115,
+        3.799871153776288,
+        5.107807084244509,
+        0.7028995748612806,
+        18.954344106639212,
+        9.311774067012017,
+        60.50083902211157
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 98.8264160256474,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 65.77871136334835,
+          "seconds_including_first_compilation": 0.1546985413879156
+        },
+        {
+          "seed": 5002,
+          "g2": 94.65160542514121,
+          "seconds_including_first_compilation": 0.1490584835410118
+        },
+        {
+          "seed": 5003,
+          "g2": 88.96818709864979,
+          "seconds_including_first_compilation": 0.1465439274907112
+        },
+        {
+          "seed": 5004,
+          "g2": 79.28176485992279,
+          "seconds_including_first_compilation": 0.15022207610309124
+        },
+        {
+          "seed": 5005,
+          "g2": 82.10828443662388,
+          "seconds_including_first_compilation": 0.15686580166220665
+        }
+      ]
+    },
+    {
+      "model": "a",
+      "variant": "combined",
+      "start_seed": 2,
+      "params": [
+        190.69818879141133,
+        49.21820667346408,
+        51.8545329965736,
+        9.67364344561031,
+        3.888073301687186,
+        4.897053941076721,
+        0.6989859787783856,
+        19.576267593558185,
+        9.708345358279757,
+        61.43966419078042
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 75.22867878648059,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 79.19842750198231,
+          "seconds_including_first_compilation": 0.15013576298952103
+        },
+        {
+          "seed": 5002,
+          "g2": 97.62857356736203,
+          "seconds_including_first_compilation": 0.14611288718879223
+        },
+        {
+          "seed": 5003,
+          "g2": 88.60886977717894,
+          "seconds_including_first_compilation": 0.14790591225028038
+        },
+        {
+          "seed": 5004,
+          "g2": 93.24797919546788,
+          "seconds_including_first_compilation": 0.15045713260769844
+        },
+        {
+          "seed": 5005,
+          "g2": 92.2450070379641,
+          "seconds_including_first_compilation": 0.14882426150143147
+        }
+      ]
+    },
+    {
+      "model": "a",
+      "variant": "legacy",
+      "start_seed": 2,
+      "params": [
+        192.68653122599812,
+        50.45751137914543,
+        51.00540624674706,
+        9.648212361669597,
+        3.891024904124988,
+        5.02105455724881,
+        0.6090136247354383,
+        19.191823465059805,
+        10.033963320465787,
+        60.42173035457347
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 83.53011196136026,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 76.21635112580822,
+          "seconds_including_first_compilation": 0.14167202077805996
+        },
+        {
+          "seed": 5002,
+          "g2": 105.90908357254635,
+          "seconds_including_first_compilation": 0.1473196167498827
+        },
+        {
+          "seed": 5003,
+          "g2": 105.77261281964812,
+          "seconds_including_first_compilation": 0.15226519107818604
+        },
+        {
+          "seed": 5004,
+          "g2": 93.47766837675645,
+          "seconds_including_first_compilation": 0.15555287338793278
+        },
+        {
+          "seed": 5005,
+          "g2": 96.07237124624788,
+          "seconds_including_first_compilation": 0.13827120326459408
+        }
+      ]
+    },
+    {
+      "model": "a",
+      "variant": "early_stop",
+      "start_seed": 2,
+      "params": [
+        196.96731952720933,
+        50.757213266519926,
+        50.04158525107519,
+        9.367772062263613,
+        3.8028664192540638,
+        5.150030025577397,
+        0.6637758080862547,
+        19.259173786749496,
+        9.781427852304564,
+        60.06682260785802
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 81.82546434969913,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 61.831419708511525,
+          "seconds_including_first_compilation": 0.1449967585504055
+        },
+        {
+          "seed": 5002,
+          "g2": 98.31928144315472,
+          "seconds_including_first_compilation": 0.14504617638885975
+        },
+        {
+          "seed": 5003,
+          "g2": 105.93721332815726,
+          "seconds_including_first_compilation": 0.14193541556596756
+        },
+        {
+          "seed": 5004,
+          "g2": 80.04736356452283,
+          "seconds_including_first_compilation": 0.14061221107840538
+        },
+        {
+          "seed": 5005,
+          "g2": 82.59159183910742,
+          "seconds_including_first_compilation": 0.15127324126660824
+        }
+      ]
+    },
+    {
+      "model": "b",
+      "variant": "legacy",
+      "start_seed": 0,
+      "params": [
+        205.89446797027745,
+        48.272929371232074,
+        9.45735892453899,
+        1.820102169401202,
+        12.538981002156369,
+        10.946923986161385,
+        0.4979870934314835,
+        15.71491757865149,
+        10.405665058112836,
+        8.64880864722688,
+        14.857101865185482,
+        10.10572678679191,
+        9.376889443371862
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 165.22357630177189,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 123.18907556063203,
+          "seconds_including_first_compilation": 13.665570318698883
+        },
+        {
+          "seed": 5002,
+          "g2": 114.40101950501,
+          "seconds_including_first_compilation": 3.9473011922091246
+        },
+        {
+          "seed": 5003,
+          "g2": 119.3093437702881,
+          "seconds_including_first_compilation": 3.906527491286397
+        },
+        {
+          "seed": 5004,
+          "g2": 146.498658774319,
+          "seconds_including_first_compilation": 3.9179872535169125
+        },
+        {
+          "seed": 5005,
+          "g2": 117.56110003638707,
+          "seconds_including_first_compilation": 3.9112425912171602
+        }
+      ]
+    },
+    {
+      "model": "b",
+      "variant": "early_stop",
+      "start_seed": 0,
+      "params": [
+        206.06395627454197,
+        48.287753501576915,
+        9.570361561327733,
+        1.8008217803520323,
+        12.432676422153698,
+        10.889836029781524,
+        0.48836778973001915,
+        15.719724941840983,
+        10.793833407034192,
+        8.728862449366094,
+        14.655342672726537,
+        10.164883136276483,
+        9.5572999126003
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 187.70891099320227,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 191.09132819221546,
+          "seconds_including_first_compilation": 4.655673721805215
+        },
+        {
+          "seed": 5002,
+          "g2": 174.54317038230698,
+          "seconds_including_first_compilation": 3.935616021975875
+        },
+        {
+          "seed": 5003,
+          "g2": 146.98504787501733,
+          "seconds_including_first_compilation": 3.9466789681464434
+        },
+        {
+          "seed": 5004,
+          "g2": 159.80140637603103,
+          "seconds_including_first_compilation": 3.91210619173944
+        },
+        {
+          "seed": 5005,
+          "g2": 163.57759216695968,
+          "seconds_including_first_compilation": 3.959844633936882
+        }
+      ]
+    },
+    {
+      "model": "b",
+      "variant": "combined",
+      "start_seed": 0,
+      "params": [
+        208.08600287289858,
+        49.136764714915685,
+        9.362323683385387,
+        1.914500463831744,
+        12.238483427668037,
+        10.817471446572801,
+        0.48245969490673024,
+        16.00680662687191,
+        10.084552047175578,
+        8.729048811901823,
+        14.720532170997327,
+        10.243891705366156,
+        9.67633796035918
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 105.0502977371711,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 93.37576276177623,
+          "seconds_including_first_compilation": 4.729501981288195
+        },
+        {
+          "seed": 5002,
+          "g2": 107.18060336146976,
+          "seconds_including_first_compilation": 3.9140187818557024
+        },
+        {
+          "seed": 5003,
+          "g2": 97.97271579444302,
+          "seconds_including_first_compilation": 3.9542460907250643
+        },
+        {
+          "seed": 5004,
+          "g2": 110.16909814141869,
+          "seconds_including_first_compilation": 3.934634255245328
+        },
+        {
+          "seed": 5005,
+          "g2": 86.78031082402778,
+          "seconds_including_first_compilation": 3.9429974909871817
+        }
+      ]
+    },
+    {
+      "model": "b",
+      "variant": "early_stop",
+      "start_seed": 1,
+      "params": [
+        207.43522496970564,
+        54.5557979857645,
+        9.529486354256541,
+        2.2050050757937774,
+        11.499199712836013,
+        9.900259312879797,
+        0.5349562101972318,
+        14.908664301924524,
+        10.061548335909873,
+        7.277469568888653,
+        13.953226178671502,
+        11.160684508357388,
+        8.739011154684702
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 81.07793589553317,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 59.75682185462698,
+          "seconds_including_first_compilation": 4.8251138255000114
+        },
+        {
+          "seed": 5002,
+          "g2": 47.27745950721929,
+          "seconds_including_first_compilation": 3.9787101298570633
+        },
+        {
+          "seed": 5003,
+          "g2": 91.14767135782597,
+          "seconds_including_first_compilation": 3.951931431889534
+        },
+        {
+          "seed": 5004,
+          "g2": 77.7596277573503,
+          "seconds_including_first_compilation": 3.979266945272684
+        },
+        {
+          "seed": 5005,
+          "g2": 80.31955513276631,
+          "seconds_including_first_compilation": 3.947095124050975
+        }
+      ]
+    },
+    {
+      "model": "b",
+      "variant": "combined",
+      "start_seed": 1,
+      "params": [
+        210.71483253499716,
+        55.54639313009219,
+        9.35186574556898,
+        2.2178932142285737,
+        11.522221384246032,
+        10.033975610089612,
+        0.5402073658443324,
+        15.150651089879362,
+        10.049643642507373,
+        7.391836259833085,
+        13.97055013188462,
+        11.260670847130454,
+        8.69106017723093
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 79.64992639369507,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 76.76453609636036,
+          "seconds_including_first_compilation": 4.8217683583498
+        },
+        {
+          "seed": 5002,
+          "g2": 76.31843459744832,
+          "seconds_including_first_compilation": 3.9735368881374598
+        },
+        {
+          "seed": 5003,
+          "g2": 60.34765774122124,
+          "seconds_including_first_compilation": 3.989486698061228
+        },
+        {
+          "seed": 5004,
+          "g2": 62.28495003065336,
+          "seconds_including_first_compilation": 3.9774775709956884
+        },
+        {
+          "seed": 5005,
+          "g2": 84.89344294386171,
+          "seconds_including_first_compilation": 3.9783418346196413
+        }
+      ]
+    },
+    {
+      "model": "b",
+      "variant": "legacy",
+      "start_seed": 1,
+      "params": [
+        207.84458698231788,
+        54.38464571902631,
+        9.49311544653862,
+        2.2176459830168875,
+        11.582982167029936,
+        9.920488012558213,
+        0.5307513276809088,
+        14.947238716954278,
+        10.09616848846525,
+        7.243645765831084,
+        13.927057012781217,
+        11.042386678490026,
+        8.747801140193436
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 68.32259670127668,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 56.511496337608435,
+          "seconds_including_first_compilation": 4.8575249761343
+        },
+        {
+          "seed": 5002,
+          "g2": 71.55807205519417,
+          "seconds_including_first_compilation": 3.9817979130893946
+        },
+        {
+          "seed": 5003,
+          "g2": 72.07523320701316,
+          "seconds_including_first_compilation": 3.9794167689979076
+        },
+        {
+          "seed": 5004,
+          "g2": 96.3760881194885,
+          "seconds_including_first_compilation": 3.9233916513621807
+        },
+        {
+          "seed": 5005,
+          "g2": 85.48305963959129,
+          "seconds_including_first_compilation": 3.9894491992890835
+        }
+      ]
+    },
+    {
+      "model": "b",
+      "variant": "combined",
+      "start_seed": 2,
+      "params": [
+        189.49422524600894,
+        47.23751433088816,
+        10.524492208370686,
+        1.870960449917331,
+        12.09744774662542,
+        10.392155945414258,
+        0.4835729984456171,
+        14.721682279017175,
+        9.765464961880816,
+        8.367886263514498,
+        13.70194762382349,
+        10.723798193302821,
+        8.790206609286512
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 68.97434832867734,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 74.46570332451971,
+          "seconds_including_first_compilation": 4.7226586025208235
+        },
+        {
+          "seed": 5002,
+          "g2": 83.48186300210973,
+          "seconds_including_first_compilation": 3.953181156888604
+        },
+        {
+          "seed": 5003,
+          "g2": 41.71611242760959,
+          "seconds_including_first_compilation": 3.945495557039976
+        },
+        {
+          "seed": 5004,
+          "g2": 80.39775129979432,
+          "seconds_including_first_compilation": 3.9296753760427237
+        },
+        {
+          "seed": 5005,
+          "g2": 57.86829274851175,
+          "seconds_including_first_compilation": 3.8831771835684776
+        }
+      ]
+    },
+    {
+      "model": "b",
+      "variant": "legacy",
+      "start_seed": 2,
+      "params": [
+        190.29509784736547,
+        48.10865342745768,
+        10.566630836897264,
+        1.8526940396158356,
+        12.201270734171032,
+        9.73961482066429,
+        0.49141399110784834,
+        14.104978777573915,
+        9.77280212549666,
+        8.255134891602232,
+        13.549929932614958,
+        10.631541943100572,
+        8.931325570838691
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 56.89519473476564,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 74.08014835651223,
+          "seconds_including_first_compilation": 4.9031059462577105
+        },
+        {
+          "seed": 5002,
+          "g2": 80.16512865748965,
+          "seconds_including_first_compilation": 3.911957560107112
+        },
+        {
+          "seed": 5003,
+          "g2": 61.9342339947072,
+          "seconds_including_first_compilation": 3.93218082934618
+        },
+        {
+          "seed": 5004,
+          "g2": 80.50265984174956,
+          "seconds_including_first_compilation": 3.913798624649644
+        },
+        {
+          "seed": 5005,
+          "g2": 60.07646363888689,
+          "seconds_including_first_compilation": 3.93591620400548
+        }
+      ]
+    },
+    {
+      "model": "b",
+      "variant": "early_stop",
+      "start_seed": 2,
+      "params": [
+        190.35435483476135,
+        46.520202053373225,
+        10.51768967273475,
+        1.859800628126672,
+        12.41733914090085,
+        10.085062207676346,
+        0.4821670192795917,
+        14.023338196393656,
+        9.37437556808221,
+        8.152450208976841,
+        13.916066670386872,
+        10.598939924633822,
+        9.113282792810658
+      ],
+      "original_score_seed": 999,
+      "original_score_nsim": 9000,
+      "original_g2": 59.0687814968055,
+      "scores": [
+        {
+          "seed": 5001,
+          "g2": 77.72501664831422,
+          "seconds_including_first_compilation": 4.910737458616495
+        },
+        {
+          "seed": 5002,
+          "g2": 68.64028485083253,
+          "seconds_including_first_compilation": 3.9565397426486015
+        },
+        {
+          "seed": 5003,
+          "g2": 67.31152066803529,
+          "seconds_including_first_compilation": 3.9156721718609333
+        },
+        {
+          "seed": 5004,
+          "g2": 68.1960194874465,
+          "seconds_including_first_compilation": 3.9564338754862547
+        },
+        {
+          "seed": 5005,
+          "g2": 81.57011062011233,
+          "seconds_including_first_compilation": 3.969453077763319
+        }
+      ]
+    }
+  ],
+  "script_sha256": "3c9e29b222fa77f95a855bd17fdf9934ce0517085044e65f1b4e84d3aa511b07",
+  "fit_results_sha256": "ffe18e16f59422d76a0dbaf882499a20ee5ab2999f05e64d3008ac9d4d6c8d3e",
+  "source_data_sha256": {
+    "a": "e432729960bced293b19a8ad9484cc3e4b2744db8451c1bc8ec116b624f6b243",
+    "b": "c0f4406643b4521ad1010bb2b37d4be59c54f822e2b888d4337a915275f0197d"
+  },
+  "planned_scores": 90,
+  "completed_scores": 90,
+  "cpu_smoke_only": false,
+  "metadata": {
+    "utc": "2026-10-13T17:12:18.774267+00:00",
+    "commit": "a33b8d321a2c23d9d75fdf491d6f9feddb7c6a0a",
+    "implementation_sha256": "e11490abe0c00ce98da7923645c4ecba93ecc413a3a85715b4fa8db799620ee0",
+    "hashed_files": [
+      "shared/blocked.py",
+      "shared/staged_fit.py",
+      "shared/benchmark_stats.py",
+      "model_a/simulate.py",
+      "model_a/objective.py",
+      "model_a/fit.py",
+      "model_b/simulate.py",
+      "model_b/objective.py",
+      "model_b/fit.py",
+      "scripts/benchmark_speedups.py"
+    ],
+    "backend": "gpu",
+    "python": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+    "packages": {
+      "jax": "0.10.2",
+      "jaxlib": "0.10.2",
+      "jax-cuda12-plugin": "0.10.2",
+      "jax-cuda12-pjrt": "0.10.2",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1"
+    },
+    "devices": [
+      "cuda:0"
+    ],
+    "device_kind": "NVIDIA H100 80GB HBM3",
+    "nvidia_smi": "NVIDIA H100 80GB HBM3, 580.126.09, 81559 MiB",
+    "matmul_precision": "default",
+    "device_allocator_memory": {
+      "num_allocs": 112810,
+      "bytes_in_use": 2391309824,
+      "peak_bytes_in_use": 8783810048,
+      "largest_alloc_size": 4130031360,
+      "bytes_limit": 63763906560,
+      "bytes_reserved": 0,
+      "peak_bytes_reserved": 0,
+      "largest_free_block_bytes": 0,
+      "pool_bytes": 10806624256,
+      "peak_pool_bytes": 10806624256
+    },
+    "memory_note": "Allocator peak includes warm-up and the entire worker process.",
+    "x64": true
+  },
+  "stopped_by_budget": false
+}

@@ -1,0 +1,46 @@
+{
+  "utc": "2026-10-13T16:29:56.297996+00:00",
+  "commit": "a33b8d321a2c23d9d75fdf491d6f9feddb7c6a0a",
+  "implementation_sha256": "e11490abe0c00ce98da7923645c4ecba93ecc413a3a85715b4fa8db799620ee0",
+  "hashed_files": [
+    "shared/blocked.py",
+    "shared/staged_fit.py",
+    "shared/benchmark_stats.py",
+    "model_a/simulate.py",
+    "model_a/objective.py",
+    "model_a/fit.py",
+    "model_b/simulate.py",
+    "model_b/objective.py",
+    "model_b/fit.py",
+    "scripts/benchmark_speedups.py"
+  ],
+  "backend": "gpu",
+  "python": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+  "packages": {
+    "jax": "0.10.2",
+    "jaxlib": "0.10.2",
+    "jax-cuda12-plugin": "0.10.2",
+    "jax-cuda12-pjrt": "0.10.2",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1"
+  },
+  "devices": [
+    "cuda:0"
+  ],
+  "device_kind": "NVIDIA H100 80GB HBM3",
+  "nvidia_smi": "NVIDIA H100 80GB HBM3, 580.126.09, 81559 MiB",
+  "matmul_precision": "default",
+  "device_allocator_memory": {
+    "num_allocs": 273,
+    "bytes_in_use": 2048,
+    "peak_bytes_in_use": 335548928,
+    "largest_alloc_size": 268435456,
+    "bytes_limit": 63763906560,
+    "bytes_reserved": 0,
+    "peak_bytes_reserved": 0,
+    "largest_free_block_bytes": 0,
+    "pool_bytes": 606076928,
+    "peak_pool_bytes": 606076928
+  },
+  "memory_note": "Allocator peak includes warm-up and the entire worker process."
+}
