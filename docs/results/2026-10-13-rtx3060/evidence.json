@@ -1,0 +1,958 @@
+{
+  "updated_utc": "2026-10-13T19:46:00.006528+00:00",
+  "final": false,
+  "guard": {
+    "deadline_utc": "2026-10-14T01:00:00+00:00",
+    "script": "/mnt/c/Personal_Coding/ratcliff-1/scripts/validate_early_stopping.py",
+    "output": "/mnt/d/ratcliff-3060/results/study-512-six-hour",
+    "last_checked_utc": "2026-10-13T19:45:50.625147+00:00",
+    "matching_pids": [
+      [
+        667,
+        false
+      ],
+      [
+        954,
+        true
+      ]
+    ],
+    "status": "watching"
+  },
+  "summaries": {
+    "pilot-512": {
+      "scope": "RTX 3060 synthetic Model B K-L validation; one laptop, limited cases",
+      "micro": {
+        "baseline": {
+          "legacy": 4.881552034999913,
+          "blocked_full": 5.735330486000748,
+          "early_stop": 0.4852662550001696,
+          "legacy_to_early_speedup": 10.059533265914414,
+          "paired_distributions": {
+            "paired": true,
+            "proportion_margin": 0.01,
+            "rt_quantile_relative_margin": 0.02,
+            "minimum_rt_category_trials": 200,
+            "all_proportion_screens_pass": true,
+            "all_rt_screens_pass": false,
+            "by_category": [
+              {
+                "condition": 0,
+                "category": 1,
+                "reference_n": 75,
+                "candidate_n": 75,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 2,
+                "reference_n": 105,
+                "candidate_n": 105,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 3,
+                "reference_n": 87,
+                "candidate_n": 87,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 4,
+                "reference_n": 54,
+                "candidate_n": 54,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 5,
+                "reference_n": 191,
+                "candidate_n": 191,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 1,
+                "reference_n": 71,
+                "candidate_n": 71,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 2,
+                "reference_n": 100,
+                "candidate_n": 100,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 3,
+                "reference_n": 94,
+                "candidate_n": 94,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 4,
+                "reference_n": 71,
+                "candidate_n": 71,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 5,
+                "reference_n": 176,
+                "candidate_n": 176,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              }
+            ],
+            "note": "Per-category screening intervals; not global equivalence proof."
+          },
+          "exact_rt_fraction": 1.0,
+          "exact_choice_fraction": 1.0
+        }
+      },
+      "fits": [],
+      "scores": [],
+      "counts": {
+        "completed": 3
+      },
+      "planned_cases": 3,
+      "recorded_cases": 3,
+      "stopped_by_budget": false,
+      "cpu_smoke_only": false
+    },
+    "pilot-9000": {
+      "scope": "RTX 3060 synthetic Model B K-L validation; one laptop, limited cases",
+      "micro": {
+        "baseline": {
+          "legacy": 90.85383044899936,
+          "early_stop": 8.600135780998244,
+          "legacy_to_early_speedup": 10.564232096165078
+        }
+      },
+      "fits": [],
+      "scores": [],
+      "counts": {
+        "completed": 2
+      },
+      "planned_cases": 2,
+      "recorded_cases": 2,
+      "stopped_by_budget": false,
+      "cpu_smoke_only": false
+    },
+    "study-128": {
+      "scope": "RTX 3060 synthetic Model B K-L validation; one laptop, limited cases",
+      "micro": {
+        "baseline": {
+          "legacy": 1.2352733309999167,
+          "blocked_full": 1.5590880319978169,
+          "early_stop": 0.14791748100105906,
+          "legacy_to_early_speedup": 8.351097670403623,
+          "paired_distributions": {
+            "paired": true,
+            "proportion_margin": 0.01,
+            "rt_quantile_relative_margin": 0.02,
+            "minimum_rt_category_trials": 200,
+            "all_proportion_screens_pass": true,
+            "all_rt_screens_pass": false,
+            "by_category": [
+              {
+                "condition": 0,
+                "category": 1,
+                "reference_n": 54,
+                "candidate_n": 54,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 2,
+                "reference_n": 91,
+                "candidate_n": 91,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 3,
+                "reference_n": 64,
+                "candidate_n": 64,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 4,
+                "reference_n": 36,
+                "candidate_n": 36,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 5,
+                "reference_n": 139,
+                "candidate_n": 139,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 1,
+                "reference_n": 46,
+                "candidate_n": 46,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 2,
+                "reference_n": 77,
+                "candidate_n": 77,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 3,
+                "reference_n": 74,
+                "candidate_n": 74,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 4,
+                "reference_n": 48,
+                "candidate_n": 48,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 5,
+                "reference_n": 139,
+                "candidate_n": 139,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              }
+            ],
+            "note": "Per-category screening intervals; not global equivalence proof."
+          },
+          "exact_rt_fraction": 1.0,
+          "exact_choice_fraction": 1.0
+        },
+        "lower_boundary": {
+          "legacy": 1.24354397499701,
+          "blocked_full": 1.5615689340011158,
+          "early_stop": 0.15240409699981683,
+          "legacy_to_early_speedup": 8.159518014784764,
+          "paired_distributions": {
+            "paired": true,
+            "proportion_margin": 0.01,
+            "rt_quantile_relative_margin": 0.02,
+            "minimum_rt_category_trials": 200,
+            "all_proportion_screens_pass": true,
+            "all_rt_screens_pass": false,
+            "by_category": [
+              {
+                "condition": 0,
+                "category": 1,
+                "reference_n": 42,
+                "candidate_n": 42,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 2,
+                "reference_n": 71,
+                "candidate_n": 71,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 3,
+                "reference_n": 42,
+                "candidate_n": 42,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 4,
+                "reference_n": 38,
+                "candidate_n": 38,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 5,
+                "reference_n": 191,
+                "candidate_n": 191,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 1,
+                "reference_n": 32,
+                "candidate_n": 32,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 2,
+                "reference_n": 46,
+                "candidate_n": 46,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 3,
+                "reference_n": 56,
+                "candidate_n": 56,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 4,
+                "reference_n": 44,
+                "candidate_n": 44,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 5,
+                "reference_n": 206,
+                "candidate_n": 206,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_quantile_relative_difference": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "rt_quantile_relative_95_ci": [
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ]
+                ],
+                "rt_screen": "pass"
+              }
+            ],
+            "note": "Per-category screening intervals; not global equivalence proof."
+          },
+          "exact_rt_fraction": 1.0,
+          "exact_choice_fraction": 1.0
+        },
+        "higher_boundary": {
+          "legacy": 1.2420766620016366,
+          "blocked_full": 1.492099525003141,
+          "early_stop": 0.17206785800226498,
+          "legacy_to_early_speedup": 7.2185280645807,
+          "paired_distributions": {
+            "paired": true,
+            "proportion_margin": 0.01,
+            "rt_quantile_relative_margin": 0.02,
+            "minimum_rt_category_trials": 200,
+            "all_proportion_screens_pass": true,
+            "all_rt_screens_pass": false,
+            "by_category": [
+              {
+                "condition": 0,
+                "category": 1,
+                "reference_n": 71,
+                "candidate_n": 71,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 2,
+                "reference_n": 79,
+                "candidate_n": 79,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 3,
+                "reference_n": 67,
+                "candidate_n": 67,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 4,
+                "reference_n": 38,
+                "candidate_n": 38,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 0,
+                "category": 5,
+                "reference_n": 129,
+                "candidate_n": 129,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 1,
+                "reference_n": 32,
+                "candidate_n": 32,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 2,
+                "reference_n": 67,
+                "candidate_n": 67,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 3,
+                "reference_n": 85,
+                "candidate_n": 85,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 4,
+                "reference_n": 52,
+                "candidate_n": 52,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              },
+              {
+                "condition": 1,
+                "category": 5,
+                "reference_n": 148,
+                "candidate_n": 148,
+                "proportion_difference": 0.0,
+                "proportion_difference_95_ci": [
+                  0.0,
+                  0.0
+                ],
+                "proportion_screen_pass": true,
+                "rt_screen": "insufficient category samples"
+              }
+            ],
+            "note": "Per-category screening intervals; not global equivalence proof."
+          },
+          "exact_rt_fraction": 1.0,
+          "exact_choice_fraction": 1.0
+        }
+      },
+      "fits": [],
+      "scores": [],
+      "counts": {
+        "completed": 12
+      }
+    },
+    "study-512-six-hour": {
+      "scope": "RTX 3060 synthetic Model B K-L validation; one laptop, limited cases",
+      "micro": {
+        "baseline": {
+          "legacy": 5.064518058999965
+        }
+      },
+      "fits": [],
+      "scores": [],
+      "counts": {
+        "completed": 1
+      }
+    }
+  },
+  "configurations": {
+    "pilot-512": {
+      "output": "/mnt/d/ratcliff-3060/results/pilot-512",
+      "worker": false,
+      "pilot_only": true,
+      "allow_cpu": false,
+      "gpu_kind": "3060",
+      "scenarios": "baseline",
+      "scenario": "baseline",
+      "action": "micro",
+      "variant": "legacy",
+      "result_file": null,
+      "fit_file": null,
+      "start_seed": 0,
+      "nsim": 512,
+      "data_nsim": 9000,
+      "score_nsim": 2048,
+      "chunk": 8,
+      "sim_seeds": 1,
+      "repeats": 3,
+      "maxiter": 1000,
+      "starts": 2,
+      "start_spread": 0.2,
+      "basis_cache_size": 2,
+      "checkpoint_every": 100,
+      "max_score_checkpoints": 8,
+      "error_limit": 0.05,
+      "budget_seconds": 600,
+      "fit_seconds_limit": 450,
+      "reserve_seconds": 30,
+      "target": "Mean effective active parameter error <=0.05; median held-out G2 <= true-parameter median +10% absolute magnitude +1",
+      "scoring_note": "Three held-out seeds; fixed training checkpoints, no scoring feedback",
+      "compared_features": "Legacy versus improvement 1 only; full-horizon blocked correctness control",
+      "precision": "fp32 spatial fields, fp64 RT, x64 enabled, default matmul",
+      "cache_note": "Same reduced basis cache for all variants; library default unchanged"
+    },
+    "pilot-9000": {
+      "output": "/mnt/d/ratcliff-3060/results/pilot-9000",
+      "worker": false,
+      "pilot_only": true,
+      "allow_cpu": false,
+      "gpu_kind": "3060",
+      "scenarios": "baseline",
+      "micro_variants": "legacy,early_stop",
+      "scenario": "baseline",
+      "action": "micro",
+      "variant": "legacy",
+      "result_file": null,
+      "fit_file": null,
+      "start_seed": 0,
+      "nsim": 9000,
+      "data_nsim": 9000,
+      "score_nsim": 2048,
+      "chunk": 8,
+      "sim_seeds": 1,
+      "repeats": 3,
+      "maxiter": 1000,
+      "starts": 2,
+      "baseline_extra_starts": 0,
+      "start_spread": 0.2,
+      "basis_cache_size": 2,
+      "checkpoint_every": 100,
+      "max_score_checkpoints": 8,
+      "error_limit": 0.05,
+      "budget_seconds": 720,
+      "fit_seconds_limit": 450,
+      "reserve_seconds": 30,
+      "target": "Mean effective active parameter error <=0.05; median held-out G2 <= true-parameter median +10% absolute magnitude +1",
+      "scoring_note": "Three held-out seeds; fixed training checkpoints, no scoring feedback",
+      "compared_features": "Legacy versus improvement 1 only; full-horizon blocked correctness control",
+      "precision": "fp32 spatial fields, fp64 RT, x64 enabled, default matmul",
+      "cache_note": "Same reduced basis cache for all variants; library default unchanged"
+    },
+    "study-128": {
+      "output": "/mnt/d/ratcliff-3060/results/study-128",
+      "worker": false,
+      "pilot_only": false,
+      "allow_cpu": false,
+      "gpu_kind": "3060",
+      "scenarios": "baseline,lower_boundary,higher_boundary",
+      "micro_variants": "legacy,blocked_full,early_stop",
+      "scenario": "baseline",
+      "action": "micro",
+      "variant": "legacy",
+      "result_file": null,
+      "fit_file": null,
+      "start_seed": 0,
+      "nsim": 128,
+      "data_nsim": 9000,
+      "score_nsim": 2048,
+      "chunk": 8,
+      "sim_seeds": 3,
+      "repeats": 3,
+      "maxiter": 1000,
+      "starts": 1,
+      "baseline_extra_starts": 1,
+      "start_spread": 0.2,
+      "basis_cache_size": 2,
+      "checkpoint_every": 100,
+      "max_score_checkpoints": 2,
+      "error_limit": 0.05,
+      "budget_seconds": 7200,
+      "fit_seconds_limit": 600,
+      "reserve_seconds": 180,
+      "target": "Mean effective active parameter error <=0.05; median held-out G2 <= true-parameter median +10% absolute magnitude +1",
+      "scoring_note": "Three held-out seeds; fixed training checkpoints, no scoring feedback",
+      "compared_features": "Legacy versus improvement 1 only; full-horizon blocked correctness control",
+      "precision": "fp32 spatial fields, fp64 RT, x64 enabled, default matmul",
+      "cache_note": "Same reduced basis cache for all variants; library default unchanged"
+    },
+    "study-512-six-hour": {
+      "output": "/mnt/d/ratcliff-3060/results/study-512-six-hour",
+      "worker": false,
+      "pilot_only": false,
+      "allow_cpu": false,
+      "gpu_kind": "3060",
+      "scenarios": "baseline,lower_boundary,higher_boundary",
+      "micro_variants": "legacy,blocked_full,early_stop",
+      "scenario": "baseline",
+      "action": "micro",
+      "variant": "legacy",
+      "result_file": null,
+      "fit_file": null,
+      "data_source": "/mnt/d/ratcliff-3060/results/study-128",
+      "deadline_utc": "2026-10-14T01:00:00Z",
+      "start_seed": 0,
+      "nsim": 512,
+      "data_nsim": 9000,
+      "score_nsim": 9000,
+      "chunk": 8,
+      "sim_seeds": 3,
+      "repeats": 3,
+      "maxiter": 1000,
+      "starts": 1,
+      "baseline_extra_starts": 1,
+      "start_spread": 0.2,
+      "basis_cache_size": 2,
+      "checkpoint_every": 100,
+      "max_score_checkpoints": 1,
+      "error_limit": 0.05,
+      "budget_seconds": 21600,
+      "fit_seconds_limit": 1800,
+      "reserve_seconds": 180,
+      "run_started_utc": "2026-10-13T19:42:49.046908+00:00",
+      "target": "Mean effective active parameter error <=0.05; median independent-MC G2 <= true-parameter median +10% absolute magnitude +1",
+      "scoring_note": "Three independent simulator seeds on the same observations; fixed training checkpoints, no scoring feedback",
+      "compared_features": "Legacy versus improvement 1 only; full-horizon blocked correctness control",
+      "precision": "fp32 spatial fields, fp64 RT, x64 enabled, default matmul",
+      "cache_note": "Same reduced basis cache for all variants; library default unchanged"
+    }
+  },
+  "fitting_cases": [
+    {
+      "action": "fit",
+      "scenario": "baseline",
+      "variant": "legacy",
+      "start_seed": 0,
+      "fit": {
+        "status": "pending_or_running",
+        "progress": {}
+      },
+      "score": {
+        "status": "unscored"
+      }
+    },
+    {
+      "action": "fit",
+      "scenario": "baseline",
+      "variant": "early_stop",
+      "start_seed": 0,
+      "fit": {
+        "status": "pending_or_running",
+        "progress": {}
+      },
+      "score": {
+        "status": "unscored"
+      }
+    },
+    {
+      "action": "fit",
+      "scenario": "lower_boundary",
+      "variant": "legacy",
+      "start_seed": 0,
+      "fit": {
+        "status": "pending_or_running",
+        "progress": {}
+      },
+      "score": {
+        "status": "unscored"
+      }
+    },
+    {
+      "action": "fit",
+      "scenario": "lower_boundary",
+      "variant": "early_stop",
+      "start_seed": 0,
+      "fit": {
+        "status": "pending_or_running",
+        "progress": {}
+      },
+      "score": {
+        "status": "unscored"
+      }
+    },
+    {
+      "action": "fit",
+      "scenario": "higher_boundary",
+      "variant": "legacy",
+      "start_seed": 0,
+      "fit": {
+        "status": "pending_or_running",
+        "progress": {}
+      },
+      "score": {
+        "status": "unscored"
+      }
+    },
+    {
+      "action": "fit",
+      "scenario": "higher_boundary",
+      "variant": "early_stop",
+      "start_seed": 0,
+      "fit": {
+        "status": "pending_or_running",
+        "progress": {}
+      },
+      "score": {
+        "status": "unscored"
+      }
+    },
+    {
+      "action": "fit",
+      "scenario": "baseline",
+      "variant": "early_stop",
+      "start_seed": 1,
+      "fit": {
+        "status": "pending_or_running",
+        "progress": {}
+      },
+      "score": {
+        "status": "unscored"
+      }
+    },
+    {
+      "action": "fit",
+      "scenario": "baseline",
+      "variant": "legacy",
+      "start_seed": 1,
+      "fit": {
+        "status": "pending_or_running",
+        "progress": {}
+      },
+      "score": {
+        "status": "unscored"
+      }
+    }
+  ],
+  "planned_job_count": 25,
+  "recorded_job_count": 1,
+  "prior_study_note": "study-128 stopped during its first fit when the user revised the budget; no completed fit claim."
+}
