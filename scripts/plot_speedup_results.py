@@ -20,6 +20,8 @@ def plot_results(source, output):
     output.mkdir(parents=True, exist_ok=True)
     rows = json.loads((source / "results.json").read_text())
     completed = [r for r in rows if r.get("status") == "completed"]
+    fit_variants = [v for v in VARIANTS if any(r["action"] == "fit"
+                    and r["variant"] == v for r in completed)] or list(VARIANTS)
     gpu_run = all(r.get("metadata", {}).get("backend") == "gpu" for r in completed)
     run_label = "H100 pilot" if gpu_run and completed else "CPU smoke (not GPU evidence)"
     fig, axes = plt.subplots(2, 3, figsize=(15, 8), constrained_layout=True)
@@ -30,12 +32,12 @@ def plot_results(source, output):
             ("independent_full_budget_loss", "Independent G2 (lower is better)", 1),
         )):
             ax = axes[mi, col]
-            for vi, variant in enumerate(VARIANTS):
+            for vi, variant in enumerate(fit_variants):
                 values = [r[field] * multiplier for r in completed
                           if r["action"] == "fit" and r["model"] == model
                           and r["variant"] == variant]
                 if values:
-                    ax.bar(vi, np.median(values), color=COLORS[vi], alpha=.8)
+                    ax.bar(vi, np.median(values), color=COLORS[VARIANTS.index(variant)], alpha=.8)
                     offsets = np.linspace(-.13, .13, len(values))
                     ax.scatter(vi + offsets, values, color="#172233", s=22, zorder=3)
                     ax.text(vi, max(values), f" n={len(values)}", ha="center",
@@ -44,7 +46,8 @@ def plot_results(source, output):
             if not any(r["action"] == "fit" and r["model"] == model for r in completed):
                 ax.text(.5, .5, "No complete fitting cases", transform=ax.transAxes,
                         ha="center", va="center", color="#65758b")
-            ax.set_xticks(range(5), LABELS, fontsize=9)
+            ax.set_xticks(range(len(fit_variants)),
+                          [LABELS[VARIANTS.index(v)] for v in fit_variants], fontsize=9)
             ax.set_ylim(bottom=0)
             ax.spines[["top", "right"]].set_visible(False)
             ax.grid(axis="y", alpha=.15)

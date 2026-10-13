@@ -93,7 +93,7 @@ def simulate_conditions(jax, model, params, nsim, seed, variant, args):
     from shared import prng
     cfg = config(variant, args)
     rt_list, cat_list = [], []
-    work = 0
+    allocated_work = []
     if model == "a":
         from model_a import objective, simulate
         p = objective.clamp(jnp.asarray(params))
@@ -106,10 +106,10 @@ def simulate_conditions(jax, model, params, nsim, seed, variant, args):
                 rt, cat, allocated = simulate.simulate_blocked_with_work(**dict(
                     zip(("key", "ter", "st", "cr", "crsd", "si", "sig", "av",
                          "nsim", "chunk_size"), values)), **cfg)
-                work += int(allocated)
+                allocated_work.append(allocated)
             else:
                 rt, cat = simulate.simulate(*values)
-                work += ((nsim + args.chunk_a - 1) // args.chunk_a) * args.chunk_a * 400
+                allocated_work.append(((nsim + args.chunk_a - 1) // args.chunk_a) * args.chunk_a * 400)
             rt_list.append(rt)
             cat_list.append(cat)
     else:
@@ -123,15 +123,18 @@ def simulate_conditions(jax, model, params, nsim, seed, variant, args):
                 rt, cat, allocated = simulate.simulate_b_blocked_with_work(
                     *values, **cfg,
                 )
-                work += int(allocated)
+                allocated_work.append(allocated)
             else:
                 rt, cat = simulate.simulate_b(*values)
-                work += ((nsim + args.chunk_b - 1) // args.chunk_b) * args.chunk_b * 400
+                allocated_work.append(((nsim + args.chunk_b - 1) // args.chunk_b) * args.chunk_b * 400)
             rt_list.append(rt)
             cat_list.append(cat)
     rt, cat = jnp.stack(rt_list), jnp.stack(cat_list)
-    jax.block_until_ready((rt, cat))
-    return np.asarray(rt), np.asarray(cat), work
+    work = jnp.stack([jnp.asarray(w, dtype=jnp.int64) for w in allocated_work]).sum()
+    # Queue all conditions for every variant before the one final wait. Reading
+    # each device work counter inside the loop unfairly serializes only blocks.
+    jax.block_until_ready((rt, cat, work))
+    return np.asarray(rt), np.asarray(cat), int(work)
 
 
 def data_from_samples(rt, cat, categories):

@@ -78,8 +78,18 @@ unscored. Bootstrap intervals describe this pilot's timing samples, not all
 machines or data. Inspect incomplete cases and convergence flags in the report.
 
 With the extended rental, use a separate follow-up directory for selected
-full-budget comparisons: `--skip-micro --fit-variants legacy,early_stop,combined
---data-nsim 9000 --final-nsim 9000 --fit-iters 100`. Keep three paired starts,
+full-budget comparisons: `--fit-variants legacy,early_stop,combined
+--data-nsim 9000 --final-nsim 9000 --fit-iters 40 --sim-seeds 12`. Keep three paired starts,
 the same independent scoring seed, and an explicit deadline based on time left
 in the two-hour rental. Finish as many complete paired comparisons as that
 deadline allows; incomplete comparisons must remain labelled incomplete.
+
+The follow-up simulator timer queues all conditions before one final wait,
+including the work counters. The initial pilot read a counter after each
+blocked condition, adding waits only to the blocked variants; retain that
+pilot for provenance but use the corrected follow-up simulator timings.
+Actual fitting measurements use neither of these work-counter waits.
+
+Run cProfile and line_profiler in their own bounded window while benchmark
+workers are stopped. Python profiles diagnose host work and synchronization;
+they do not resolve individual GPU kernels or supply speedup evidence.
