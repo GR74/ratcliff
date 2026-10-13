@@ -126,3 +126,49 @@ Score at most two eligible checkpoints, selected evenly in order, plus the final
 estimate in this first pass. This coarser checkpoint resolution must accompany
 any reported observed time to quality. The three-key independent score remains
 unchanged; do not relax the target after seeing results.
+
+## Revised six-hour study
+
+The user briefly allowed twelve hours, then reduced the limit to **six hours**.
+The final allowance includes earlier local GPU pilots. The first pilot began
+at 19:00:22 UTC; conservatively stop by **2026-10-14 01:00:00 UTC**, or
+**9:00 p.m. Eastern on October 13**. This supersedes the two-hour first-pass
+plan and the intermediate overnight allowance.
+
+The 9,000-trial pilot measured a median 90.8538 s for legacy and 8.6001 s for
+early stopping: 10.564x faster simulation. Both medians use three warmed
+repetitions, chunk 8, and one simulator seed. Compared with the H100 medians,
+this workload took about 23x longer on the laptop. Different batch sizes
+(8 versus 64), drivers and CUDA dependencies limit that comparison.
+
+The smaller 128-trial run completed nine microbenchmarks and all three
+9,000-trial observation datasets. Its first fit was interrupted to implement
+the revised scope; retain its traces and label it interrupted, not completed.
+Reuse the observations only after matching each completed record's SHA-256,
+trial count and fixed generation seed. Preserve the earlier driver snapshots.
+
+Use **512 fitting trials per condition**, **9,000 independent scoring trials**,
+three simulator seeds, three warmed timing repetitions, and the same four
+paired starting cases (eight fits). Keep 1,000 maximum iterations, tolerance
+1e-5, and a **1,800-second training cap per fit**. A 180-second overall reserve
+leaves room to write final records before the absolute deadline. No convergence
+or quality outcome is guaranteed within this allowance.
+
+To bound scoring costs, score the first saved checkpoint that satisfies the
+parameter-error requirement, plus the final estimate; at most two distinct
+vectors. Use all three previously declared independent simulator keys. The
+observations are shared with training: this is independent Monte Carlo
+scoring, not a held-out participant dataset. Save each completed scoring
+checkpoint immediately so a later timeout cannot erase earlier measurements.
+The coarse checkpoint resolution and reduced fitting trial count remain
+limitations of any time-to-quality claim.
+
+The benchmark itself respects the absolute UTC deadline. A separate Windows
+process running `scripts/guard_laptop_validation.py` checks WSL processes every
+15 seconds and stops only this named benchmark's parent and workers at the
+deadline. It never shuts down WSL or other applications. Keep the laptop on
+AC power and awake. A scheduled follow-up should inspect completion, publish
+all completed/censored cases and raw backups to the existing experiment
+branch, and then remove its own schedule. Do not start duplicate GPU jobs or
+extend the deadline. The user also offered the remaining $3.48 RunPod balance;
+it is reserved for a focused follow-up if the laptop results leave a gap.

@@ -6,11 +6,13 @@ Recorded checkpoint times exclude later diagnostic scoring and are upper
 bounds on the first time a target could have been reached between checkpoints.
 """
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 import time
 from types import SimpleNamespace
@@ -31,6 +33,30 @@ def meets_target(error, loss, truth_loss, error_limit=.05):
     return (all(math.isfinite(v) for v in (error, loss, truth_loss))
             and error <= error_limit
             and loss <= truth_loss + .1 * max(abs(truth_loss), 1.) + 1.)
+
+
+def reuse_data(source, out, scenarios, data_nsim):
+    """Reuse only complete, fingerprint-verified observations at the same size."""
+    source = Path(source).resolve()
+    config = json.loads((source / "run-config.json").read_text(encoding="utf-8"))
+    if config["data_nsim"] != data_nsim:
+        raise ValueError("reused data trial count must match")
+    manifest = []
+    for scenario in scenarios:
+        original = source / f"data-{scenario}.npz"
+        record = json.loads((source / f"data-{scenario}-0-legacy.json").read_text(encoding="utf-8"))
+        digest = hashlib.sha256(original.read_bytes()).hexdigest()
+        if (record["status"] != "completed" or record["scenario"] != scenario
+                or record["data_nsim"] != data_nsim or record["data_seed"] != 123
+                or record["data_sha256"] != digest):
+            raise ValueError(f"incomplete or mismatched reused data: {scenario}")
+        destination = out / original.name
+        if destination.exists():
+            raise ValueError("reused data destination already exists")
+        shutil.copyfile(original, destination)
+        manifest.append(dict(scenario=scenario, source=str(original), sha256=digest,
+                             original_metadata=record.get("metadata")))
+    bench.write_json(out / "reused-data.json", manifest)
 
 
 def worker(args):
@@ -166,12 +192,27 @@ def worker(args):
             if not eligible or eligible[-1]["params"] != final["params"]:
                 eligible.append(final)
             checked = []
+
+            def save_scoring_progress():
+                hits = [c for c in checked if c["target_pass"]]
+                result.update(status="scoring_in_progress", truth_g2_by_seed=truth_scores,
+                    score_seeds=seeds, scored_checkpoints=checked,
+                    observed_time_to_target_seconds=min(c["fit_elapsed_seconds"] for c in hits) if hits else None,
+                    target_reached=bool(hits), final_params=fitted["params"],
+                    score_nsim=args.score_nsim,
+                    target_note="Earliest scored checkpoint; not an exact crossing time or global accuracy guarantee.",
+                    metadata=bench.metadata(jax),
+                    data_sha256=hashlib.sha256(data_path.read_bytes()).hexdigest())
+                bench.write_json(args.result_file, result)
+
+            save_scoring_progress()
             for c in eligible:
                 values = score(c["params"])
                 r = dict(c, independent_g2_by_seed=values, independent_g2_median=float(np.median(values)))
                 r["target_pass"] = meets_target(r["mean_active_effective_parameter_error"],
                     r["independent_g2_median"], float(np.median(truth_scores)), args.error_limit)
                 checked.append(r)
+                save_scoring_progress()
                 print("SCORE", args.scenario, args.start_seed, args.variant,
                       "eval", c["eval"], "pass", r["target_pass"], flush=True)
             hits = [c for c in checked if c["target_pass"]]
@@ -181,6 +222,7 @@ def worker(args):
                           target_reached=bool(hits), final_params=fitted["params"],
                           score_nsim=args.score_nsim,
                           target_note="Earliest scored checkpoint; not an exact crossing time or global accuracy guarantee.")
+            result["status"] = "completed"
     result["metadata"] = bench.metadata(jax)
     result["metadata"]["x64"] = bool(jax.config.jax_enable_x64)
     result["metadata"]["validation_driver_sha256"] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -229,19 +271,29 @@ def main(args):
         raise ValueError("valid scenarios and positive sizes are required")
     out.mkdir(parents=True, exist_ok=True)
     bench.write_json(out / "run-config.json", dict(vars(args),
-        target=f"Mean effective active parameter error <={args.error_limit}; median held-out G2 <= true-parameter median +10% absolute magnitude +1",
-        scoring_note="Three held-out seeds; fixed training checkpoints, no scoring feedback",
+        run_started_utc=datetime.now(timezone.utc).isoformat(),
+        target=f"Mean effective active parameter error <={args.error_limit}; median independent-MC G2 <= true-parameter median +10% absolute magnitude +1",
+        scoring_note="Three independent simulator seeds on the same observations; fixed training checkpoints, no scoring feedback",
         compared_features="Legacy versus improvement 1 only; full-horizon blocked correctness control",
         precision="fp32 spatial fields, fp64 RT, x64 enabled, default matmul",
         cache_note="Same reduced basis cache for all variants; library default unchanged"))
+    shutil.copyfile(__file__, out / "validation-driver-snapshot.py")
     deadline = time.monotonic() + args.budget_seconds
+    if args.deadline_utc:
+        absolute = datetime.fromisoformat(args.deadline_utc.replace("Z", "+00:00"))
+        if absolute.utcoffset() is None:
+            raise ValueError("deadline must include a timezone")
+        deadline = min(deadline, time.monotonic() + (absolute - datetime.now(timezone.utc)).total_seconds())
     rows = []
     micro_variants = args.micro_variants.split(",")
     if not micro_variants or any(v not in ("legacy", "blocked_full", "early_stop") for v in micro_variants):
         raise ValueError("valid micro variants required")
     jobs = [("micro", s, v, 0) for s in scenarios for v in micro_variants]
     if not args.pilot_only:
-        jobs += [("data", s, "legacy", 0) for s in scenarios]
+        if args.data_source:
+            reuse_data(args.data_source, out, scenarios, args.data_nsim)
+        else:
+            jobs += [("data", s, "legacy", 0) for s in scenarios]
         for seed in range(args.starts):
             for scenario in scenarios:
                 variants = ("legacy", "early_stop") if seed % 2 == 0 else ("early_stop", "legacy")
@@ -252,6 +304,8 @@ def main(args):
                 variants = ("legacy", "early_stop") if seed % 2 == 0 else ("early_stop", "legacy")
                 for variant in variants:
                     jobs += [("fit", "baseline", variant, seed), ("score", "baseline", variant, seed)]
+    bench.write_json(out / "planned-jobs.json", [dict(action=a, scenario=s, variant=v, start_seed=n)
+                                               for a, s, v, n in jobs])
     for action, scenario, variant, seed in jobs:
         remaining = deadline - time.monotonic()
         if remaining <= args.reserve_seconds:
@@ -282,9 +336,12 @@ def main(args):
             row = json.loads(path.read_text(encoding="utf-8")) if path.exists() else dict(
                 action=action, scenario=scenario, variant=variant, start_seed=seed,
                 status="error", returncode=process.returncode)
+            if process.returncode:
+                row.update(status="error", returncode=process.returncode)
         except subprocess.TimeoutExpired:
-            row = dict(action=action, scenario=scenario, variant=variant,
-                       start_seed=seed, status="timeout")
+            row = json.loads(path.read_text(encoding="utf-8")) if path.exists() else dict(
+                action=action, scenario=scenario, variant=variant, start_seed=seed)
+            row.update(status="timeout")
         rows.append(row)
         bench.write_json(out / "results.json", rows)
         bench.write_json(out / "summary.json", analyse(out, rows, args))
@@ -311,6 +368,8 @@ def parser():
     p.add_argument("--variant", choices=("legacy", "blocked_full", "early_stop"), default="legacy")
     p.add_argument("--result-file")
     p.add_argument("--fit-file")
+    p.add_argument("--data-source", help="Reuse complete legacy-generated observation files")
+    p.add_argument("--deadline-utc", help="Absolute stop deadline, in timezone-aware ISO format")
     p.add_argument("--start-seed", type=int, default=0)
     p.add_argument("--nsim", type=int, default=512)
     p.add_argument("--data-nsim", type=int, default=9000)

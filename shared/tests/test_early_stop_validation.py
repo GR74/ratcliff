@@ -1,5 +1,6 @@
 """Do not turn a fast/finished fit, a CPU fallback or an empty run into a win."""
 import json
+import hashlib
 from types import SimpleNamespace
 
 import pytest
@@ -45,3 +46,35 @@ def test_memory_sized_study_keeps_extra_baseline_start_inside_saved_plan(tmp_pat
     summary = json.loads((tmp_path / "summary.json").read_text(encoding="utf-8"))
     assert summary["planned_cases"] == 28
     assert summary["stopped_by_budget"]
+
+
+def test_reusing_observations_checks_fingerprints_and_trial_count(tmp_path):
+    source, out = tmp_path / "old", tmp_path / "new"
+    source.mkdir()
+    out.mkdir()
+    (source / "run-config.json").write_text(json.dumps(dict(data_nsim=9000)))
+    payload = b"example-observations"
+    (source / "data-baseline.npz").write_bytes(payload)
+    record = dict(status="completed", scenario="baseline", data_nsim=9000,
+                  data_seed=123, data_sha256=hashlib.sha256(payload).hexdigest())
+    (source / "data-baseline-0-legacy.json").write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="trial count"):
+        validation.reuse_data(source, out, ["baseline"], 512)
+    validation.reuse_data(source, out, ["baseline"], 9000)
+    assert (out / "data-baseline.npz").read_bytes() == payload
+    (source / "data-baseline.npz").write_bytes(b"corrupted-observations")
+    with pytest.raises(ValueError, match="mismatched"):
+        validation.reuse_data(source, out, ["baseline"], 9000)
+
+
+def test_watchdog_matches_only_exact_benchmark_and_output():
+    from scripts.guard_laptop_validation import matches_run
+    script = "/repo/scripts/validate_early_stopping.py"
+    output = "/results/ours"
+    assert matches_run(["python", script, "--output", output], "/repo", script, output)
+    assert matches_run(["python", "scripts/validate_early_stopping.py", "--output", output],
+                       "/repo", script, output)
+    assert not matches_run(["python", script, "--output", "/results/other"], "/repo", script, output)
+    assert not matches_run(["python", "other.py", "--output", output], "/repo", script, output)
+    assert not matches_run(["python", "scripts/validate_early_stopping.py", "--output", output],
+                           "/another/repo", script, output)
