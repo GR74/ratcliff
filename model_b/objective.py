@@ -89,7 +89,8 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
 
 
 def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
-                time_block_size=0, stop_early=True, compact=True):
+                time_block_size=0, stop_early=True, compact=True,
+                kl_bucketed=False, cumulative_kl=False):
     """
     Vectorized G2 objective for Model B, summed across 2 conditions.
 
@@ -102,6 +103,9 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
     # Local imports to avoid hard top-level dependency cycle risk
     from model_b import simulate as sim_b
     from shared import prng
+
+    if (kl_bucketed or cumulative_kl) and (not time_block_size or not use_kl):
+        raise ValueError("K-L extensions require blocked simulation and use_kl=True")
 
     p = clamp_b(params)
     ter, st, cr, crsd, sis, sig = p[0], p[1], p[2], p[3], p[4], p[5]
@@ -133,6 +137,7 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
             avs[ci, 0], avs[ci, 1], avs[ci, 2],
             sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
             time_block_size, stop_early, compact,
+            kl_bucketed, cumulative_kl,
         ) for ci in range(2)]
         rts = jnp.stack([out[0] for out in outputs])
         cats = jnp.stack([out[1] for out in outputs])

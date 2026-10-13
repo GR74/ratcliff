@@ -62,13 +62,15 @@ def _batch_sizes(size):
 
 def first_passage(noise_keys, thresholds, drift, valid_trials,
                   sample_noise: Callable, *, n_steps=400, block_size=32,
-                  stop_early=True, compact=True):
+                  stop_early=True, compact=True, noise_is_path=False):
     """Return first crossings, preserving the shared upper-boundary rule.
 
     sample_noise(keys) returns (batch, block_size, locations). It receives
     trial/block keys so an unfinished trial sees the same noise when others
     finish. All intermediate steps are checked, including a short final block.
     Full-horizon control: stop_early=False (also disables compaction).
+    With noise_is_path=True, the callback returns cumulative noise at EVERY
+    intermediate step. Drift and centering are applied to those paths directly.
 
     Keep the condition loop outside vmap: batched conditional predicates can
     execute all lax.switch branches and defeat the purpose of compaction.
@@ -100,9 +102,15 @@ def first_passage(noise_keys, thresholds, drift, valid_trials,
             block_keys = jax.vmap(lambda k: jax.random.fold_in(k, s.block))(
                 noise_keys[indices],
             )
-            increments = sample_noise(block_keys) + drift[None, None, :]
-            increments -= increments.mean(axis=-1, keepdims=True)
-            paths = jnp.cumsum(increments, axis=1)
+            noise = sample_noise(block_keys)
+            if noise_is_path:
+                times = jnp.arange(1, block_size + 1, dtype=drift.dtype)
+                paths = noise + times[None, :, None] * drift[None, None, :]
+                paths -= paths.mean(axis=-1, keepdims=True)
+            else:
+                increments = noise + drift[None, None, :]
+                increments -= increments.mean(axis=-1, keepdims=True)
+                paths = jnp.cumsum(increments, axis=1)
             paths += s.accumulator[indices, None, :]
             start = s.block * block_size
             within_horizon = start + jnp.arange(block_size) < n_steps

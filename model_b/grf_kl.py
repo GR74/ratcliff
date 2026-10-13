@@ -19,16 +19,20 @@ from model_b import grf as grf_circulant
 # limit if a fit visits many distinct sig values. Each entry holds a
 # (n*m, 2*k_max) fp32 array — 256 MB at NM=16000, k_max=2000.
 _BASIS_CACHE_MAXSIZE = 64
+DEFAULT_K_MAX = 2000
+DEFAULT_MODE_BUCKETS = (512, 1024, 1536, 2000)
 _basis_cache = {}
 _basis_cache_order = []
 
 
-def _cached_calc_kl_basis(sig_key, n, m, k_max, variance_threshold, pad_to_k_max):
-    cache_key = (sig_key, n, m, k_max, variance_threshold, pad_to_k_max)
+def _cached_calc_kl_basis(sig_key, n, m, k_max, variance_threshold, pad_to_k_max,
+                          mode_buckets=None):
+    cache_key = (sig_key, n, m, k_max, variance_threshold, pad_to_k_max, mode_buckets)
     cached = _basis_cache.get(cache_key)
     if cached is not None:
         return cached
-    result = _calc_kl_basis_impl(sig_key, n, m, k_max, variance_threshold, pad_to_k_max)
+    result = _calc_kl_basis_impl(sig_key, n, m, k_max, variance_threshold,
+                               pad_to_k_max, mode_buckets)
     _basis_cache[cache_key] = result
     _basis_cache_order.append(cache_key)
     if len(_basis_cache_order) > _BASIS_CACHE_MAXSIZE:
@@ -42,7 +46,7 @@ def calc_kl_basis(sig: float,
                   m: int = 160,
                   k_max: int = 2000,
                   variance_threshold: float = 0.99,
-                  pad_to_k_max: bool = False):
+                  pad_to_k_max: bool = False, mode_buckets=None):
     """
     Build the truncated K-L basis for the circulant-embedded covariance.
 
@@ -67,15 +71,26 @@ def calc_kl_basis(sig: float,
 
     Cached by (rounded sig, n, m, k_max, variance_threshold, pad_to_k_max)
     so a fit visiting the same sig twice doesn't rebuild.
+
+    mode_buckets optionally pads to the smallest listed complex-mode capacity
+    that covers K. It changes padding only, never the retained modes or variance
+    threshold. Bucket configuration is included in the cache key.
     """
+    if mode_buckets is not None:
+        mode_buckets = tuple(mode_buckets)
+        if (not mode_buckets or any(not isinstance(k, int) or k < 1 for k in mode_buckets)
+                or any(a >= b for a, b in zip(mode_buckets, mode_buckets[1:]))
+                or mode_buckets[-1] < k_max):
+            raise ValueError("mode buckets must increase strictly and cover k_max")
     # Round sig key to 6 decimals so floating-point jitter still hits cache.
     sig_key = round(float(sig), 6)
     return _cached_calc_kl_basis(sig_key, n, m, k_max,
-                                  variance_threshold, pad_to_k_max)
+                                  variance_threshold, pad_to_k_max, mode_buckets)
 
 
 def _calc_kl_basis_impl(sig: float, n: int, m: int, k_max: int,
-                         variance_threshold: float, pad_to_k_max: bool):
+                         variance_threshold: float, pad_to_k_max: bool,
+                         mode_buckets=None):
     """The actual K-L basis construction. Wrapped by calc_kl_basis with caching."""
     LAM = grf_circulant.calc_LAM(n=n, m=m, s1=sig, s2=sig)
     n_pad, m_pad = LAM.shape
@@ -123,7 +138,9 @@ def _calc_kl_basis_impl(sig: float, n: int, m: int, k_max: int,
 
     # Pad output to (n*m, 2*k_max) when requested; the extra columns are zeros
     # so any random noise multiplied against them contributes nothing.
-    cols = 2 * k_max if pad_to_k_max else 2 * K
+    capacity = (next(k for k in mode_buckets if k >= K) if mode_buckets is not None
+                else k_max if pad_to_k_max else K)
+    cols = 2 * capacity
     V = np.zeros((n * m, cols), dtype=np.float32)
     V[:, 0 : 2 * K : 2] = re.T        # even columns = real parts
     V[:, 1 : 2 * K : 2] = im.T        # odd columns  = imag parts

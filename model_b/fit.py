@@ -27,7 +27,8 @@ class FitResult:
 def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
                   tol: float = 1e-7, chunk_size: int = 4, use_kl: bool = False,
                   on_update=None, trial_schedule=None, time_block_size=0,
-                  stop_early=True, compact=True, on_stage=None):
+                  stop_early=True, compact=True, on_stage=None,
+                  optimize_active_only=False, kl_bucketed=False, cumulative_kl=False):
     """
     Scipy Nelder-Mead simplex fit for Model B.
 
@@ -44,19 +45,40 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
                  UI without modifying scipy.
 
     Returns FitResult.
+    optimize_active_only removes the inert sv coordinate from the search while
+    preserving the public 13-parameter result/callbacks and its initial sv value.
+    kl_bucketed/cumulative_kl are optional blocked K-L simulation extensions.
     """
+    template = np.asarray(x0, dtype=float).copy()
+    if template.shape != (13,):
+        raise ValueError("Model B x0 must have 13 parameters")
+    active = np.asarray([i for i in range(13) if i != 6])
+
+    def expand(p_np):
+        if not optimize_active_only:
+            return np.asarray(p_np)
+        full = template.copy()
+        full[active] = p_np
+        return full
+
     def loss_numpy(p_np, stage_nsim):
-        p = jnp.asarray(p_np)
+        p = jnp.asarray(expand(p_np))
         return obj_b.fofs_b_new(
             p, data, key, nsim=stage_nsim, chunk_size=chunk_size, use_kl=use_kl,
             time_block_size=time_block_size, stop_early=stop_early, compact=compact,
+            kl_bucketed=kl_bucketed, cumulative_kl=cumulative_kl,
         )
 
+    def progress(number, loss, params):
+        if on_update is not None:
+            on_update(number, loss, expand(params).copy())
+
     res = minimize_staged(
-        loss_numpy, x0, nsim=nsim, maxiter=maxiter, tol=tol,
-        schedule=trial_schedule, on_update=on_update, on_stage=on_stage,
+        loss_numpy, template[active] if optimize_active_only else template,
+        nsim=nsim, maxiter=maxiter, tol=tol,
+        schedule=trial_schedule, on_update=progress, on_stage=on_stage,
     )
     return FitResult(
-        params=jnp.asarray(res.params), loss=res.loss, n_iters=res.n_iters,
+        params=jnp.asarray(expand(res.params)), loss=res.loss, n_iters=res.n_iters,
         converged=res.converged, n_evals=res.n_evals, stages=res.stages,
     )

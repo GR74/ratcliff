@@ -23,7 +23,11 @@ def plot_results(source, output):
     fit_variants = [v for v in VARIANTS if any(r["action"] == "fit"
                     and r["variant"] == v for r in completed)] or list(VARIANTS)
     gpu_run = all(r.get("metadata", {}).get("backend") == "gpu" for r in completed)
-    run_label = "H100 pilot" if gpu_run and completed else "CPU smoke (not GPU evidence)"
+    h100_run = gpu_run and all("H100" in r.get("metadata", {}).get("device_kind", "")
+                              for r in completed)
+    run_label = ("H100 screening" if h100_run and completed else
+                 "GPU screening" if gpu_run and completed else
+                 "CPU smoke (not GPU evidence)")
     fig, axes = plt.subplots(2, 3, figsize=(15, 8), constrained_layout=True)
     for mi, model in enumerate(("a", "b")):
         for col, (field, title, multiplier) in enumerate((

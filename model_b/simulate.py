@@ -309,16 +309,20 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
     )
 
 
-@partial(jax.jit, static_argnums=(8, 9, 10, 11, 12, 13))
+@partial(jax.jit, static_argnums=(8, 9, 10, 11, 12, 13, 14))
 def _simulate_b_blocked_core(key, ter, st, cr, crsd, drift, k_zone, basis,
                              nsim, chunk_size, time_block_size,
-                             stop_early, compact, use_kl):
+                             stop_early, compact, use_kl, cumulative_kl=False):
     n_chunks = (nsim + chunk_size - 1) // chunk_size
 
     def sample_noise(keys):
         if use_kl:
-            z = blocked.normal_blocks(keys, time_block_size, basis.shape[1],
-                                       jnp.float32)
+            # Keep normal draws fixed across basis capacities; padding removal
+            # must not silently replace the retained modes' random weights.
+            z = blocked.normal_blocks(keys, time_block_size, 2 * grf_kl.DEFAULT_K_MAX,
+                                       jnp.float32)[..., :basis.shape[1]]
+            if cumulative_kl:
+                z = jnp.cumsum(z, axis=1)
             return jnp.einsum("bsk,Nk->bsN", z, basis)
         n_pad, m_pad = basis.shape
         n_fft = (time_block_size + 1) // 2
@@ -339,6 +343,7 @@ def _simulate_b_blocked_core(key, ter, st, cr, crsd, drift, k_zone, basis,
             noise_keys, thresholds, drift, indices < nsim, sample_noise,
             n_steps=NSTEP, block_size=time_block_size,
             stop_early=stop_early, compact=compact,
+            noise_is_path=cumulative_kl,
         )
         cat = jnp.where(result.crossed, k_zone[result.positions], 5)
         rt = (result.steps.astype(jnp.float64) + ndt) * E
@@ -351,7 +356,8 @@ def _simulate_b_blocked_core(key, ter, st, cr, crsd, drift, k_zone, basis,
 def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
                                  sis, sig, si, nsim, chunk_size=64,
                                  use_kl=True, time_block_size=32,
-                                 stop_early=True, compact=True):
+                                 stop_early=True, compact=True,
+                                 kl_bucketed=False, cumulative_kl=False):
     """Optional blocked Model B with unchanged FFT/K-L covariance/categories.
 
     stop_early=False is the paired full-horizon control. Keep time_block_size
@@ -359,6 +365,8 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
     """
     if nsim < 1 or chunk_size < 1:
         raise ValueError("nsim and chunk_size must be positive")
+    if (kl_bucketed or cumulative_kl) and not use_kl:
+        raise ValueError("K-L extensions require use_kl=True")
     v1, v2, v3 = drift_bumps(sis=sis)
     drift = (jnp.asarray(av1, dtype=jnp.float32) * v1.astype(jnp.float32)
              + jnp.asarray(av2, dtype=jnp.float32) * v2.astype(jnp.float32)
@@ -366,21 +374,25 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
     if use_kl:
         basis, _k, _variance = grf_kl.calc_kl_basis(
             sig=float(sig), n=N, m=M, pad_to_k_max=True,
+            mode_buckets=grf_kl.DEFAULT_MODE_BUCKETS if kl_bucketed else None,
         )
     else:
         basis = grf.calc_LAM(s1=sig, s2=sig).astype(jnp.float32)
     return _simulate_b_blocked_core(
         key, ter, st, cr, crsd, drift.reshape(-1), zone_array(si).reshape(-1),
         basis, nsim, chunk_size, time_block_size, stop_early, compact, use_kl,
+        cumulative_kl,
     )
 
 
 def simulate_b_blocked(key, ter, st, cr, crsd, av1, av2, av3,
                        sis, sig, si, nsim, chunk_size=64, use_kl=True,
-                       time_block_size=32, stop_early=True, compact=True):
+                       time_block_size=32, stop_early=True, compact=True,
+                       kl_bucketed=False, cumulative_kl=False):
     """RT/category-only interface for optional time blocking."""
     rt, cat, _work = simulate_b_blocked_with_work(
         key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim,
         chunk_size, use_kl, time_block_size, stop_early, compact,
+        kl_bucketed, cumulative_kl,
     )
     return rt, cat

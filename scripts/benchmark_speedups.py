@@ -75,8 +75,11 @@ def metadata(jax):
 def config(variant, args):
     if variant == "legacy":
         return {"time_block_size": 0}
-    return {"time_block_size": args.block_size,
-            "stop_early": variant in ("early_stop", "combined"), "compact": True}
+    result = {"time_block_size": args.block_size,
+              "stop_early": variant in ("early_stop", "combined"), "compact": True}
+    if getattr(args, "kl_bucketed", False) or getattr(args, "cumulative_kl", False):
+        result.update(kl_bucketed=args.kl_bucketed, cumulative_kl=args.cumulative_kl)
+    return result
 
 
 def schedule(args):
@@ -162,6 +165,10 @@ def worker(args):
     if not args.allow_cpu and (jax.default_backend() != "gpu"
                               or "H100" not in jax.devices()[0].device_kind):
         raise RuntimeError(f"An H100 is required; got {jax.devices()}")
+    extension_flags = {name: bool(getattr(args, name, False)) for name in
+                       ("optimize_active_only", "kl_bucketed", "cumulative_kl")}
+    if any(extension_flags.values()) and (args.model != "b" or args.variant == "legacy"):
+        raise ValueError("extension benchmark workers require Model B's blocked path")
     out = Path(args.output)
     params = np.asarray(TRUE[args.model])
     categories = 3 if args.model == "a" else 5
@@ -170,7 +177,8 @@ def worker(args):
               "settings": {"block_size": args.block_size, "chunk_a": args.chunk_a,
                            "chunk_b": args.chunk_b, "sim_nsim": args.sim_nsim,
                            "final_nsim": args.final_nsim, "fit_iters": args.fit_iters,
-                           "matmul_precision": args.matmul_precision}}
+                           "matmul_precision": args.matmul_precision,
+                           "extensions": extension_flags}}
     if args.action == "data":
         rt, cat, _ = simulate_conditions(jax, args.model, params, args.data_nsim,
                                          123, "legacy", args)
@@ -203,6 +211,13 @@ def worker(args):
         result.update({"timings_seconds": times, "seed_timings_seconds": seed_times,
                        "computed_trial_steps": work,
                        "nominal_full_trial_steps": rt.shape[0] * args.sim_nsim * 400})
+        if args.model == "b":
+            from model_b import grf_kl
+            basis, modes, variance = grf_kl.calc_kl_basis(
+                float(params[5]), pad_to_k_max=True,
+                mode_buckets=grf_kl.DEFAULT_MODE_BUCKETS if extension_flags["kl_bucketed"] else None)
+            result["kl_basis"] = {"complex_modes": modes, "real_columns": basis.shape[1],
+                                  "variance_captured": variance, "normal_draw_columns": 4000}
     else:
         if args.model == "a":
             from model_a import fit, objective
@@ -231,7 +246,9 @@ def worker(args):
         fit_start = time.perf_counter()
         fitted = driver(data, jax.random.key(321), x0,
                          nsim=args.final_nsim, maxiter=args.fit_iters, tol=1e-5,
-                         trial_schedule=stages, on_update=on_update, **options, **cfg)
+                         trial_schedule=stages, on_update=on_update, **options, **cfg,
+                         **({"optimize_active_only": extension_flags["optimize_active_only"]}
+                            if args.model == "b" else {}))
         wall = time.perf_counter() - fit_start
         estimate = np.asarray(fitted.params)
         active = np.asarray([i for i in range(len(params)) if i != 6])
@@ -360,6 +377,9 @@ def main(args):
                       "variant": args.variant, "seed": args.seed, "error": str(error)}
         write_json(args.result_file, result)
         return 0 if result["status"] == "completed" else 1
+    if any(getattr(args, name, False) for name in
+           ("optimize_active_only", "kl_bucketed", "cumulative_kl")):
+        raise ValueError("use benchmark_model_b_extensions.py to compare extension switches")
     if (out / "results.json").exists():
         raise ValueError("choose a fresh output directory; existing results must not be mixed")
     if args.fit_iters < 4 or args.final_nsim < 4:
@@ -474,6 +494,9 @@ def parser():
     p.add_argument("--chunk-b", type=int, default=64)
     p.add_argument("--matmul-precision", choices=["default", "highest"], default="default")
     p.add_argument("--allow-cpu", action="store_true", help="local smoke only; not H100 evidence")
+    p.add_argument("--optimize-active-only", action="store_true")
+    p.add_argument("--kl-bucketed", action="store_true")
+    p.add_argument("--cumulative-kl", action="store_true")
     p.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     p.add_argument("--action", choices=["data", "micro", "fit"], default="micro", help=argparse.SUPPRESS)
     p.add_argument("--model", choices=["a", "b"], default="a", help=argparse.SUPPRESS)
