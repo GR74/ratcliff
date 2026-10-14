@@ -1,0 +1,14 @@
+{
+  "planned_and_recorded_jobs": 25,
+  "gpu_worker_records": 25,
+  "scored_fits": 8,
+  "quality_target_hits": 0,
+  "paired_exact_trials": 9216,
+  "original_time_capped_fits": 3,
+  "validation_driver_sha256": "306d40bba33064d477594cbc3cd48042032dd5c88d8c4bf0471e58ab015f6b1f",
+  "implementation_sha256": "510e2fc165e926b701dc2bb13aca960bf99d559c58f97606256a7b7a45ac5ecb",
+  "archive_count": 2,
+  "archive_total_bytes": 959311,
+  "archive_and_file_hashes_verified": true,
+  "final_score_vectors_match_returned_fits": true
+}
