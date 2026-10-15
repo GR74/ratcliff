@@ -48,6 +48,20 @@ def test_memory_sized_study_keeps_extra_baseline_start_inside_saved_plan(tmp_pat
     assert summary["stopped_by_budget"]
 
 
+def test_repaired_run_plans_one_exact_paired_start_and_gpu_verification(tmp_path):
+    args = validation.parser().parse_args([
+        "--output", str(tmp_path), "--budget-seconds", "1", "--reserve-seconds", "2",
+        "--scenarios", "baseline", "--start-seeds", "1", "--nsim", "9000",
+        "--stable-kl-noise", "--score-nsim", "9000"])
+    validation.main(args)
+    plan = json.loads((tmp_path / "planned-jobs.json").read_text())
+    assert plan[0]["action"] == "verify"
+    fits = [p for p in plan if p["action"] == "fit"]
+    assert [(p["start_seed"], p["variant"]) for p in fits] == [(1, "early_stop"), (1, "legacy")]
+    config = json.loads((tmp_path / "run-config.json").read_text())
+    assert config["nsim"] == config["score_nsim"] == 9000 and config["stable_kl_noise"]
+
+
 def test_reusing_observations_checks_fingerprints_and_trial_count(tmp_path):
     source, out = tmp_path / "old", tmp_path / "new"
     source.mkdir()

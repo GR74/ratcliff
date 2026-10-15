@@ -28,7 +28,8 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
                   tol: float = 1e-7, chunk_size: int = 4, use_kl: bool = False,
                   on_update=None, trial_schedule=None, time_block_size=0,
                   stop_early=True, compact=True, on_stage=None,
-                  optimize_active_only=False, kl_bucketed=False, cumulative_kl=False):
+                  optimize_active_only=False, kl_bucketed=False, cumulative_kl=False,
+                  stable_kl_noise=False):
     """
     Scipy Nelder-Mead simplex fit for Model B.
 
@@ -67,6 +68,7 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
             p, data, key, nsim=stage_nsim, chunk_size=chunk_size, use_kl=use_kl,
             time_block_size=time_block_size, stop_early=stop_early, compact=compact,
             kl_bucketed=kl_bucketed, cumulative_kl=cumulative_kl,
+            stable_kl_noise=stable_kl_noise,
         )
 
     def progress(number, loss, params):

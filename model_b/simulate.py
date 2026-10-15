@@ -173,7 +173,7 @@ def _simulate_chunk_b(key, ter, st, cr, crsd, av1, av2, av3,
 
 
 def _simulate_chunk_b_kl(key, ter, st, cr, crsd, av1, av2, av3,
-                          V_kl, v1, v2, v3, k_zone, chunk_size):
+                          V_kl, v1, v2, v3, k_zone, chunk_size, mode_ids=None):
     """K-L low-rank variant of _simulate_chunk_b.
 
     Replaces the (chunk, n_fft, 2, n_pad, m_pad) noise + batched 2D FFT with
@@ -193,7 +193,11 @@ def _simulate_chunk_b_kl(key, ter, st, cr, crsd, av1, av2, av3,
     ndt = (ter + st * (0.5 - u[:, 9])) / E
 
     # Sample (chunk, NSTEP, 2K) iid normals
-    z = jax.random.normal(kg, (chunk_size, NSTEP, two_K), dtype=jnp.float32)
+    if mode_ids is None:
+        z = jax.random.normal(kg, (chunk_size, NSTEP, two_K), dtype=jnp.float32)
+    else:
+        noise_keys = blocked.indexed_keys(kg, jnp.arange(chunk_size))
+        z = grf_kl.mode_normal_blocks(noise_keys, mode_ids, NSTEP, jnp.float32)
 
     # One batched GEMM: (chunk, NSTEP, 2K) @ (2K, NM) -> (chunk, NSTEP, NM)
     grf_flat = jnp.einsum("csk,Nk->csN", z, V_kl)
@@ -251,7 +255,7 @@ def _simulate_b_fft(key, ter, st, cr, crsd, av1, av2, av3,
 
 @partial(jax.jit, static_argnums=(11, 12))
 def _simulate_b_kl_inner(key, ter, st, cr, crsd, av1, av2, av3,
-                          V_kl, sis, si, nsim, chunk_size):
+                          V_kl, sis, si, nsim, chunk_size, mode_ids=None):
     """K-L-path inner core for simulate_b. V_kl is passed as a traced array
     (built outside jit by grf_kl.calc_kl_basis, which uses numpy)."""
     v1, v2, v3 = drift_bumps(sis=sis)
@@ -263,7 +267,7 @@ def _simulate_b_kl_inner(key, ter, st, cr, crsd, av1, av2, av3,
     def run_chunk(k):
         return _simulate_chunk_b_kl(
             k, ter, st, cr, crsd, av1, av2, av3,
-            V_kl, v1, v2, v3, k_zone, chunk_size,
+            V_kl, v1, v2, v3, k_zone, chunk_size, mode_ids,
         )
 
     rts, cats = jax.lax.map(run_chunk, keys)
@@ -271,7 +275,8 @@ def _simulate_b_kl_inner(key, ter, st, cr, crsd, av1, av2, av3,
 
 
 def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
-               sis, sig, si, nsim, chunk_size=4, use_kl=False):
+               sis, sig, si, nsim, chunk_size=4, use_kl=False,
+               stable_kl_noise=False):
     """
     Run `nsim` Model B trials with the given parameters.
 
@@ -290,18 +295,23 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
     the K-L basis is constructed via numpy in grf_kl.calc_kl_basis, which cannot
     run inside jax tracing. The compute-heavy inner cores are jitted.
     """
+    if stable_kl_noise and not use_kl:
+        raise ValueError("stable K-L noise requires use_kl=True")
     if use_kl:
         # pad_to_k_max=True keeps V_kl shape constant across sig values, so
         # _simulate_b_kl_inner JIT compiles ONCE and stays cached across the
         # fit instead of recompiling per new sig vertex scipy visits.
         # Cost: ~50% larger GEMM (K=k_max=2000 vs ~1325 at sig=10); benefit:
         # no JIT recompile per eval (~2-4 sec saved per new sig).
-        V_kl, _K_kl, _ = grf_kl.calc_kl_basis(
+        result = grf_kl.calc_kl_basis(
             sig=float(sig), n=N, m=M, pad_to_k_max=True,
+            return_mode_ids=stable_kl_noise,
         )
+        V_kl = result[0]
+        mode_ids = result[3] if stable_kl_noise else None
         return _simulate_b_kl_inner(
             key, ter, st, cr, crsd, av1, av2, av3,
-            V_kl, sis, si, nsim, chunk_size,
+            V_kl, sis, si, nsim, chunk_size, mode_ids,
         )
     return _simulate_b_fft(
         key, ter, st, cr, crsd, av1, av2, av3,
@@ -312,15 +322,19 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
 @partial(jax.jit, static_argnums=(8, 9, 10, 11, 12, 13, 14))
 def _simulate_b_blocked_core(key, ter, st, cr, crsd, drift, k_zone, basis,
                              nsim, chunk_size, time_block_size,
-                             stop_early, compact, use_kl, cumulative_kl=False):
+                             stop_early, compact, use_kl, cumulative_kl=False,
+                             mode_ids=None):
     n_chunks = (nsim + chunk_size - 1) // chunk_size
 
     def sample_noise(keys):
         if use_kl:
             # Keep normal draws fixed across basis capacities; padding removal
             # must not silently replace the retained modes' random weights.
-            z = blocked.normal_blocks(keys, time_block_size, 2 * grf_kl.DEFAULT_K_MAX,
-                                       jnp.float32)[..., :basis.shape[1]]
+            if mode_ids is None:
+                z = blocked.normal_blocks(keys, time_block_size, 2 * grf_kl.DEFAULT_K_MAX,
+                                           jnp.float32)[..., :basis.shape[1]]
+            else:
+                z = grf_kl.mode_normal_blocks(keys, mode_ids, time_block_size, jnp.float32)
             if cumulative_kl:
                 z = jnp.cumsum(z, axis=1)
             return jnp.einsum("bsk,Nk->bsN", z, basis)
@@ -357,7 +371,8 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
                                  sis, sig, si, nsim, chunk_size=64,
                                  use_kl=True, time_block_size=32,
                                  stop_early=True, compact=True,
-                                 kl_bucketed=False, cumulative_kl=False):
+                                 kl_bucketed=False, cumulative_kl=False,
+                                 stable_kl_noise=False):
     """Optional blocked Model B with unchanged FFT/K-L covariance/categories.
 
     stop_early=False is the paired full-horizon control. Keep time_block_size
@@ -365,34 +380,38 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
     """
     if nsim < 1 or chunk_size < 1:
         raise ValueError("nsim and chunk_size must be positive")
-    if (kl_bucketed or cumulative_kl) and not use_kl:
+    if (kl_bucketed or cumulative_kl or stable_kl_noise) and not use_kl:
         raise ValueError("K-L extensions require use_kl=True")
     v1, v2, v3 = drift_bumps(sis=sis)
     drift = (jnp.asarray(av1, dtype=jnp.float32) * v1.astype(jnp.float32)
              + jnp.asarray(av2, dtype=jnp.float32) * v2.astype(jnp.float32)
              + jnp.asarray(av3, dtype=jnp.float32) * v3.astype(jnp.float32))
+    mode_ids = None
     if use_kl:
-        basis, _k, _variance = grf_kl.calc_kl_basis(
+        result = grf_kl.calc_kl_basis(
             sig=float(sig), n=N, m=M, pad_to_k_max=True,
             mode_buckets=grf_kl.DEFAULT_MODE_BUCKETS if kl_bucketed else None,
+            return_mode_ids=stable_kl_noise,
         )
+        basis = result[0]
+        mode_ids = result[3] if stable_kl_noise else None
     else:
         basis = grf.calc_LAM(s1=sig, s2=sig).astype(jnp.float32)
     return _simulate_b_blocked_core(
         key, ter, st, cr, crsd, drift.reshape(-1), zone_array(si).reshape(-1),
         basis, nsim, chunk_size, time_block_size, stop_early, compact, use_kl,
-        cumulative_kl,
+        cumulative_kl, mode_ids,
     )
 
 
 def simulate_b_blocked(key, ter, st, cr, crsd, av1, av2, av3,
                        sis, sig, si, nsim, chunk_size=64, use_kl=True,
                        time_block_size=32, stop_early=True, compact=True,
-                       kl_bucketed=False, cumulative_kl=False):
+                       kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False):
     """RT/category-only interface for optional time blocking."""
     rt, cat, _work = simulate_b_blocked_with_work(
         key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim,
         chunk_size, use_kl, time_block_size, stop_early, compact,
-        kl_bucketed, cumulative_kl,
+        kl_bucketed, cumulative_kl, stable_kl_noise,
     )
     return rt, cat

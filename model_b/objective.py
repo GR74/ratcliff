@@ -90,7 +90,7 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
 
 def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
                 time_block_size=0, stop_early=True, compact=True,
-                kl_bucketed=False, cumulative_kl=False):
+                kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False):
     """
     Vectorized G2 objective for Model B, summed across 2 conditions.
 
@@ -106,6 +106,8 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
 
     if (kl_bucketed or cumulative_kl) and (not time_block_size or not use_kl):
         raise ValueError("K-L extensions require blocked simulation and use_kl=True")
+    if stable_kl_noise and not use_kl:
+        raise ValueError("stable K-L noise requires use_kl=True")
 
     p = clamp_b(params)
     ter, st, cr, crsd, sis, sig = p[0], p[1], p[2], p[3], p[4], p[5]
@@ -137,19 +139,19 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
             avs[ci, 0], avs[ci, 1], avs[ci, 2],
             sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
             time_block_size, stop_early, compact,
-            kl_bucketed, cumulative_kl,
+            kl_bucketed, cumulative_kl, stable_kl_noise,
         ) for ci in range(2)]
         rts = jnp.stack([out[0] for out in outputs])
         cats = jnp.stack([out[1] for out in outputs])
     else:
         sim_vmap = jax.vmap(
             sim_b.simulate_b,
-            in_axes=(0, None, None, None, None, 0, 0, 0, None, None, None, None, None, None),
+            in_axes=(0, None, None, None, None, 0, 0, 0, None, None, None, None, None, None, None),
         )
         rts, cats = sim_vmap(
             cond_keys, ter, st, cr, crsd,
             avs[:, 0], avs[:, 1], avs[:, 2],
-            sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
+            sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl, stable_kl_noise,
         )
     # rts, cats: (2, nsim)
 

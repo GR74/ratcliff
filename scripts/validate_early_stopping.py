@@ -59,6 +59,37 @@ def reuse_data(source, out, scenarios, data_nsim):
     bench.write_json(out / "reused-data.json", manifest)
 
 
+def verify_stable_noise(args, jax, np):
+    """Bounded GPU regression and production-basis checks before fitting."""
+    import jax.numpy as jnp
+    import pytest
+    from model_b import grf_kl
+    from shared import blocked
+
+    tests = ["model_b/tests/test_kl_mode_noise.py", "model_b/tests/test_blocked_simulate.py"]
+    code = pytest.main([*tests, "-q", "--tb=short"])
+    if code:
+        raise RuntimeError(f"GPU regression tests failed: {code}")
+    grf_kl._basis_cache.clear()
+    grf_kl._basis_cache_order.clear()
+    v0, k0, variance0, ids0 = grf_kl.calc_kl_basis(10., pad_to_k_max=True, return_mode_ids=True)
+    v1, k1, variance1, ids1 = grf_kl.calc_kl_basis(10.000001, pad_to_k_max=True, return_mode_ids=True)
+    assert k0 == k1 and set(np.asarray(ids0[:k0])) == set(np.asarray(ids1[:k1]))
+    indices = np.random.default_rng(55).choice(16000, 128, replace=False)
+    keys = blocked.indexed_keys(jax.random.key(4), jnp.arange(2))
+    z0 = grf_kl.mode_normal_blocks(keys, ids0, 32, jnp.float32)
+    z1 = grf_kl.mode_normal_blocks(keys, ids1, 32, jnp.float32)
+    f0, f1 = np.asarray(z0 @ v0[indices].T), np.asarray(z1 @ v1[indices].T)
+    change = float(np.linalg.norm(f1-f0) / np.linalg.norm(f0))
+    if change >= 1e-4:
+        raise RuntimeError(f"Production GPU noise continuity failed: {change}")
+    return dict(action="verify", scenario=args.scenario, variant=args.variant,
+                start_seed=args.start_seed, status="completed", gpu_regression_tests=9,
+                retained_modes=[k0, k1], retained_variance=[variance0, variance1],
+                nearby_width_relative_field_change=change,
+                stable_kl_noise=True, metadata=bench.metadata(jax))
+
+
 def worker(args):
     import jax
     import jax.numpy as jnp
@@ -75,13 +106,16 @@ def worker(args):
     grf_kl._BASIS_CACHE_MAXSIZE = args.basis_cache_size
     grf_kl._basis_cache.clear()
     grf_kl._basis_cache_order.clear()
+    if args.action == "verify":
+        return verify_stable_noise(args, jax, np)
     out = Path(args.output)
     params = np.asarray(SCENARIOS[args.scenario])
     cfg = {} if args.variant == "legacy" else dict(time_block_size=32, stop_early=True, compact=True)
     result = dict(action=args.action, scenario=args.scenario, variant=args.variant,
                   start_seed=args.start_seed, status="completed", settings=vars(args))
     settings = SimpleNamespace(chunk_a=256, chunk_b=args.chunk, block_size=32,
-                               kl_bucketed=False, cumulative_kl=False)
+                               kl_bucketed=False, cumulative_kl=False,
+                               stable_kl_noise=getattr(args, "stable_kl_noise", False))
     data_path = out / f"data-{args.scenario}.npz"
     if args.action == "data":
         rt, cat, _ = bench.simulate_conditions(jax, "b", params, args.data_nsim,
@@ -106,7 +140,8 @@ def worker(args):
     else:
         with np.load(data_path) as archive:
             data = {k: jnp.asarray(v) for k, v in archive.items()}
-        options = dict(nsim=args.nsim, chunk_size=args.chunk, use_kl=True)
+        options = dict(nsim=args.nsim, chunk_size=args.chunk, use_kl=True,
+                       stable_kl_noise=getattr(args, "stable_kl_noise", False))
         active = np.asarray([i for i in range(13) if i != 6])
 
         def recovery_error(vector):
@@ -179,7 +214,8 @@ def worker(args):
                 if identity not in scores:
                     scores[identity] = [float(objective.fofs_b_new(
                         jnp.asarray(vector), data, jax.random.key(seed),
-                        nsim=args.score_nsim, chunk_size=args.chunk, use_kl=True)) for seed in seeds]
+                        nsim=args.score_nsim, chunk_size=args.chunk, use_kl=True,
+                        stable_kl_noise=getattr(args, "stable_kl_noise", False))) for seed in seeds]
                 return scores[identity]
 
             truth_scores = score(params)
@@ -274,7 +310,9 @@ def main(args):
         run_started_utc=datetime.now(timezone.utc).isoformat(),
         target=f"Mean effective active parameter error <={args.error_limit}; median independent-MC G2 <= true-parameter median +10% absolute magnitude +1",
         scoring_note="Three independent simulator seeds on the same observations; fixed training checkpoints, no scoring feedback",
-        compared_features="Legacy versus improvement 1 only; full-horizon blocked correctness control",
+        compared_features=("Legacy versus improvement 1, both with mode-indexed K-L repair; other improvements off"
+                           if args.stable_kl_noise else
+                           "Legacy versus improvement 1 only; full-horizon blocked correctness control"),
         precision="fp32 spatial fields, fp64 RT, x64 enabled, default matmul",
         cache_note="Same reduced basis cache for all variants; library default unchanged"))
     shutil.copyfile(__file__, out / "validation-driver-snapshot.py")
@@ -288,13 +326,19 @@ def main(args):
     micro_variants = args.micro_variants.split(",")
     if not micro_variants or any(v not in ("legacy", "blocked_full", "early_stop") for v in micro_variants):
         raise ValueError("valid micro variants required")
-    jobs = [("micro", s, v, 0) for s in scenarios for v in micro_variants]
+    jobs = [("verify", scenarios[0], "blocked_full", 0)] if args.stable_kl_noise else []
+    jobs += [("micro", s, v, 0) for s in scenarios for v in micro_variants]
     if not args.pilot_only:
         if args.data_source:
             reuse_data(args.data_source, out, scenarios, args.data_nsim)
         else:
             jobs += [("data", s, "legacy", 0) for s in scenarios]
-        for seed in range(args.starts):
+        start_seeds = [int(s) for s in args.start_seeds.split(",")] if args.start_seeds else list(range(args.starts))
+        if len(set(start_seeds)) != len(start_seeds) or any(s < 0 for s in start_seeds):
+            raise ValueError("start seeds must be unique and nonnegative")
+        if args.start_seeds and args.baseline_extra_starts:
+            raise ValueError("explicit start seeds cannot be combined with extra starts")
+        for seed in start_seeds:
             for scenario in scenarios:
                 variants = ("legacy", "early_stop") if seed % 2 == 0 else ("early_stop", "legacy")
                 for variant in variants:
@@ -318,9 +362,18 @@ def main(args):
         for field in ("nsim", "data_nsim", "score_nsim", "chunk", "sim_seeds", "repeats", "maxiter",
                       "starts", "start_spread", "fit_seconds_limit", "basis_cache_size", "checkpoint_every",
                       "max_score_checkpoints", "error_limit"):
-            command += ["--" + field.replace("_", "-"), str(getattr(args, field))]
+            value = getattr(args, field)
+            if action == "fit" and field == "fit_seconds_limit":
+                value = min(value, remaining - args.reserve_seconds - args.score_reserve_seconds)
+                if value <= 0:
+                    break
+            command += ["--" + field.replace("_", "-"), str(value)]
+        if action == "fit" and remaining <= args.reserve_seconds + args.score_reserve_seconds:
+            break
         if args.allow_cpu:
             command.append("--allow-cpu")
+        if args.stable_kl_noise:
+            command.append("--stable-kl-noise")
         fit_path = out / f"fit-{scenario}-{seed}-{variant}.json"
         if action == "score":
             if not fit_path.exists():
@@ -344,8 +397,18 @@ def main(args):
             row.update(status="timeout")
         rows.append(row)
         bench.write_json(out / "results.json", rows)
-        bench.write_json(out / "summary.json", analyse(out, rows, args))
+        current_summary = analyse(out, rows, args)
+        bench.write_json(out / "summary.json", current_summary)
         print("DONE", name, row["status"], row.get("fit_seconds", ""), flush=True)
+        if action == "verify" and row["status"] != "completed":
+            raise RuntimeError("GPU verification failed; benchmark aborted before fitting")
+        if args.stable_kl_noise and action == "micro":
+            if row["status"] != "completed":
+                raise RuntimeError("Repaired GPU pilot failed; benchmark aborted before fitting")
+            if variant == "early_stop" and "blocked_full" in micro_variants:
+                paired = current_summary["micro"][scenario]
+                if paired.get("exact_rt_fraction") != 1. or paired.get("exact_choice_fraction") != 1.:
+                    raise RuntimeError("Repaired stopping control did not match exactly; fitting aborted")
     summary = analyse(out, rows, args)
     summary["planned_cases"] = len(jobs)
     summary["recorded_cases"] = len(rows)
@@ -360,11 +423,12 @@ def parser():
     p.add_argument("--worker", action="store_true")
     p.add_argument("--pilot-only", action="store_true")
     p.add_argument("--allow-cpu", action="store_true")
+    p.add_argument("--stable-kl-noise", action="store_true")
     p.add_argument("--gpu-kind", default="3060")
     p.add_argument("--scenarios", default=",".join(SCENARIOS))
     p.add_argument("--micro-variants", default="legacy,blocked_full,early_stop")
     p.add_argument("--scenario", choices=SCENARIOS, default="baseline")
-    p.add_argument("--action", choices=("micro", "data", "fit", "score"), default="micro")
+    p.add_argument("--action", choices=("verify", "micro", "data", "fit", "score"), default="micro")
     p.add_argument("--variant", choices=("legacy", "blocked_full", "early_stop"), default="legacy")
     p.add_argument("--result-file")
     p.add_argument("--fit-file")
@@ -379,6 +443,7 @@ def parser():
     p.add_argument("--repeats", type=int, default=5)
     p.add_argument("--maxiter", type=int, default=1000)
     p.add_argument("--starts", type=int, default=2)
+    p.add_argument("--start-seeds", help="Explicit paired optimizer starting seeds, e.g. 1")
     p.add_argument("--baseline-extra-starts", type=int, default=0)
     p.add_argument("--start-spread", type=float, default=.2)
     p.add_argument("--basis-cache-size", type=int, default=2)
@@ -386,7 +451,8 @@ def parser():
     p.add_argument("--max-score-checkpoints", type=int, default=8)
     p.add_argument("--error-limit", type=float, default=.05)
     p.add_argument("--budget-seconds", type=int, default=7200)
-    p.add_argument("--fit-seconds-limit", type=int, default=450)
+    p.add_argument("--fit-seconds-limit", type=float, default=450)
+    p.add_argument("--score-reserve-seconds", type=int, default=0)
     p.add_argument("--reserve-seconds", type=int, default=180)
     return p
 

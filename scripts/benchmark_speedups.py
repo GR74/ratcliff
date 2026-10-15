@@ -49,16 +49,19 @@ def metadata(jax):
             pass
     stats = jax.devices()[0].memory_stats()
     digest = hashlib.sha256()
-    files = ["shared/blocked.py", "shared/staged_fit.py", "shared/benchmark_stats.py",
+    files = ["shared/blocked.py", "shared/staged_fit.py", "shared/benchmark_stats.py", "shared/prng.py",
              "model_a/simulate.py", "model_a/objective.py", "model_a/fit.py",
-             "model_b/simulate.py", "model_b/objective.py", "model_b/fit.py",
+             "model_b/simulate.py", "model_b/objective.py", "model_b/fit.py", "model_b/grf_kl.py", "model_b/grf.py",
              "scripts/benchmark_speedups.py"]
     for path in files:
         digest.update(path.encode())
         digest.update((ROOT / path).read_bytes())
+    snapshot_path = ROOT / "benchmark-source.json"
+    snapshot = json.loads(snapshot_path.read_text()) if snapshot_path.exists() else {}
     return {
         "utc": datetime.now(timezone.utc).isoformat(),
-        "commit": command(["git", "rev-parse", "HEAD"]),
+        "commit": command(["git", "rev-parse", "HEAD"]) or snapshot.get("commit"),
+        "source_snapshot": snapshot,
         "implementation_sha256": digest.hexdigest(), "hashed_files": files,
         "backend": jax.default_backend(),
         "python": sys.version, "packages": packages,
@@ -124,11 +127,12 @@ def simulate_conditions(jax, model, params, nsim, seed, variant, args):
                       p[4], float(p[5]), 6., nsim, args.chunk_b, True)
             if cfg["time_block_size"]:
                 rt, cat, allocated = simulate.simulate_b_blocked_with_work(
-                    *values, **cfg,
+                    *values, **cfg, stable_kl_noise=getattr(args, "stable_kl_noise", False),
                 )
                 allocated_work.append(allocated)
             else:
-                rt, cat = simulate.simulate_b(*values)
+                rt, cat = simulate.simulate_b(*values,
+                    stable_kl_noise=getattr(args, "stable_kl_noise", False))
                 allocated_work.append(((nsim + args.chunk_b - 1) // args.chunk_b) * args.chunk_b * 400)
             rt_list.append(rt)
             cat_list.append(cat)

@@ -1,14 +1,13 @@
 """
 Karhunen-Loève low-rank GRF generator for Model B.
 
-For our block-circulant covariance, the K-L eigendecomposition equals the FFT
-of the kernel. Top-K modes by spectral magnitude capture ~99.9% of variance at
-sig=10 with K ≈ 100. Runtime sampling is one batched GEMM instead of a 2D FFT.
+For our block-circulant covariance, the K-L eigenvalues come from the FFT of
+the kernel. About 1325 modes capture 99% of variance at sig=10. Runtime
+sampling is one batched GEMM instead of a 2D FFT.
 
 See docs/plans/2026-06-05-model-b-stage-6-design.md for math + design rationale.
 """
-import functools
-
+import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -26,13 +25,14 @@ _basis_cache_order = []
 
 
 def _cached_calc_kl_basis(sig_key, n, m, k_max, variance_threshold, pad_to_k_max,
-                          mode_buckets=None):
-    cache_key = (sig_key, n, m, k_max, variance_threshold, pad_to_k_max, mode_buckets)
+                          mode_buckets=None, return_mode_ids=False):
+    cache_key = (sig_key, n, m, k_max, variance_threshold, pad_to_k_max, mode_buckets,
+                 return_mode_ids)
     cached = _basis_cache.get(cache_key)
     if cached is not None:
         return cached
     result = _calc_kl_basis_impl(sig_key, n, m, k_max, variance_threshold,
-                               pad_to_k_max, mode_buckets)
+                               pad_to_k_max, mode_buckets, return_mode_ids)
     _basis_cache[cache_key] = result
     _basis_cache_order.append(cache_key)
     if len(_basis_cache_order) > _BASIS_CACHE_MAXSIZE:
@@ -46,7 +46,8 @@ def calc_kl_basis(sig: float,
                   m: int = 160,
                   k_max: int = 2000,
                   variance_threshold: float = 0.99,
-                  pad_to_k_max: bool = False, mode_buckets=None):
+                  pad_to_k_max: bool = False, mode_buckets=None,
+                  return_mode_ids: bool = False):
     """
     Build the truncated K-L basis for the circulant-embedded covariance.
 
@@ -75,6 +76,11 @@ def calc_kl_basis(sig: float,
     mode_buckets optionally pads to the smallest listed complex-mode capacity
     that covers K. It changes padding only, never the retained modes or variance
     threshold. Bucket configuration is included in the cache key.
+
+    return_mode_ids additionally returns a uint32 ID for each complex mode
+    column pair. IDs are physical flattened Fourier-grid indices, independent
+    of eigenvalue rank. Padding uses 0xffffffff and has zero basis columns.
+    The historical three-value return and basis values remain unchanged.
     """
     if mode_buckets is not None:
         mode_buckets = tuple(mode_buckets)
@@ -85,12 +91,13 @@ def calc_kl_basis(sig: float,
     # Round sig key to 6 decimals so floating-point jitter still hits cache.
     sig_key = round(float(sig), 6)
     return _cached_calc_kl_basis(sig_key, n, m, k_max,
-                                  variance_threshold, pad_to_k_max, mode_buckets)
+                                  variance_threshold, pad_to_k_max, mode_buckets,
+                                  return_mode_ids)
 
 
 def _calc_kl_basis_impl(sig: float, n: int, m: int, k_max: int,
                          variance_threshold: float, pad_to_k_max: bool,
-                         mode_buckets=None):
+                         mode_buckets=None, return_mode_ids=False):
     """The actual K-L basis construction. Wrapped by calc_kl_basis with caching."""
     LAM = grf_circulant.calc_LAM(n=n, m=m, s1=sig, s2=sig)
     n_pad, m_pad = LAM.shape
@@ -145,7 +152,30 @@ def _calc_kl_basis_impl(sig: float, n: int, m: int, k_max: int,
     V[:, 0 : 2 * K : 2] = re.T        # even columns = real parts
     V[:, 1 : 2 * K : 2] = im.T        # odd columns  = imag parts
 
-    return jnp.asarray(V), K, variance_captured
+    result = (jnp.asarray(V), K, variance_captured)
+    if return_mode_ids:
+        mode_ids = np.full(capacity, np.uint32(0xffffffff), dtype=np.uint32)
+        mode_ids[:K] = top_idx.astype(np.uint32)
+        return (*result, jnp.asarray(mode_ids))
+    return result
+
+
+def mode_normal_blocks(keys, mode_ids, block_size, dtype=jnp.float32):
+    """Independent normal coefficient pairs indexed by physical Fourier mode.
+
+    keys are per-trial (and, for blocked simulation, per-block) keys. Each
+    physical mode receives its own folded key before generating time x real/
+    imaginary draws. Changing the rank, retained set or padded capacity does
+    not reassign coefficients for any shared mode. Different block lengths
+    remain different random layouts; use the same length in paired controls.
+    """
+    def sample_trial(key):
+        mode_keys = jax.vmap(lambda mode: jax.random.fold_in(key, mode))(mode_ids)
+        samples = jax.vmap(lambda k: jax.random.normal(
+            k, (block_size, 2), dtype=dtype))(mode_keys)
+        return samples.transpose(1, 0, 2).reshape(block_size, 2 * len(mode_ids))
+
+    return jax.vmap(sample_trial)(keys)
 
 
 def sample_kl_grf(V, z, n: int = 100, m: int = 160):
