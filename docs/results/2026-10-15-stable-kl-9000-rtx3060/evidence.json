@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-10-15T20:41:41.776034+00:00",
+  "updated_utc": "2026-10-15T21:01:40.354515+00:00",
   "final": false,
   "preflight_failed": false,
   "scope": "One paired baseline start; repaired K-L in both arms, 9000 fitting and scoring trials per condition",
@@ -28,7 +28,7 @@
     "deadline_utc": "2026-10-15T23:24:24+00:00",
     "script": "/home/anik278/ratcliff-kl-9000-20261015-v2/checkout/scripts/validate_early_stopping.py",
     "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
-    "last_checked_utc": "2026-10-15T20:41:33.097962+00:00",
+    "last_checked_utc": "2026-10-15T21:01:26.036997+00:00",
     "matching_pids": [
       [
         630,
@@ -1964,7 +1964,7 @@
       "status": "running_or_pending",
       "returned_error": null,
       "returned_error_below_5pct": null,
-      "recorded_evaluations": 18,
+      "recorded_evaluations": 30,
       "partial_trace_lines": 0,
       "joint_target_verified": null,
       "observed_time_to_quality": null
@@ -2964,6 +2964,48 @@
             15.419673408578916,
             11.167830578164825,
             8.387034179396732
+          ]
+        },
+        {
+          "eval": 25,
+          "elapsed": 2268.1519613759992,
+          "error": 0.0795814997848519,
+          "loss": 1395.450480028349,
+          "params": [
+            207.4114143015224,
+            57.50359114588332,
+            8.852602696567937,
+            2.3897253808144034,
+            11.269992168439321,
+            10.005200233031404,
+            0.5712627822182343,
+            14.167857557925494,
+            10.066435883116004,
+            6.477100901135846,
+            14.989678826206422,
+            11.090525637020406,
+            8.410593722337914
+          ]
+        },
+        {
+          "eval": 26,
+          "elapsed": 2357.2069363069986,
+          "error": 0.07602969166597785,
+          "loss": 325.3298858373946,
+          "params": [
+            210.64425646427338,
+            55.27551790740267,
+            8.990584819412636,
+            2.405128292366708,
+            11.356592767833813,
+            10.161147451601956,
+            0.5741239139453074,
+            14.024188927780756,
+            10.000466449327888,
+            6.4715567705148604,
+            14.774681535020179,
+            11.051873166448196,
+            8.422373493808507
           ]
         }
       ]
