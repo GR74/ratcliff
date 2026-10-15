@@ -1,0 +1,25 @@
+{
+  "source": "scripts/h100_stage6_kl_benchmark.py: np.random.seed(0), uniform(.9,1.1,13)",
+  "june_initial_multipliers": [
+    1.009762700785465,
+    1.043037873274484,
+    1.0205526752143288,
+    1.0089766365993795,
+    0.984730959867781,
+    1.0291788226133314,
+    0.9875174422525386,
+    1.0783546001564162,
+    1.092732552100206,
+    0.9766883037651556,
+    1.058345007616533,
+    1.0057789839505809,
+    1.0136089122187866
+  ],
+  "june_initial_mean_active_parameter_error": 0.033242458408047904,
+  "reported_june_final_mean_active_parameter_error": 0.0298,
+  "fitting_trials_per_condition_june": 9000,
+  "fitting_trials_per_condition_october": 512,
+  "observations_per_condition_june": 1024,
+  "observations_per_condition_october": 9000,
+  "note": "June start was already below the current 5% mean-error criterion; its joint prediction gate was not tested here."
+}

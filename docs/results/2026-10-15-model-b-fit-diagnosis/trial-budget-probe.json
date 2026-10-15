@@ -1,0 +1,37 @@
+{
+  "scope": "Conditional bootstrap of one real 9000-trial pool at truth; not independent new simulations, fitting, or an accuracy claim.",
+  "full_pool_g2": 58.148207777555854,
+  "pool_seed": 0,
+  "observed_seed": 123,
+  "bootstrap_seed": 766,
+  "results": [
+    {
+      "nsim": 128,
+      "replicates": 128,
+      "median_g2": 4792.965229138048,
+      "p10_g2": 3120.9690280533646,
+      "p90_g2": 7387.118843598537
+    },
+    {
+      "nsim": 512,
+      "replicates": 128,
+      "median_g2": 623.6877978961685,
+      "p10_g2": 479.45094324208657,
+      "p90_g2": 803.5839146523489
+    },
+    {
+      "nsim": 2048,
+      "replicates": 128,
+      "median_g2": 191.4564580922895,
+      "p10_g2": 148.80357724834758,
+      "p90_g2": 235.83473100258348
+    },
+    {
+      "nsim": 9000,
+      "replicates": 128,
+      "median_g2": 85.31654469843524,
+      "p10_g2": 67.99715714921129,
+      "p90_g2": 105.18721384560881
+    }
+  ]
+}

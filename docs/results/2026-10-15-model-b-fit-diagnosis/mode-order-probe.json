@@ -1,0 +1,32 @@
+{
+  "scope": "Production padded basis at 100x160; 128 spatial locations; CPU, x64 spectrum/fp32 basis; 32 fixed diagnostic normal draws.",
+  "intervention": "Reassign the same coefficients by physical Fourier mode, retaining the same modes and eigenvalues. Diagnostic only.",
+  "results": [
+    {
+      "sig": 10.0,
+      "delta": 1e-06,
+      "retained_modes": 1325,
+      "retained_set_identical": true,
+      "same_rank_fraction": 0.5788679245283019,
+      "relative_spectrum_change": 1.9999999987937284e-07,
+      "expected_relative_noise_change": 0.9290420413017273,
+      "expected_relative_noise_change_after_alignment": 1.3566715040269628e-07,
+      "sampled_relative_noise_change": 0.9022758603096008,
+      "sampled_relative_noise_change_after_alignment": 2.4968045408968464e-07,
+      "permutation_covariance_preserved": true
+    },
+    {
+      "sig": 11.651022,
+      "delta": 1e-06,
+      "retained_modes": 976,
+      "retained_set_identical": true,
+      "same_rank_fraction": 0.5778688524590164,
+      "relative_spectrum_change": 1.71658760940655e-07,
+      "expected_relative_noise_change": 0.9549773931503296,
+      "expected_relative_noise_change_after_alignment": 1.1841031266612845e-07,
+      "sampled_relative_noise_change": 0.9473395347595215,
+      "sampled_relative_noise_change_after_alignment": 2.2493654228128435e-07,
+      "permutation_covariance_preserved": true
+    }
+  ]
+}

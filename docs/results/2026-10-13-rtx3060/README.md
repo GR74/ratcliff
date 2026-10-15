@@ -5,6 +5,8 @@ Updated 2026-10-14T00:22:41.365193+00:00. **Study finished within budget.**
 The 9,000-trial pilot measured **90.85 s -> 8.60 s**, or **10.56x faster simulation**.
 This establishes a simulation result for this workload. Fitting to equal quality is a separate question.
 
+**October 15 follow-up:** [CPU forensic diagnosis](../2026-10-15-model-b-fit-diagnosis/README.md) reproduced all 3,125 fitting proposals, confirmed flat final simplexes, isolated a K-L mode-assignment discontinuity, and measured trial-budget effects. It also found that June's recovery example started at 3.324% mean parameter error. These later diagnostics do not alter the measured results below or establish successful repaired fitting.
+
 ![Measured simulation times](simulation-pilots.png)
 
 | Pilot trials per condition | Original | Early stopping | Speedup |
