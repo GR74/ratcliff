@@ -74,19 +74,35 @@ def verify_stable_noise(args, jax, np):
     grf_kl._basis_cache_order.clear()
     v0, k0, variance0, ids0 = grf_kl.calc_kl_basis(10., pad_to_k_max=True, return_mode_ids=True)
     v1, k1, variance1, ids1 = grf_kl.calc_kl_basis(10.000001, pad_to_k_max=True, return_mode_ids=True)
-    assert k0 == k1 and set(np.asarray(ids0[:k0])) == set(np.asarray(ids1[:k1]))
+    keys0 = np.asarray(ids0[:k0]) & grf_kl.MODE_KEY_MASK
+    keys1 = np.asarray(ids1[:k1]) & grf_kl.MODE_KEY_MASK
+    assert len(np.unique(keys0)) == k0 and len(np.unique(keys1)) == k1
+    common = np.intersect1d(keys0, keys1)
+    if not len(common):
+        raise RuntimeError("No common physical mode components for continuity check")
     indices = np.random.default_rng(55).choice(16000, 128, replace=False)
     keys = blocked.indexed_keys(jax.random.key(4), jnp.arange(2))
     z0 = grf_kl.mode_normal_blocks(keys, ids0, 32, jnp.float32)
     z1 = grf_kl.mode_normal_blocks(keys, ids1, 32, jnp.float32)
     f0, f1 = np.asarray(z0 @ v0[indices].T), np.asarray(z1 @ v1[indices].T)
     change = float(np.linalg.norm(f1-f0) / np.linalg.norm(f0))
-    if change >= 1e-4:
-        raise RuntimeError(f"Production GPU noise continuity failed: {change}")
+    mask0 = jnp.repeat(jnp.asarray(np.isin(np.asarray(ids0) & grf_kl.MODE_KEY_MASK, common)), 2)
+    mask1 = jnp.repeat(jnp.asarray(np.isin(np.asarray(ids1) & grf_kl.MODE_KEY_MASK, common)), 2)
+    shared0 = np.asarray((z0 * mask0) @ v0[indices].T)
+    shared1 = np.asarray((z1 * mask1) @ v1[indices].T)
+    shared_change = float(np.linalg.norm(shared1-shared0) / np.linalg.norm(shared0))
+    if shared_change >= 1e-4:
+        raise RuntimeError(f"Production GPU shared-mode continuity failed: {shared_change}")
+    same_set = set(keys0) == set(keys1)
+    if same_set and change >= 1e-4:
+        raise RuntimeError(f"Production GPU whole-field continuity failed: {change}")
     return dict(action="verify", scenario=args.scenario, variant=args.variant,
-                start_seed=args.start_seed, status="completed", gpu_regression_tests=9,
+                start_seed=args.start_seed, status="completed", gpu_regression_tests=10,
                 retained_modes=[k0, k1], retained_variance=[variance0, variance1],
                 nearby_width_relative_field_change=change,
+                nearby_width_shared_mode_relative_field_change=shared_change,
+                same_retained_component_set=same_set, common_components=len(common),
+                removed_components=len(keys0)-len(common), added_components=len(keys1)-len(common),
                 stable_kl_noise=True, metadata=bench.metadata(jax))
 
 

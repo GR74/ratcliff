@@ -1,0 +1,288 @@
+{
+  "updated_utc": "2026-10-15T17:57:28.038084+00:00",
+  "final": true,
+  "preflight_failed": true,
+  "scope": "One paired baseline start; repaired K-L in both arms, 9000 fitting and scoring trials per condition",
+  "active_study": {
+    "allowance_started_utc": "2026-10-15T17:24:24Z",
+    "deadline_utc": "2026-10-15T23:24:24Z",
+    "linux_base": "/home/anik278/ratcliff-kl-9000-20261015",
+    "script": "/home/anik278/ratcliff-kl-9000-20261015/checkout/scripts/validate_early_stopping.py",
+    "output": "/home/anik278/ratcliff-kl-9000-20261015/study",
+    "source_commit": "a6cd09dc491d5c18baec20894ab344bc233b27e3",
+    "source_tar_sha256": "e1595ca5b3f9e774897013b1fee1b4725d8cd9d83936b8e10038c9b87d76e6fd",
+    "branch": "feat/h100-blocked-staged-fitting",
+    "fit_trials_per_condition": 9000,
+    "score_trials_per_condition": 9000,
+    "start_seed": 1,
+    "primary_pair": "baseline",
+    "status": "prepared_not_started"
+  },
+  "guard": {
+    "deadline_utc": "2026-10-15T23:24:24+00:00",
+    "script": "/home/anik278/ratcliff-kl-9000-20261015/checkout/scripts/validate_early_stopping.py",
+    "output": "/home/anik278/ratcliff-kl-9000-20261015/study",
+    "last_checked_utc": "2026-10-15T17:50:25.563314+00:00",
+    "matching_pids": [],
+    "status": "benchmark_processes_exited"
+  },
+  "configuration": {
+    "output": "/home/anik278/ratcliff-kl-9000-20261015/study",
+    "worker": false,
+    "pilot_only": false,
+    "allow_cpu": false,
+    "stable_kl_noise": true,
+    "gpu_kind": "3060",
+    "scenarios": "baseline",
+    "micro_variants": "legacy,blocked_full,early_stop",
+    "scenario": "baseline",
+    "action": "micro",
+    "variant": "legacy",
+    "result_file": null,
+    "fit_file": null,
+    "data_source": "/home/anik278/ratcliff-kl-9000-20261015/observations",
+    "deadline_utc": "2026-10-15T23:24:24Z",
+    "start_seed": 0,
+    "nsim": 9000,
+    "data_nsim": 9000,
+    "score_nsim": 9000,
+    "chunk": 8,
+    "sim_seeds": 1,
+    "repeats": 1,
+    "maxiter": 1000,
+    "starts": 1,
+    "start_seeds": "1",
+    "baseline_extra_starts": 0,
+    "start_spread": 0.2,
+    "basis_cache_size": 2,
+    "checkpoint_every": 25,
+    "max_score_checkpoints": 2,
+    "error_limit": 0.05,
+    "budget_seconds": 21600,
+    "fit_seconds_limit": 8100.0,
+    "score_reserve_seconds": 1800,
+    "reserve_seconds": 180,
+    "run_started_utc": "2026-10-15T17:49:58.527003+00:00",
+    "target": "Mean effective active parameter error <=0.05; median independent-MC G2 <= true-parameter median +10% absolute magnitude +1",
+    "scoring_note": "Three independent simulator seeds on the same observations; fixed training checkpoints, no scoring feedback",
+    "compared_features": "Legacy versus improvement 1, both with mode-indexed K-L repair; other improvements off",
+    "precision": "fp32 spatial fields, fp64 RT, x64 enabled, default matmul",
+    "cache_note": "Same reduced basis cache for all variants; library default unchanged"
+  },
+  "source_snapshot": {
+    "commit": "a6cd09dc491d5c18baec20894ab344bc233b27e3",
+    "source_tar_sha256": "e1595ca5b3f9e774897013b1fee1b4725d8cd9d83936b8e10038c9b87d76e6fd",
+    "manifest_sha256": "73343ed2e9dc3dc5be2a3b6f89c130480d7818e2d33be982ae2b2b113b8dd649",
+    "file_count": 83
+  },
+  "source_files_verified": 83,
+  "recorded_jobs": [
+    {
+      "action": "verify",
+      "scenario": "baseline",
+      "variant": "blocked_full",
+      "start_seed": 0,
+      "status": "error",
+      "returncode": 1
+    }
+  ],
+  "planned_jobs": [
+    {
+      "action": "verify",
+      "scenario": "baseline",
+      "variant": "blocked_full",
+      "start_seed": 0
+    },
+    {
+      "action": "micro",
+      "scenario": "baseline",
+      "variant": "legacy",
+      "start_seed": 0
+    },
+    {
+      "action": "micro",
+      "scenario": "baseline",
+      "variant": "blocked_full",
+      "start_seed": 0
+    },
+    {
+      "action": "micro",
+      "scenario": "baseline",
+      "variant": "early_stop",
+      "start_seed": 0
+    },
+    {
+      "action": "fit",
+      "scenario": "baseline",
+      "variant": "early_stop",
+      "start_seed": 1
+    },
+    {
+      "action": "score",
+      "scenario": "baseline",
+      "variant": "early_stop",
+      "start_seed": 1
+    },
+    {
+      "action": "fit",
+      "scenario": "baseline",
+      "variant": "legacy",
+      "start_seed": 1
+    },
+    {
+      "action": "score",
+      "scenario": "baseline",
+      "variant": "legacy",
+      "start_seed": 1
+    }
+  ],
+  "cases": [
+    {
+      "variant": "early_stop",
+      "fit": {},
+      "score": {},
+      "status": "missing",
+      "returned_error": null,
+      "returned_error_below_5pct": null,
+      "recorded_evaluations": 0,
+      "partial_trace_lines": 0,
+      "joint_target_verified": null,
+      "observed_time_to_quality": null
+    },
+    {
+      "variant": "legacy",
+      "fit": {},
+      "score": {},
+      "status": "missing",
+      "returned_error": null,
+      "returned_error_below_5pct": null,
+      "recorded_evaluations": 0,
+      "partial_trace_lines": 0,
+      "joint_target_verified": null,
+      "observed_time_to_quality": null
+    }
+  ],
+  "trajectories": [
+    {
+      "variant": "early_stop",
+      "best_training_trajectory": []
+    },
+    {
+      "variant": "legacy",
+      "best_training_trajectory": []
+    }
+  ],
+  "observed_time_to_quality_ratio": null,
+  "raw_archive": {
+    "archive": "repaired-kl-9000-study.tar.gz",
+    "bytes": 146241,
+    "sha256": "d9e05e783c1c5b1a5a8efc84c1c84081fe8c0e5c91204b7d23f3d59ef8038c0e",
+    "files": [
+      {
+        "path": "study/data-baseline.npz",
+        "bytes": 1102,
+        "sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
+      },
+      {
+        "path": "study/planned-jobs.json",
+        "bytes": 863,
+        "sha256": "6d48b6c7378e0b6e6005e8ed0d8f2bd3e15c7f120047457d35eecaccdfa8f233"
+      },
+      {
+        "path": "study/results.json",
+        "bytes": 158,
+        "sha256": "b55d50a757a326687c9bd4ee47673d06e027b66b43df0569c1fd3ba8b17743f3"
+      },
+      {
+        "path": "study/reused-data.json",
+        "bytes": 1952,
+        "sha256": "827352db01ec086373d751bf5947c7d0d6ff277fbe6ae891d7b17907d0b7a8ca"
+      },
+      {
+        "path": "study/run-config.json",
+        "bytes": 1542,
+        "sha256": "86869fd4746ef5e16a5f23a67b27a0f721f16814c2c2fef6a8d80131a021a594"
+      },
+      {
+        "path": "study/summary.json",
+        "bytes": 164,
+        "sha256": "f48873e154c7704fb04118c7229246557b851dd68805961cb233f1dc1a0a238a"
+      },
+      {
+        "path": "study/validation-driver-snapshot.py",
+        "bytes": 27085,
+        "sha256": "2944c62ddcbf040c2db5b0cbedbe6b5fd8b8bb8eafd07ebf620e627c41c23a3a"
+      },
+      {
+        "path": "study/verify-baseline-0-blocked_full.log",
+        "bytes": 1396,
+        "sha256": "192925e7ae74a7fd506da33d4d087948b590bdf715dc94065c648df8515a35df"
+      },
+      {
+        "path": "control/active-study.json",
+        "bytes": 689,
+        "sha256": "e5494799f6fc36aad6a3b1393923d18984c9d947762a44ef08040acbc0db627f"
+      },
+      {
+        "path": "control/processes.json",
+        "bytes": 120,
+        "sha256": "5a27b39c0b9a55869cb8a7a03deeafe338abafdf645f5a1da2389dbcd4cdeb79"
+      },
+      {
+        "path": "control/guard-state.json",
+        "bytes": 339,
+        "sha256": "f1ec1aa41b28f105f62a36a4cc3747d780e282176234ce9a7fd8e22e56efc421"
+      },
+      {
+        "path": "control/guard.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "control/guard.err",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "control/run.log",
+        "bytes": 94,
+        "sha256": "2d2ca36df7149a20f8717fdc48293fc329cf87135a4f108f1f37f37a23afc4ae"
+      },
+      {
+        "path": "control/run.err",
+        "bytes": 451,
+        "sha256": "a20a934b2155c91ab22638e8d389d1e81ce67d9a124c898ed92764488701367a"
+      },
+      {
+        "path": "control/source.tar",
+        "bytes": 532480,
+        "sha256": "e1595ca5b3f9e774897013b1fee1b4725d8cd9d83936b8e10038c9b87d76e6fd"
+      },
+      {
+        "path": "control/setup-evidence.json",
+        "bytes": 394,
+        "sha256": "91317c62187a17b6ce1a42a62e95bab3f83e6e276433f3bdf1883555ca2c9919"
+      },
+      {
+        "path": "control/launch.py",
+        "bytes": 1517,
+        "sha256": "75acd6fa631329bba4a7dd2fb32d4cce6d9362ac9b73341819ce0e641e7e09d1"
+      },
+      {
+        "path": "control/prepare-run.py",
+        "bytes": 2044,
+        "sha256": "180cf3792dc5d09db08415a5109f3f5c9206b487d1d86f900bcd44d7b4223b0f"
+      },
+      {
+        "path": "source/benchmark-source.json",
+        "bytes": 258,
+        "sha256": "fff0d54fe8c4bf163a19f1d812d132c9817a253077fa2d1fe3ce9d9755a80f6d"
+      },
+      {
+        "path": "source/source-manifest.json",
+        "bytes": 8552,
+        "sha256": "73343ed2e9dc3dc5be2a3b6f89c130480d7818e2d33be982ae2b2b113b8dd649"
+      }
+    ]
+  }
+}

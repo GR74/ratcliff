@@ -52,6 +52,35 @@ def test_mode_coefficients_keep_independent_unit_normal_covariance():
     np.testing.assert_allclose(np.cov(z, rowvar=False), np.eye(8), atol=.04)
 
 
+def test_conjugate_cutoff_representative_flip_preserves_field(monkeypatch):
+    def lam(**kwargs):
+        values = np.zeros((3, 5))
+        values.flat[1] = 2. + (1e-7 if kwargs["s1"] == 10 else -1e-7)
+        values.flat[4] = 4. - values.flat[1]
+        return jnp.sqrt(jnp.asarray(values))
+
+    monkeypatch.setattr(grf_kl.grf_circulant, "calc_LAM", lam)
+    grf_kl._basis_cache.clear()
+    grf_kl._basis_cache_order.clear()
+    options = dict(n=3, m=3, k_max=4, variance_threshold=.4,
+                   pad_to_k_max=True, return_mode_ids=True)
+    a, ka, _, ids_a = grf_kl.calc_kl_basis(10., **options)
+    b, kb, _, ids_b = grf_kl.calc_kl_basis(10.000001, **options)
+    assert ka == kb == 1
+    assert ids_a[0] != ids_b[0]
+    assert ids_a[0] & grf_kl.MODE_KEY_MASK == ids_b[0] & grf_kl.MODE_KEY_MASK
+    keys = blocked.indexed_keys(jax.random.key(12), jnp.arange(2))
+    fields_a = grf_kl.mode_normal_blocks(keys, ids_a, 8) @ a.T
+    fields_b = grf_kl.mode_normal_blocks(keys, ids_b, 8) @ b.T
+    np.testing.assert_allclose(fields_a, fields_b, atol=1e-6, rtol=1e-6)
+    both, k, _, codes = grf_kl.calc_kl_basis(10., **{**options, "variance_threshold": 1.})
+    assert k == 2 and len(np.unique(np.asarray(codes[:k]) & grf_kl.MODE_KEY_MASK)) == 2
+    z = np.asarray(grf_kl.mode_normal_blocks(keys[:1], codes[:k], 32768))[0]
+    np.testing.assert_allclose(np.cov(z, rowvar=False), np.eye(4), atol=.04)
+    grf_kl._basis_cache.clear()
+    grf_kl._basis_cache_order.clear()
+
+
 def test_repaired_wrappers_use_ids_and_preserve_paired_stopping(monkeypatch):
     rng = np.random.default_rng(2)
     basis = jnp.asarray(rng.normal(size=(16000, 6)), dtype=jnp.float32)

@@ -20,6 +20,8 @@ from model_b import grf as grf_circulant
 _BASIS_CACHE_MAXSIZE = 64
 DEFAULT_K_MAX = 2000
 DEFAULT_MODE_BUCKETS = (512, 1024, 1536, 2000)
+MODE_ORIENTATION_BIT = np.uint32(0x80000000)
+MODE_KEY_MASK = np.uint32(0x7fffffff)
 _basis_cache = {}
 _basis_cache_order = []
 
@@ -77,9 +79,12 @@ def calc_kl_basis(sig: float,
     that covers K. It changes padding only, never the retained modes or variance
     threshold. Bucket configuration is included in the cache key.
 
-    return_mode_ids additionally returns a uint32 ID for each complex mode
-    column pair. IDs are physical flattened Fourier-grid indices, independent
-    of eigenvalue rank. Padding uses 0xffffffff and has zero basis columns.
+    return_mode_ids additionally returns a uint32 code for each complex mode
+    column pair. Its low bits identify a canonical conjugate family and an
+    independent component within that family. The high bit reverses the sine
+    coefficient for a conjugate orientation. Thus a singleton's representative
+    may flip without changing its random field. If both members are retained,
+    they receive independent components. Padding is 0xffffffff, with zero columns.
     The historical three-value return and basis values remain unchanged.
     """
     if mode_buckets is not None:
@@ -155,7 +160,15 @@ def _calc_kl_basis_impl(sig: float, n: int, m: int, k_max: int,
     result = (jnp.asarray(V), K, variance_captured)
     if return_mode_ids:
         mode_ids = np.full(capacity, np.uint32(0xffffffff), dtype=np.uint32)
-        mode_ids[:K] = top_idx.astype(np.uint32)
+        conjugates = ((-i_star) % n_pad) * m_pad + ((-j_star) % m_pad)
+        canonical = np.minimum(top_idx, conjugates)
+        selected = set(top_idx.tolist())
+        paired = np.asarray([c != i and c in selected for i, c in zip(top_idx, conjugates)])
+        reverse = top_idx != canonical
+        components = (paired & reverse).astype(np.uint32)
+        codes = 2 * canonical.astype(np.uint32) + components
+        codes |= np.where(reverse, MODE_ORIENTATION_BIT, np.uint32(0))
+        mode_ids[:K] = codes
         return (*result, jnp.asarray(mode_ids))
     return result
 
@@ -164,15 +177,21 @@ def mode_normal_blocks(keys, mode_ids, block_size, dtype=jnp.float32):
     """Independent normal coefficient pairs indexed by physical Fourier mode.
 
     keys are per-trial (and, for blocked simulation, per-block) keys. Each
-    physical mode receives its own folded key before generating time x real/
-    imaginary draws. Changing the rank, retained set or padded capacity does
-    not reassign coefficients for any shared mode. Different block lengths
+    physical mode component receives its own folded key before generating
+    time x real/imaginary draws. Conjugate orientation flips only the sine
+    coefficient, compensating the basis's sine sign. Changing rank, retained
+    set or capacity does not reassign shared components. Different block lengths
     remain different random layouts; use the same length in paired controls.
     """
+    codes = jnp.asarray(mode_ids, dtype=jnp.uint32)
+    identities = codes & MODE_KEY_MASK
+    orientation = jnp.where((codes & MODE_ORIENTATION_BIT) != 0, -1., 1.).astype(dtype)
+
     def sample_trial(key):
-        mode_keys = jax.vmap(lambda mode: jax.random.fold_in(key, mode))(mode_ids)
+        mode_keys = jax.vmap(lambda mode: jax.random.fold_in(key, mode))(identities)
         samples = jax.vmap(lambda k: jax.random.normal(
             k, (block_size, 2), dtype=dtype))(mode_keys)
+        samples = samples.at[:, :, 1].multiply(orientation[:, None])
         return samples.transpose(1, 0, 2).reshape(block_size, 2 * len(mode_ids))
 
     return jax.vmap(sample_trial)(keys)
