@@ -11,7 +11,7 @@ Hard stop: **October 15, 2026 at 7:24:24 p.m. Eastern**. This includes setup/pil
 | Variant | Status | Returned parameter error | Training minutes | Converged | Joint target verified |
 |---|---|---:|---:|---|---|
 | early_stop | completed | 4.586% | 93.68 | True | False |
-| legacy | running_or_pending | Unavailable | Unavailable | Unavailable | None |
+| legacy | fit_time_limit | 7.960% | 135.33 | False | None |
 
 ![Recovery during optimization](recovery-progress.png)
 
