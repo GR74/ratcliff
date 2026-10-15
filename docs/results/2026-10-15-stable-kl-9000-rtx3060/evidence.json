@@ -1,0 +1,634 @@
+{
+  "updated_utc": "2026-10-15T18:12:42.619222+00:00",
+  "final": false,
+  "preflight_failed": false,
+  "scope": "One paired baseline start; repaired K-L in both arms, 9000 fitting and scoring trials per condition",
+  "active_study": {
+    "allowance_started_utc": "2026-10-15T17:24:24Z",
+    "deadline_utc": "2026-10-15T23:24:24Z",
+    "linux_base": "/home/anik278/ratcliff-kl-9000-20261015-v2",
+    "script": "/home/anik278/ratcliff-kl-9000-20261015-v2/checkout/scripts/validate_early_stopping.py",
+    "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
+    "source_commit": "322bd1fb3893d394727f724947147b249eebb098",
+    "source_tar_sha256": "704aa3cbf72bdf107c3d13d60613f5ce988ec317ba3fec8ade5e34d768008fc9",
+    "branch": "feat/h100-blocked-staged-fitting",
+    "fit_trials_per_condition": 9000,
+    "score_trials_per_condition": 9000,
+    "start_seed": 1,
+    "primary_pair": "baseline",
+    "status": "running",
+    "attempt": 2,
+    "prior_attempt": {
+      "source_commit": "a6cd09d",
+      "outcome": "GPU unit tests passed; conjugate cutoff check failed before fitting; raw archive preserved"
+    },
+    "launch_verified_utc": "2026-10-15T18:07:42.880797+00:00"
+  },
+  "guard": {
+    "deadline_utc": "2026-10-15T23:24:24+00:00",
+    "script": "/home/anik278/ratcliff-kl-9000-20261015-v2/checkout/scripts/validate_early_stopping.py",
+    "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
+    "last_checked_utc": "2026-10-15T18:12:29.158539+00:00",
+    "matching_pids": [
+      [
+        630,
+        false
+      ],
+      [
+        3779,
+        true
+      ]
+    ],
+    "status": "watching"
+  },
+  "configuration": {
+    "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
+    "worker": false,
+    "pilot_only": false,
+    "allow_cpu": false,
+    "stable_kl_noise": true,
+    "gpu_kind": "3060",
+    "scenarios": "baseline",
+    "micro_variants": "legacy,blocked_full,early_stop",
+    "scenario": "baseline",
+    "action": "micro",
+    "variant": "legacy",
+    "result_file": null,
+    "fit_file": null,
+    "data_source": "/home/anik278/ratcliff-kl-9000-20261015-v2/observations",
+    "deadline_utc": "2026-10-15T23:24:24Z",
+    "start_seed": 0,
+    "nsim": 9000,
+    "data_nsim": 9000,
+    "score_nsim": 9000,
+    "chunk": 8,
+    "sim_seeds": 1,
+    "repeats": 1,
+    "maxiter": 1000,
+    "starts": 1,
+    "start_seeds": "1",
+    "baseline_extra_starts": 0,
+    "start_spread": 0.2,
+    "basis_cache_size": 2,
+    "checkpoint_every": 25,
+    "max_score_checkpoints": 2,
+    "error_limit": 0.05,
+    "budget_seconds": 21600,
+    "fit_seconds_limit": 8100.0,
+    "score_reserve_seconds": 1800,
+    "reserve_seconds": 180,
+    "run_started_utc": "2026-10-15T17:59:42.142697+00:00",
+    "target": "Mean effective active parameter error <=0.05; median independent-MC G2 <= true-parameter median +10% absolute magnitude +1",
+    "scoring_note": "Three independent simulator seeds on the same observations; fixed training checkpoints, no scoring feedback",
+    "compared_features": "Legacy versus improvement 1, both with mode-indexed K-L repair; other improvements off",
+    "precision": "fp32 spatial fields, fp64 RT, x64 enabled, default matmul",
+    "cache_note": "Same reduced basis cache for all variants; library default unchanged"
+  },
+  "source_snapshot": {
+    "commit": "322bd1fb3893d394727f724947147b249eebb098",
+    "source_tar_sha256": "704aa3cbf72bdf107c3d13d60613f5ce988ec317ba3fec8ade5e34d768008fc9",
+    "manifest_sha256": "83795face5e2675e59eff93c793c050db77b6a72ca90cdd12d31617545fb2bb0",
+    "file_count": 84
+  },
+  "runtime_environment": {
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "packages": {
+      "ratcliff": "0.1.0",
+      "nvidia-cuda-cupti-cu12": "12.9.79",
+      "pluggy": "1.7.0",
+      "iniconfig": "2.3.1",
+      "nvidia-cuda-nvcc-cu12": "12.9.86",
+      "scipy": "1.18.1",
+      "nvidia-nccl-cu12": "2.32.3",
+      "nvidia-cufft-cu12": "11.4.1.4",
+      "nvidia-cusolver-cu12": "11.7.5.82",
+      "opt_einsum": "3.4.0",
+      "ml_dtypes": "0.6.0",
+      "nvidia-cuda-cccl-cu12": "12.9.27",
+      "jax-cuda12-plugin": "0.10.2",
+      "nvidia-cudnn-cu12": "9.27.0.42",
+      "nvidia-nvjitlink-cu12": "12.9.86",
+      "nvidia-cuda-nvrtc-cu12": "12.9.86",
+      "jax-cuda12-pjrt": "0.10.2",
+      "jaxlib": "0.10.2",
+      "nvidia-cublas-cu12": "12.9.2.10",
+      "nvidia-cusparse-cu12": "12.5.10.65",
+      "jax": "0.10.2",
+      "nvidia-nvshmem-cu12": "3.8.0",
+      "packaging": "26.3",
+      "pytest": "9.1.1",
+      "numpy": "2.5.4",
+      "nvidia-cuda-runtime-cu12": "12.9.79",
+      "Pygments": "2.21.0"
+    },
+    "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB, 3356 MiB, 100 %, 86, 76.74 W",
+    "sampled_utc": "2026-10-15T18:07:42.880797+00:00"
+  },
+  "reporter_sha256": "78b4746a89a823199c1c7f7a91c1baaa56a750c6a04da6cdd45a74c8ab1597ee",
+  "source_files_verified": 84,
+  "recorded_jobs": [
+    {
+      "action": "verify",
+      "scenario": "baseline",
+      "variant": "blocked_full",
+      "start_seed": 0,
+      "status": "completed",
+      "gpu_regression_tests": 10,
+      "retained_modes": [
+        1325,
+        1325
+      ],
+      "retained_variance": [
+        0.9900387952538491,
+        0.9900388065741801
+      ],
+      "nearby_width_relative_field_change": 8.01641454017954e-06,
+      "nearby_width_shared_mode_relative_field_change": 8.01641454017954e-06,
+      "same_retained_component_set": true,
+      "common_components": 1325,
+      "removed_components": 0,
+      "added_components": 0,
+      "stable_kl_noise": true,
+      "metadata": {
+        "utc": "2026-10-15T18:00:07.485482+00:00",
+        "commit": "322bd1fb3893d394727f724947147b249eebb098",
+        "source_snapshot": {
+          "commit": "322bd1fb3893d394727f724947147b249eebb098",
+          "source_tar_sha256": "704aa3cbf72bdf107c3d13d60613f5ce988ec317ba3fec8ade5e34d768008fc9",
+          "manifest_sha256": "83795face5e2675e59eff93c793c050db77b6a72ca90cdd12d31617545fb2bb0",
+          "file_count": 84
+        },
+        "implementation_sha256": "077149ab5e2d5a64fbb4324b2fb2311ca72b70de22e5aa19b520ab0578834689",
+        "hashed_files": [
+          "shared/blocked.py",
+          "shared/staged_fit.py",
+          "shared/benchmark_stats.py",
+          "shared/prng.py",
+          "model_a/simulate.py",
+          "model_a/objective.py",
+          "model_a/fit.py",
+          "model_b/simulate.py",
+          "model_b/objective.py",
+          "model_b/fit.py",
+          "model_b/grf_kl.py",
+          "model_b/grf.py",
+          "scripts/benchmark_speedups.py"
+        ],
+        "backend": "gpu",
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "packages": {
+          "jax": "0.10.2",
+          "jaxlib": "0.10.2",
+          "jax-cuda12-plugin": "0.10.2",
+          "jax-cuda12-pjrt": "0.10.2",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1"
+        },
+        "devices": [
+          "cuda:0"
+        ],
+        "device_kind": "NVIDIA GeForce RTX 3060 Laptop GPU",
+        "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB",
+        "matmul_precision": "default",
+        "device_allocator_memory": {
+          "num_allocs": 3221,
+          "bytes_in_use": 539951360,
+          "peak_bytes_in_use": 806097408,
+          "largest_alloc_size": 280870912,
+          "bytes_limit": 3221225472,
+          "bytes_reserved": 0,
+          "peak_bytes_reserved": 0,
+          "largest_free_block_bytes": 0,
+          "pool_bytes": 1075838976,
+          "peak_pool_bytes": 1075838976
+        },
+        "memory_note": "Allocator peak includes warm-up and the entire worker process."
+      }
+    },
+    {
+      "action": "micro",
+      "scenario": "baseline",
+      "variant": "legacy",
+      "start_seed": 0,
+      "status": "completed",
+      "settings": {
+        "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
+        "worker": true,
+        "pilot_only": false,
+        "allow_cpu": false,
+        "stable_kl_noise": true,
+        "gpu_kind": "3060",
+        "scenarios": "baseline,lower_boundary,higher_boundary",
+        "micro_variants": "legacy,blocked_full,early_stop",
+        "scenario": "baseline",
+        "action": "micro",
+        "variant": "legacy",
+        "result_file": "/home/anik278/ratcliff-kl-9000-20261015-v2/study/micro-baseline-0-legacy.json",
+        "fit_file": null,
+        "data_source": null,
+        "deadline_utc": null,
+        "start_seed": 0,
+        "nsim": 9000,
+        "data_nsim": 9000,
+        "score_nsim": 9000,
+        "chunk": 8,
+        "sim_seeds": 1,
+        "repeats": 1,
+        "maxiter": 1000,
+        "starts": 1,
+        "start_seeds": null,
+        "baseline_extra_starts": 0,
+        "start_spread": 0.2,
+        "basis_cache_size": 2,
+        "checkpoint_every": 25,
+        "max_score_checkpoints": 2,
+        "error_limit": 0.05,
+        "budget_seconds": 7200,
+        "fit_seconds_limit": 8100.0,
+        "score_reserve_seconds": 0,
+        "reserve_seconds": 180
+      },
+      "compile_and_first_call_seconds": 92.99024259300018,
+      "timings_seconds": [
+        93.89322813100011
+      ],
+      "computed_trial_steps": 7200000,
+      "metadata": {
+        "utc": "2026-10-15T18:05:02.091183+00:00",
+        "commit": "322bd1fb3893d394727f724947147b249eebb098",
+        "source_snapshot": {
+          "commit": "322bd1fb3893d394727f724947147b249eebb098",
+          "source_tar_sha256": "704aa3cbf72bdf107c3d13d60613f5ce988ec317ba3fec8ade5e34d768008fc9",
+          "manifest_sha256": "83795face5e2675e59eff93c793c050db77b6a72ca90cdd12d31617545fb2bb0",
+          "file_count": 84
+        },
+        "implementation_sha256": "077149ab5e2d5a64fbb4324b2fb2311ca72b70de22e5aa19b520ab0578834689",
+        "hashed_files": [
+          "shared/blocked.py",
+          "shared/staged_fit.py",
+          "shared/benchmark_stats.py",
+          "shared/prng.py",
+          "model_a/simulate.py",
+          "model_a/objective.py",
+          "model_a/fit.py",
+          "model_b/simulate.py",
+          "model_b/objective.py",
+          "model_b/fit.py",
+          "model_b/grf_kl.py",
+          "model_b/grf.py",
+          "scripts/benchmark_speedups.py"
+        ],
+        "backend": "gpu",
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "packages": {
+          "jax": "0.10.2",
+          "jaxlib": "0.10.2",
+          "jax-cuda12-plugin": "0.10.2",
+          "jax-cuda12-pjrt": "0.10.2",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1"
+        },
+        "devices": [
+          "cuda:0"
+        ],
+        "device_kind": "NVIDIA GeForce RTX 3060 Laptop GPU",
+        "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB",
+        "matmul_precision": "default",
+        "device_allocator_memory": {
+          "num_allocs": 612,
+          "bytes_in_use": 268702208,
+          "peak_bytes_in_use": 1082547456,
+          "largest_alloc_size": 272777216,
+          "bytes_limit": 3221225472,
+          "bytes_reserved": 0,
+          "peak_bytes_reserved": 0,
+          "largest_free_block_bytes": 0,
+          "pool_bytes": 2153775104,
+          "peak_pool_bytes": 2153775104
+        },
+        "memory_note": "Allocator peak includes warm-up and the entire worker process.",
+        "x64": true,
+        "validation_driver_sha256": "3ed11cedeec3a9d43b233eb47ba0ef530dea1aab05054513b61a9eba6f4ed4ed",
+        "basis_cache_size": 2
+      },
+      "data_sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
+    },
+    {
+      "action": "micro",
+      "scenario": "baseline",
+      "variant": "blocked_full",
+      "start_seed": 0,
+      "status": "completed",
+      "settings": {
+        "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
+        "worker": true,
+        "pilot_only": false,
+        "allow_cpu": false,
+        "stable_kl_noise": true,
+        "gpu_kind": "3060",
+        "scenarios": "baseline,lower_boundary,higher_boundary",
+        "micro_variants": "legacy,blocked_full,early_stop",
+        "scenario": "baseline",
+        "action": "micro",
+        "variant": "blocked_full",
+        "result_file": "/home/anik278/ratcliff-kl-9000-20261015-v2/study/micro-baseline-0-blocked_full.json",
+        "fit_file": null,
+        "data_source": null,
+        "deadline_utc": null,
+        "start_seed": 0,
+        "nsim": 9000,
+        "data_nsim": 9000,
+        "score_nsim": 9000,
+        "chunk": 8,
+        "sim_seeds": 1,
+        "repeats": 1,
+        "maxiter": 1000,
+        "starts": 1,
+        "start_seeds": null,
+        "baseline_extra_starts": 0,
+        "start_spread": 0.2,
+        "basis_cache_size": 2,
+        "checkpoint_every": 25,
+        "max_score_checkpoints": 2,
+        "error_limit": 0.05,
+        "budget_seconds": 7200,
+        "fit_seconds_limit": 8100.0,
+        "score_reserve_seconds": 0,
+        "reserve_seconds": 180
+      },
+      "compile_and_first_call_seconds": 117.87545558800002,
+      "timings_seconds": [
+        108.47780292000016
+      ],
+      "computed_trial_steps": 7488000,
+      "metadata": {
+        "utc": "2026-10-15T18:11:04.955084+00:00",
+        "commit": "322bd1fb3893d394727f724947147b249eebb098",
+        "source_snapshot": {
+          "commit": "322bd1fb3893d394727f724947147b249eebb098",
+          "source_tar_sha256": "704aa3cbf72bdf107c3d13d60613f5ce988ec317ba3fec8ade5e34d768008fc9",
+          "manifest_sha256": "83795face5e2675e59eff93c793c050db77b6a72ca90cdd12d31617545fb2bb0",
+          "file_count": 84
+        },
+        "implementation_sha256": "077149ab5e2d5a64fbb4324b2fb2311ca72b70de22e5aa19b520ab0578834689",
+        "hashed_files": [
+          "shared/blocked.py",
+          "shared/staged_fit.py",
+          "shared/benchmark_stats.py",
+          "shared/prng.py",
+          "model_a/simulate.py",
+          "model_a/objective.py",
+          "model_a/fit.py",
+          "model_b/simulate.py",
+          "model_b/objective.py",
+          "model_b/fit.py",
+          "model_b/grf_kl.py",
+          "model_b/grf.py",
+          "scripts/benchmark_speedups.py"
+        ],
+        "backend": "gpu",
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "packages": {
+          "jax": "0.10.2",
+          "jaxlib": "0.10.2",
+          "jax-cuda12-plugin": "0.10.2",
+          "jax-cuda12-pjrt": "0.10.2",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1"
+        },
+        "devices": [
+          "cuda:0"
+        ],
+        "device_kind": "NVIDIA GeForce RTX 3060 Laptop GPU",
+        "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB",
+        "matmul_precision": "default",
+        "device_allocator_memory": {
+          "num_allocs": 1298,
+          "bytes_in_use": 268702208,
+          "peak_bytes_in_use": 616735744,
+          "largest_alloc_size": 272777216,
+          "bytes_limit": 3221225472,
+          "bytes_reserved": 0,
+          "peak_bytes_reserved": 0,
+          "largest_free_block_bytes": 0,
+          "pool_bytes": 1080033280,
+          "peak_pool_bytes": 1080033280
+        },
+        "memory_note": "Allocator peak includes warm-up and the entire worker process.",
+        "x64": true,
+        "validation_driver_sha256": "3ed11cedeec3a9d43b233eb47ba0ef530dea1aab05054513b61a9eba6f4ed4ed",
+        "basis_cache_size": 2
+      },
+      "data_sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
+    },
+    {
+      "action": "micro",
+      "scenario": "baseline",
+      "variant": "early_stop",
+      "start_seed": 0,
+      "status": "completed",
+      "settings": {
+        "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
+        "worker": true,
+        "pilot_only": false,
+        "allow_cpu": false,
+        "stable_kl_noise": true,
+        "gpu_kind": "3060",
+        "scenarios": "baseline,lower_boundary,higher_boundary",
+        "micro_variants": "legacy,blocked_full,early_stop",
+        "scenario": "baseline",
+        "action": "micro",
+        "variant": "early_stop",
+        "result_file": "/home/anik278/ratcliff-kl-9000-20261015-v2/study/micro-baseline-0-early_stop.json",
+        "fit_file": null,
+        "data_source": null,
+        "deadline_utc": null,
+        "start_seed": 0,
+        "nsim": 9000,
+        "data_nsim": 9000,
+        "score_nsim": 9000,
+        "chunk": 8,
+        "sim_seeds": 1,
+        "repeats": 1,
+        "maxiter": 1000,
+        "starts": 1,
+        "start_seeds": null,
+        "baseline_extra_starts": 0,
+        "start_spread": 0.2,
+        "basis_cache_size": 2,
+        "checkpoint_every": 25,
+        "max_score_checkpoints": 2,
+        "error_limit": 0.05,
+        "budget_seconds": 7200,
+        "fit_seconds_limit": 8100.0,
+        "score_reserve_seconds": 0,
+        "reserve_seconds": 180
+      },
+      "compile_and_first_call_seconds": 15.226207552000233,
+      "timings_seconds": [
+        9.271234756000013
+      ],
+      "computed_trial_steps": 576000,
+      "metadata": {
+        "utc": "2026-10-15T18:11:41.927558+00:00",
+        "commit": "322bd1fb3893d394727f724947147b249eebb098",
+        "source_snapshot": {
+          "commit": "322bd1fb3893d394727f724947147b249eebb098",
+          "source_tar_sha256": "704aa3cbf72bdf107c3d13d60613f5ce988ec317ba3fec8ade5e34d768008fc9",
+          "manifest_sha256": "83795face5e2675e59eff93c793c050db77b6a72ca90cdd12d31617545fb2bb0",
+          "file_count": 84
+        },
+        "implementation_sha256": "077149ab5e2d5a64fbb4324b2fb2311ca72b70de22e5aa19b520ab0578834689",
+        "hashed_files": [
+          "shared/blocked.py",
+          "shared/staged_fit.py",
+          "shared/benchmark_stats.py",
+          "shared/prng.py",
+          "model_a/simulate.py",
+          "model_a/objective.py",
+          "model_a/fit.py",
+          "model_b/simulate.py",
+          "model_b/objective.py",
+          "model_b/fit.py",
+          "model_b/grf_kl.py",
+          "model_b/grf.py",
+          "scripts/benchmark_speedups.py"
+        ],
+        "backend": "gpu",
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "packages": {
+          "jax": "0.10.2",
+          "jaxlib": "0.10.2",
+          "jax-cuda12-plugin": "0.10.2",
+          "jax-cuda12-pjrt": "0.10.2",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1"
+        },
+        "devices": [
+          "cuda:0"
+        ],
+        "device_kind": "NVIDIA GeForce RTX 3060 Laptop GPU",
+        "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB",
+        "matmul_precision": "default",
+        "device_allocator_memory": {
+          "num_allocs": 1303,
+          "bytes_in_use": 268702208,
+          "peak_bytes_in_use": 616735744,
+          "largest_alloc_size": 272777216,
+          "bytes_limit": 3221225472,
+          "bytes_reserved": 0,
+          "peak_bytes_reserved": 0,
+          "largest_free_block_bytes": 0,
+          "pool_bytes": 1080033280,
+          "peak_pool_bytes": 1080033280
+        },
+        "memory_note": "Allocator peak includes warm-up and the entire worker process.",
+        "x64": true,
+        "validation_driver_sha256": "3ed11cedeec3a9d43b233eb47ba0ef530dea1aab05054513b61a9eba6f4ed4ed",
+        "basis_cache_size": 2
+      },
+      "data_sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
+    }
+  ],
+  "planned_jobs": [
+    {
+      "action": "verify",
+      "scenario": "baseline",
+      "variant": "blocked_full",
+      "start_seed": 0
+    },
+    {
+      "action": "micro",
+      "scenario": "baseline",
+      "variant": "legacy",
+      "start_seed": 0
+    },
+    {
+      "action": "micro",
+      "scenario": "baseline",
+      "variant": "blocked_full",
+      "start_seed": 0
+    },
+    {
+      "action": "micro",
+      "scenario": "baseline",
+      "variant": "early_stop",
+      "start_seed": 0
+    },
+    {
+      "action": "fit",
+      "scenario": "baseline",
+      "variant": "early_stop",
+      "start_seed": 1
+    },
+    {
+      "action": "score",
+      "scenario": "baseline",
+      "variant": "early_stop",
+      "start_seed": 1
+    },
+    {
+      "action": "fit",
+      "scenario": "baseline",
+      "variant": "legacy",
+      "start_seed": 1
+    },
+    {
+      "action": "score",
+      "scenario": "baseline",
+      "variant": "legacy",
+      "start_seed": 1
+    }
+  ],
+  "cases": [
+    {
+      "variant": "early_stop",
+      "fit": {},
+      "score": {},
+      "status": "running_or_pending",
+      "returned_error": null,
+      "returned_error_below_5pct": null,
+      "recorded_evaluations": 4,
+      "partial_trace_lines": 0,
+      "joint_target_verified": null,
+      "observed_time_to_quality": null
+    },
+    {
+      "variant": "legacy",
+      "fit": {},
+      "score": {},
+      "status": "running_or_pending",
+      "returned_error": null,
+      "returned_error_below_5pct": null,
+      "recorded_evaluations": 0,
+      "partial_trace_lines": 0,
+      "joint_target_verified": null,
+      "observed_time_to_quality": null
+    }
+  ],
+  "trajectories": [
+    {
+      "variant": "early_stop",
+      "best_training_trajectory": [
+        {
+          "eval": 1,
+          "elapsed": 9.649272396000015,
+          "error": 0.0868792465972188,
+          "loss": 6305.978181481296
+        },
+        {
+          "eval": 2,
+          "elapsed": 19.475207375000082,
+          "error": 0.09106561597171921,
+          "loss": 1846.6234029232205
+        }
+      ]
+    },
+    {
+      "variant": "legacy",
+      "best_training_trajectory": []
+    }
+  ],
+  "observed_time_to_quality_ratio": null,
+  "raw_archive": null
+}

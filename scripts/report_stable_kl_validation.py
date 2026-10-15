@@ -34,10 +34,12 @@ def archive_raw(base, control, destination):
         files = [(p, "study/" + p.relative_to(base / "study").as_posix())
                  for p in sorted((base / "study").rglob("*")) if p.is_file()]
         names = ["active-study.json", "processes.json", "guard-state.json", "guard.log", "guard.err",
-                 "run.log", "run.err", "source.tar", "setup-evidence.json", "launch.py", "prepare-run.py"]
+                 "run.log", "run.err", "source.tar", "setup-evidence.json", "launch.py", "prepare-run.py",
+                 "keep-awake.py", "keep-awake-state.json", "runtime-environment.json"]
         files += [(control / name, "control/" + name) for name in names if (control / name).exists()]
         files += [(base / "checkout" / name, "source/" + name)
                   for name in ("benchmark-source.json", "source-manifest.json")]
+        files.append((Path(__file__), "reporting/report_stable_kl_validation.py"))
         entries = []
         with tarfile.open(archive, "w:gz") as handle:
             for path, name in files:
@@ -118,6 +120,11 @@ def main(args):
             assert fit["settings"]["nsim"] == 9000 and fit["settings"]["stable_kl_noise"] is True
             assert fit["metadata"]["backend"] == "gpu"
             assert fit["metadata"]["commit"] == active["source_commit"]
+            effective_final = np.asarray(clamp_b(jnp.asarray(fit["params"])))
+            active_indices = [i for i in range(13) if i != 6]
+            true_final = np.asarray(fit["true_params"])
+            reproduced_error = float(np.mean(abs(effective_final[active_indices] / true_final[active_indices] - 1)))
+            assert abs(reproduced_error-final_error) < 1e-10
         if score:
             assert score["score_seeds"] == [999, 5001, 5002]
             assert score["settings"]["stable_kl_noise"] is True and score["score_nsim"] == 9000
@@ -139,6 +146,8 @@ def main(args):
         preflight_failed=preflight_failed,
         scope="One paired baseline start; repaired K-L in both arms, 9000 fitting and scoring trials per condition",
         active_study=active, guard=guard, configuration=config, source_snapshot=snapshot,
+        runtime_environment=read(control / "runtime-environment.json", {}),
+        reporter_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         source_files_verified=len(source_files), recorded_jobs=rows, planned_jobs=planned,
         cases=returned, trajectories=trajectories, observed_time_to_quality_ratio=ratio, raw_archive=archive)
     write(out / "evidence.json", evidence)
@@ -161,11 +170,17 @@ def main(args):
     fig.savefig(out / "recovery-progress.png", dpi=180)
     plt.close(fig)
 
+    verification = next((r for r in rows if r["action"] == "verify" and r["status"] == "completed"), {})
+    verification_text = (f'GPU preflight passed {verification["gpu_regression_tests"]} tests. The production nearby-width field change was '
+                         f'{100*verification["nearby_width_relative_field_change"]:.6f}%; retained component sets identical: '
+                         f'{verification["same_retained_component_set"]}.' if verification else
+                         "GPU preflight has not passed in this attempt.")
     lines = ["# Repaired K L fitting on the RTX 3060", "",
         "**Verification failed before fitting; no recovery result.**" if preflight_failed else
         "**Final report.**" if args.final else "**In progress. No final fitting-speed or accuracy claim yet.**", "",
         "Both variants enable the mode-indexed noise repair. Every optimization evaluation uses 9,000 trials per condition. "
         "The observed data, 8.688% starting error and ordinary simplex settings are matched; other improvements are off.", "",
+        verification_text, "",
         "Hard stop: **October 15, 2026 at 7:24:24 p.m. Eastern**. This includes setup/pilots and never extends the six-hour allowance.", "",
         "| Variant | Status | Returned parameter error | Training minutes | Converged | Joint target verified |",
         "|---|---|---:|---:|---|---|"]
@@ -184,6 +199,8 @@ def main(args):
         "**Time-to-quality ratio is not estimable: both target hits have not been verified.**", "",
         "This is one paired synthetic case on one laptop. Missing, interrupted and time-capped fits are retained. "
         "Scoring uses the same observations with independent simulator randomness, not held-out participant data.", "",
+        "Relative to the earlier 512-trial study, both the noise assignment and optimization trial budget changed. "
+        "This experiment does not separately estimate how much each change affects recovery.", "",
         f"[Predeclared plan]({Path(os.path.relpath(ROOT / 'docs/plans/2026-10-15-stable-kl-9000-rtx3060.md', out)).as_posix()}) · [Compact evidence](evidence.json)"]
     if archive:
         lines += ["", "[Verified raw archive manifest](raw/manifest.json). The archive includes source, observations, traces, scores, logs and guard evidence."]
