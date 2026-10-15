@@ -477,24 +477,6 @@ def report():
         ["Accurate fitting", "Latest repair: 1 of 2 arms below 5% mean error; 0 of 2 joint passes. Earlier study: 0 of 8 joint passes", "Replicate recovery across settings and starts, calibrate prediction tolerances, then compare time to the same accepted quality"],
         ["Publication contribution", "Engineering result with a proposed methods-paper scope", "Review prior work on early stopping, active-batch compaction and spatial DDM acceleration; define the incremental contribution"],
     ], [1.2, 2.2, 3.6])
-    heading(doc, "Recommended next validation sequence")
-    p(doc, "First, run a parameter-grid recovery and boundary-case study of the stopping path against its "
-      "paired full-horizon control, and statistical comparisons with the original simulator. Use enough "
-      "trials in rare response categories to assess the agreed RT and choice margins.")
-    p(doc, "A concrete starting proposal is ten agreed parameter settings, twelve seeds and 9,000 trials per "
-      "condition: 2.16 million paired trial comparisons across two conditions. Repeat warmed timing seven "
-      "times per setting and report first-use costs separately. This proposed study has not been run; "
-      "expand it if rare categories or parameter limits remain unresolved.")
-    p(doc, "Second, replicate the repaired 9,000-trial recovery test across starts and parameter settings. "
-      "Compare repaired and historical noise assignment at the same trial budget to isolate the repair's "
-      "effect. Separately test restarts and removal of the inactive coordinate. Calibrate the prediction "
-      "criterion using repeated truth simulations and agree practical tolerances with Dr Ratcliff. Retain "
-      "failures and capped cases; do not average only successful fits. These proposed studies have not "
-      "been run. [9, 10, 12]")
-    p(doc, "Finally, repeat performance measurements on the frozen implementation and assess real participant "
-      "data if it becomes available for this project. A simulation-methods paper can focus on faster forward "
-      "simulation with validated output fidelity. A claim of faster accurate fitting needs the additional "
-      "recovery result. We can draft the model, algorithm and current benchmark sections now.")
     p(doc, "Other optional extensions reached 0.269 seconds in one separate H100 simulator experiment, "
       "an additional 1.38-fold gain over that run's 0.3714-second early-stop control. Their combined fitting "
       "results were mixed. They are separate exploratory results and do not replace the improvement-1 headline. [8]", size=9.5)
