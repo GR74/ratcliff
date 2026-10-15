@@ -114,7 +114,7 @@ def main(args):
                 if record["loss"] < best:
                     best = record["loss"]
                     trajectory.append(dict(eval=record["eval"], elapsed=record["elapsed"],
-                                           error=float(error), loss=best))
+                                           error=float(error), loss=best, params=record["params"]))
         final_error = fit.get("mean_active_effective_parameter_error")
         if fit:
             assert fit["settings"]["nsim"] == 9000 and fit["settings"]["stable_kl_noise"] is True
