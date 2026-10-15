@@ -10,7 +10,7 @@ Hard stop: **October 15, 2026 at 7:24:24 p.m. Eastern**. This includes setup/pil
 
 | Variant | Status | Returned parameter error | Training minutes | Converged | Joint target verified |
 |---|---|---:|---:|---|---|
-| early_stop | completed | 4.586% | 93.68 | True | None |
+| early_stop | completed | 4.586% | 93.68 | True | False |
 | legacy | running_or_pending | Unavailable | Unavailable | Unavailable | None |
 
 ![Recovery during optimization](recovery-progress.png)
@@ -18,6 +18,16 @@ Hard stop: **October 15, 2026 at 7:24:24 p.m. Eastern**. This includes setup/pil
 The plot follows strict improvements in training loss; recovery error does not guide the optimizer. The actual returned estimate is reported separately because tied losses can select another simplex vertex.
 
 Independent scoring uses the repaired original full-horizon simulator at 9,000 trials for keys 999, 5001 and 5002. A verified joint hit requires at most 5% mean active-parameter error and the predeclared prediction-quality margin. A low error alone, optimizer convergence, or a time cap is not a successful joint hit.
+
+Independent scoring for **early_stop** (lower G2 means less prediction mismatch):
+
+| Estimate | G2 key 999 | G2 key 5001 | G2 key 5002 | Median G2 | Joint gate |
+|---|---:|---:|---:|---:|---|
+| True parameters | 35.760 | 34.324 | 84.072 | 35.760 | Reference |
+| Checkpoint at evaluation 225 | 74.595 | 48.135 | 86.070 | 74.595 | False |
+| Returned estimate | 82.109 | 50.309 | 80.302 | 80.302 | False |
+
+The predeclared prediction cutoff is **40.336**. Parameter recovery below 5% and prediction quality are separate checks. The parameter error is a mean across twelve active parameters; individual errors may be higher. This provisional gate is not a statistical significance test or a finalized scientific accuracy criterion.
 
 **Time-to-quality ratio is not estimable: both target hits have not been verified.**
 

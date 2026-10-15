@@ -194,8 +194,27 @@ def main(args):
         "The actual returned estimate is reported separately because tied losses can select another simplex vertex.", "",
         "Independent scoring uses the repaired original full-horizon simulator at 9,000 trials for keys 999, 5001 and 5002. "
         "A verified joint hit requires at most 5% mean active-parameter error and the predeclared prediction-quality margin. "
-        "A low error alone, optimizer convergence, or a time cap is not a successful joint hit.", "",
-        f"Observed original/early-stop time-to-quality ratio: **{ratio:.3f}x**." if ratio is not None else
+        "A low error alone, optimizer convergence, or a time cap is not a successful joint hit.", ""]
+    for case in returned:
+        score = case["score"]
+        if score.get("status") != "completed":
+            continue
+        truth_median = float(np.median(score["truth_g2_by_seed"]))
+        cutoff = truth_median + .1 * max(abs(truth_median), 1.) + 1.
+        lines += [f'Independent scoring for **{case["variant"]}** (lower G2 means less prediction mismatch):', "",
+                  "| Estimate | G2 key 999 | G2 key 5001 | G2 key 5002 | Median G2 | Joint gate |",
+                  "|---|---:|---:|---:|---:|---|"]
+        truth_values = " | ".join(f"{v:.3f}" for v in score["truth_g2_by_seed"])
+        lines.append(f"| True parameters | {truth_values} | {truth_median:.3f} | Reference |")
+        for checkpoint in score["scored_checkpoints"]:
+            is_returned = np.array_equal(checkpoint["params"], score["final_params"])
+            label = "Returned estimate" if is_returned else f'Checkpoint at evaluation {checkpoint["eval"]}'
+            values = " | ".join(f"{v:.3f}" for v in checkpoint["independent_g2_by_seed"])
+            lines.append(f'| {label} | {values} | {checkpoint["independent_g2_median"]:.3f} | {checkpoint["target_pass"]} |')
+        lines += ["", f"The predeclared prediction cutoff is **{cutoff:.3f}**. Parameter recovery below 5% and prediction quality are separate checks. "
+                  "The parameter error is a mean across twelve active parameters; individual errors may be higher. "
+                  "This provisional gate is not a statistical significance test or a finalized scientific accuracy criterion.", ""]
+    lines += [f"Observed original/early-stop time-to-quality ratio: **{ratio:.3f}x**." if ratio is not None else
         "**Time-to-quality ratio is not estimable: both target hits have not been verified.**", "",
         "This is one paired synthetic case on one laptop. Missing, interrupted and time-capped fits are retained. "
         "Scoring uses the same observations with independent simulator randomness, not held-out participant data.", "",

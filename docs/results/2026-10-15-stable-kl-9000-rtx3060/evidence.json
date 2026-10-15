@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-10-15T20:01:38.979037+00:00",
+  "updated_utc": "2026-10-15T20:22:31.724481+00:00",
   "final": false,
   "preflight_failed": false,
   "scope": "One paired baseline start; repaired K-L in both arms, 9000 fitting and scoring trials per condition",
@@ -28,14 +28,14 @@
     "deadline_utc": "2026-10-15T23:24:24+00:00",
     "script": "/home/anik278/ratcliff-kl-9000-20261015-v2/checkout/scripts/validate_early_stopping.py",
     "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
-    "last_checked_utc": "2026-10-15T20:01:31.731901+00:00",
+    "last_checked_utc": "2026-10-15T20:22:25.398715+00:00",
     "matching_pids": [
       [
         630,
         false
       ],
       [
-        11485,
+        12802,
         true
       ]
     ],
@@ -124,7 +124,7 @@
     "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB, 3356 MiB, 100 %, 86, 76.74 W",
     "sampled_utc": "2026-10-15T18:07:42.880797+00:00"
   },
-  "reporter_sha256": "e36a952509022afca6b3d0fa62252bb7b1e1ab7db8e2114181edb7b4e7c68b3e",
+  "reporter_sha256": "01de0cb68207ad29e8cd8466d6cc2e82911295c07dd4c28ba0804a0db1c262d7",
   "source_files_verified": 84,
   "recorded_jobs": [
     {
@@ -1021,6 +1021,196 @@
         "basis_cache_size": 2
       },
       "data_sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
+    },
+    {
+      "action": "score",
+      "scenario": "baseline",
+      "variant": "early_stop",
+      "start_seed": 1,
+      "status": "completed",
+      "settings": {
+        "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
+        "worker": true,
+        "pilot_only": false,
+        "allow_cpu": false,
+        "stable_kl_noise": true,
+        "gpu_kind": "3060",
+        "scenarios": "baseline,lower_boundary,higher_boundary",
+        "micro_variants": "legacy,blocked_full,early_stop",
+        "scenario": "baseline",
+        "action": "score",
+        "variant": "early_stop",
+        "result_file": "/home/anik278/ratcliff-kl-9000-20261015-v2/study/score-baseline-1-early_stop.json",
+        "fit_file": "/home/anik278/ratcliff-kl-9000-20261015-v2/study/fit-baseline-1-early_stop.json",
+        "data_source": null,
+        "deadline_utc": null,
+        "start_seed": 1,
+        "nsim": 9000,
+        "data_nsim": 9000,
+        "score_nsim": 9000,
+        "chunk": 8,
+        "sim_seeds": 1,
+        "repeats": 1,
+        "maxiter": 1000,
+        "starts": 1,
+        "start_seeds": null,
+        "baseline_extra_starts": 0,
+        "start_spread": 0.2,
+        "basis_cache_size": 2,
+        "checkpoint_every": 25,
+        "max_score_checkpoints": 2,
+        "error_limit": 0.05,
+        "budget_seconds": 7200,
+        "fit_seconds_limit": 8100.0,
+        "score_reserve_seconds": 0,
+        "reserve_seconds": 180
+      },
+      "truth_g2_by_seed": [
+        35.759875899308355,
+        34.32428210141598,
+        84.07194683565632
+      ],
+      "score_seeds": [
+        999,
+        5001,
+        5002
+      ],
+      "scored_checkpoints": [
+        {
+          "eval": 225,
+          "fit_elapsed_seconds": 2298.4181279,
+          "training_loss": 59.8450691904999,
+          "params": [
+            206.677927128036,
+            54.46610650711298,
+            9.57637049054619,
+            2.330116040014844,
+            11.358499883723008,
+            9.901782131932091,
+            0.47490898078149957,
+            14.781292573890621,
+            10.239227402468384,
+            7.493050493708072,
+            14.285855492079738,
+            11.096205633215238,
+            8.437844553077856
+          ],
+          "mean_active_effective_parameter_error": 0.04890922688227373,
+          "independent_g2_by_seed": [
+            74.59512505789844,
+            48.135072650781126,
+            86.07017904572024
+          ],
+          "independent_g2_median": 74.59512505789844,
+          "target_pass": false
+        },
+        {
+          "eval": 425,
+          "fit_elapsed_seconds": 4278.747944445,
+          "training_loss": 51.405493704715994,
+          "params": [
+            207.01734765199973,
+            54.05860270970677,
+            9.587299740838544,
+            2.3326986744783604,
+            11.359812663486869,
+            9.902332104497788,
+            0.4683787533580581,
+            14.89747823013479,
+            10.265541202348917,
+            7.601331355355374,
+            14.167171056799253,
+            11.088278747975831,
+            8.458260973111031
+          ],
+          "mean_active_effective_parameter_error": 0.045864644254049625,
+          "independent_g2_by_seed": [
+            82.1091139257229,
+            50.309496502768845,
+            80.30217981338726
+          ],
+          "independent_g2_median": 80.30217981338726,
+          "target_pass": false
+        }
+      ],
+      "observed_time_to_target_seconds": null,
+      "target_reached": false,
+      "final_params": [
+        207.01734765199973,
+        54.05860270970677,
+        9.587299740838544,
+        2.3326986744783604,
+        11.359812663486869,
+        9.902332104497788,
+        0.4683787533580581,
+        14.89747823013479,
+        10.265541202348917,
+        7.601331355355374,
+        14.167171056799253,
+        11.088278747975831,
+        8.458260973111031
+      ],
+      "score_nsim": 9000,
+      "target_note": "Earliest scored checkpoint; not an exact crossing time or global accuracy guarantee.",
+      "metadata": {
+        "utc": "2026-10-15T20:09:15.180577+00:00",
+        "commit": "322bd1fb3893d394727f724947147b249eebb098",
+        "source_snapshot": {
+          "commit": "322bd1fb3893d394727f724947147b249eebb098",
+          "source_tar_sha256": "704aa3cbf72bdf107c3d13d60613f5ce988ec317ba3fec8ade5e34d768008fc9",
+          "manifest_sha256": "83795face5e2675e59eff93c793c050db77b6a72ca90cdd12d31617545fb2bb0",
+          "file_count": 84
+        },
+        "implementation_sha256": "077149ab5e2d5a64fbb4324b2fb2311ca72b70de22e5aa19b520ab0578834689",
+        "hashed_files": [
+          "shared/blocked.py",
+          "shared/staged_fit.py",
+          "shared/benchmark_stats.py",
+          "shared/prng.py",
+          "model_a/simulate.py",
+          "model_a/objective.py",
+          "model_a/fit.py",
+          "model_b/simulate.py",
+          "model_b/objective.py",
+          "model_b/fit.py",
+          "model_b/grf_kl.py",
+          "model_b/grf.py",
+          "scripts/benchmark_speedups.py"
+        ],
+        "backend": "gpu",
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "packages": {
+          "jax": "0.10.2",
+          "jaxlib": "0.10.2",
+          "jax-cuda12-plugin": "0.10.2",
+          "jax-cuda12-pjrt": "0.10.2",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1"
+        },
+        "devices": [
+          "cuda:0"
+        ],
+        "device_kind": "NVIDIA GeForce RTX 3060 Laptop GPU",
+        "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB",
+        "matmul_precision": "default",
+        "device_allocator_memory": {
+          "num_allocs": 14120,
+          "bytes_in_use": 537146880,
+          "peak_bytes_in_use": 1484056064,
+          "largest_alloc_size": 536870912,
+          "bytes_limit": 3221225472,
+          "bytes_reserved": 0,
+          "peak_bytes_reserved": 0,
+          "largest_free_block_bytes": 0,
+          "pool_bytes": 2153775104,
+          "peak_pool_bytes": 2153775104
+        },
+        "memory_note": "Allocator peak includes warm-up and the entire worker process.",
+        "x64": true,
+        "validation_driver_sha256": "3ed11cedeec3a9d43b233eb47ba0ef530dea1aab05054513b61a9eba6f4ed4ed",
+        "basis_cache_size": 2
+      },
+      "data_sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
     }
   ],
   "planned_jobs": [
@@ -1574,7 +1764,7 @@
         "scenario": "baseline",
         "variant": "early_stop",
         "start_seed": 1,
-        "status": "scoring_in_progress",
+        "status": "completed",
         "settings": {
           "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
           "worker": true,
@@ -1622,7 +1812,64 @@
           5001,
           5002
         ],
-        "scored_checkpoints": [],
+        "scored_checkpoints": [
+          {
+            "eval": 225,
+            "fit_elapsed_seconds": 2298.4181279,
+            "training_loss": 59.8450691904999,
+            "params": [
+              206.677927128036,
+              54.46610650711298,
+              9.57637049054619,
+              2.330116040014844,
+              11.358499883723008,
+              9.901782131932091,
+              0.47490898078149957,
+              14.781292573890621,
+              10.239227402468384,
+              7.493050493708072,
+              14.285855492079738,
+              11.096205633215238,
+              8.437844553077856
+            ],
+            "mean_active_effective_parameter_error": 0.04890922688227373,
+            "independent_g2_by_seed": [
+              74.59512505789844,
+              48.135072650781126,
+              86.07017904572024
+            ],
+            "independent_g2_median": 74.59512505789844,
+            "target_pass": false
+          },
+          {
+            "eval": 425,
+            "fit_elapsed_seconds": 4278.747944445,
+            "training_loss": 51.405493704715994,
+            "params": [
+              207.01734765199973,
+              54.05860270970677,
+              9.587299740838544,
+              2.3326986744783604,
+              11.359812663486869,
+              9.902332104497788,
+              0.4683787533580581,
+              14.89747823013479,
+              10.265541202348917,
+              7.601331355355374,
+              14.167171056799253,
+              11.088278747975831,
+              8.458260973111031
+            ],
+            "mean_active_effective_parameter_error": 0.045864644254049625,
+            "independent_g2_by_seed": [
+              82.1091139257229,
+              50.309496502768845,
+              80.30217981338726
+            ],
+            "independent_g2_median": 80.30217981338726,
+            "target_pass": false
+          }
+        ],
         "observed_time_to_target_seconds": null,
         "target_reached": false,
         "final_params": [
@@ -1643,7 +1890,7 @@
         "score_nsim": 9000,
         "target_note": "Earliest scored checkpoint; not an exact crossing time or global accuracy guarantee.",
         "metadata": {
-          "utc": "2026-10-15T19:58:55.574602+00:00",
+          "utc": "2026-10-15T20:09:15.180577+00:00",
           "commit": "322bd1fb3893d394727f724947147b249eebb098",
           "source_snapshot": {
             "commit": "322bd1fb3893d394727f724947147b249eebb098",
@@ -1684,8 +1931,8 @@
           "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB",
           "matmul_precision": "default",
           "device_allocator_memory": {
-            "num_allocs": 4778,
-            "bytes_in_use": 268703232,
+            "num_allocs": 14120,
+            "bytes_in_use": 537146880,
             "peak_bytes_in_use": 1484056064,
             "largest_alloc_size": 536870912,
             "bytes_limit": 3221225472,
@@ -1695,7 +1942,10 @@
             "pool_bytes": 2153775104,
             "peak_pool_bytes": 2153775104
           },
-          "memory_note": "Allocator peak includes warm-up and the entire worker process."
+          "memory_note": "Allocator peak includes warm-up and the entire worker process.",
+          "x64": true,
+          "validation_driver_sha256": "3ed11cedeec3a9d43b233eb47ba0ef530dea1aab05054513b61a9eba6f4ed4ed",
+          "basis_cache_size": 2
         },
         "data_sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
       },
@@ -1704,7 +1954,7 @@
       "returned_error_below_5pct": true,
       "recorded_evaluations": 563,
       "partial_trace_lines": 0,
-      "joint_target_verified": null,
+      "joint_target_verified": false,
       "observed_time_to_quality": null
     },
     {
@@ -1714,7 +1964,7 @@
       "status": "running_or_pending",
       "returned_error": null,
       "returned_error_below_5pct": null,
-      "recorded_evaluations": 0,
+      "recorded_evaluations": 6,
       "partial_trace_lines": 0,
       "joint_target_verified": null,
       "observed_time_to_quality": null
@@ -2673,7 +2923,50 @@
     },
     {
       "variant": "legacy",
-      "best_training_trajectory": []
+      "best_training_trajectory": [
+        {
+          "eval": 1,
+          "elapsed": 90.43491357199855,
+          "error": 0.0868792465972188,
+          "loss": 6475.716078595815,
+          "params": [
+            200.94572997602054,
+            59.0092739265187,
+            8.576638450878535,
+            2.358919557709795,
+            11.09679096965033,
+            9.693305795890302,
+            0.5655405187640883,
+            14.455194818214967,
+            10.198374750692238,
+            6.488189162377819,
+            15.419673408578916,
+            11.167830578164825,
+            8.387034179396732
+          ]
+        },
+        {
+          "eval": 2,
+          "elapsed": 179.33875427699968,
+          "error": 0.09106561597171921,
+          "loss": 1866.1242375479378,
+          "params": [
+            210.9930164748216,
+            59.0092739265187,
+            8.576638450878535,
+            2.358919557709795,
+            11.09679096965033,
+            9.693305795890302,
+            0.5655405187640883,
+            14.455194818214967,
+            10.198374750692238,
+            6.488189162377819,
+            15.419673408578916,
+            11.167830578164825,
+            8.387034179396732
+          ]
+        }
+      ]
     }
   ],
   "observed_time_to_quality_ratio": null,
