@@ -1,6 +1,7 @@
 """CPU-only progress/final report for the guarded 9000-trial repaired K-L run."""
 import argparse
-from datetime import datetime, timezone
+from collections import Counter
+from datetime import datetime, timedelta, timezone
 import hashlib
 import io
 import json
@@ -63,6 +64,7 @@ def main(args):
     import jax.numpy as jnp
     import numpy as np
     from model_b.objective import clamp_b
+    from scripts.validate_early_stopping import meets_target
 
     control, out = args.control, args.output
     out.mkdir(parents=True, exist_ok=True)
@@ -116,6 +118,7 @@ def main(args):
                     trajectory.append(dict(eval=record["eval"], elapsed=record["elapsed"],
                                            error=float(error), loss=best, params=record["params"]))
         final_error = fit.get("mean_active_effective_parameter_error")
+        parameter_errors = []
         if fit:
             assert fit["settings"]["nsim"] == 9000 and fit["settings"]["stable_kl_noise"] is True
             assert fit["metadata"]["backend"] == "gpu"
@@ -125,14 +128,26 @@ def main(args):
             true_final = np.asarray(fit["true_params"])
             reproduced_error = float(np.mean(abs(effective_final[active_indices] / true_final[active_indices] - 1)))
             assert abs(reproduced_error-final_error) < 1e-10
+            names = ["ter", "st", "cr", "crsd", "sis", "sig", "sv",
+                     "av1_c1", "av2_c1", "av3_c1", "av1_c2", "av2_c2", "av3_c2"]
+            parameter_errors = [dict(parameter=name, truth=float(true_final[i]),
+                returned=float(fit["params"][i]), effective=float(effective_final[i]),
+                absolute_relative_error=float(abs(effective_final[i] / true_final[i] - 1)),
+                included_in_mean=i != 6) for i, name in enumerate(names)]
         if score:
             assert score["score_seeds"] == [999, 5001, 5002]
             assert score["settings"]["stable_kl_noise"] is True and score["score_nsim"] == 9000
             np.testing.assert_array_equal(score["final_params"], fit["params"])
+            truth_median = float(np.median(score["truth_g2_by_seed"]))
+            for checkpoint in score["scored_checkpoints"]:
+                median = float(np.median(checkpoint["independent_g2_by_seed"]))
+                assert abs(median - checkpoint["independent_g2_median"]) < 1e-10
+                assert meets_target(checkpoint["mean_active_effective_parameter_error"], median, truth_median) == checkpoint["target_pass"]
         returned.append(dict(variant=variant, fit=fit, score=score,
             status=fit.get("status", "interrupted_without_returned_estimate" if args.final and records else
                            "running_or_pending" if not args.final else "missing"),
             returned_error=final_error, returned_error_below_5pct=final_error < .05 if final_error is not None else None,
+            per_parameter_errors=parameter_errors,
             recorded_evaluations=len(records), partial_trace_lines=partial_lines,
             joint_target_verified=score.get("target_reached") if score.get("status") == "completed" else None,
             observed_time_to_quality=score.get("observed_time_to_target_seconds") if score.get("status") == "completed" else None))
@@ -140,6 +155,23 @@ def main(args):
     ratio = None
     if all(c["joint_target_verified"] is True and c["observed_time_to_quality"] is not None for c in returned):
         ratio = returned[1]["observed_time_to_quality"] / returned[0]["observed_time_to_quality"]
+    micro = {}
+    for row in rows:
+        if row["action"] == "micro" and row["status"] == "completed":
+            micro[row["variant"]] = row["timings_seconds"][0]
+    if "legacy" in micro and "early_stop" in micro:
+        micro["original_to_early_stop_ratio"] = micro["legacy"] / micro["early_stop"]
+    paired_samples = [base / "study" / f"samples-baseline-{v}-0.npz" for v in ("blocked_full", "early_stop")]
+    if all(p.exists() for p in paired_samples):
+        with np.load(paired_samples[0]) as reference, np.load(paired_samples[1]) as candidate:
+            assert reference["rt"].shape == candidate["rt"].shape == (2, 9000)
+            micro["paired_trials"] = int(reference["rt"].size)
+            micro["exact_rt_matches"] = int(np.count_nonzero(reference["rt"] == candidate["rt"]))
+            micro["exact_choice_matches"] = int(np.count_nonzero(reference["cat"] == candidate["cat"]))
+            assert micro["exact_rt_matches"] == micro["exact_choice_matches"] == micro["paired_trials"]
+    job_key = lambda row: tuple(row[k] for k in ("action", "scenario", "variant", "start_seed"))
+    inventory = dict(status_counts=dict(Counter(r["status"] for r in rows)),
+        missing_jobs=[r for r in planned if job_key(r) not in {job_key(row) for row in rows}])
     archive = archive_raw(base, control, out / "raw") if args.final else None
     preflight_failed = any(r["action"] == "verify" and r["status"] != "completed" for r in rows)
     evidence = dict(updated_utc=datetime.now(timezone.utc).isoformat(), final=args.final,
@@ -149,7 +181,8 @@ def main(args):
         runtime_environment=read(control / "runtime-environment.json", {}),
         reporter_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         source_files_verified=len(source_files), recorded_jobs=rows, planned_jobs=planned,
-        cases=returned, trajectories=trajectories, observed_time_to_quality_ratio=ratio, raw_archive=archive)
+        cases=returned, trajectories=trajectories, micro_pilot=micro, job_inventory=inventory,
+        observed_time_to_quality_ratio=ratio, raw_archive=archive)
     write(out / "evidence.json", evidence)
 
     import matplotlib
@@ -189,6 +222,20 @@ def main(args):
         error = f'{100*case["returned_error"]:.3f}%' if case["returned_error"] is not None else "Unavailable"
         duration = f'{fit["fit_seconds"] / 60:.2f}' if "fit_seconds" in fit else "Unavailable"
         lines.append(f'| {case["variant"]} | {case["status"]} | {error} | {duration} | {fit.get("converged", "Unavailable")} | {case["joint_target_verified"]} |')
+    if args.final:
+        stopped = datetime.fromisoformat(guard["last_checked_utc"]).astimezone(timezone(timedelta(hours=-4)))
+        stopped_text = stopped.strftime("%B %d, %Y at %I:%M:%S %p Eastern")
+        counts = ", ".join(f"{count} {status}" for status, count in inventory["status_counts"].items())
+        lines += ["", f'Guard-confirmed exit: **{stopped_text}**; no matching benchmark processes remain. '
+                  f'All {len(planned)} planned jobs have {len(rows)} result records ({counts}). '
+                  f'Missing jobs: {len(inventory["missing_jobs"])}. The original fit reached its soft time cap; it did not converge. '
+                  "Warm-up and independent scoring are excluded from the training-minute column.", ""]
+    if "original_to_early_stop_ratio" in micro:
+        lines += ["", f'The forward-simulation pilot took **{micro["legacy"]:.3f} s original versus {micro["early_stop"]:.3f} s early-stop**, '
+                  f'a descriptive **{micro["original_to_early_stop_ratio"]:.2f}x** ratio at 9,000 trials per condition. '
+                  "This is one timed call after two warm-ups, not a confidence interval or a fitting-speed estimate. "
+                  f'The full-horizon blocked control and early stopping matched all **{micro.get("paired_trials", 0):,}** trial choices and RTs exactly. '
+                  "The original and blocked implementations use different random layouts; the same root key does not make their samples identical.", ""]
     lines += ["", "![Recovery during optimization](recovery-progress.png)", "",
         "The plot follows strict improvements in training loss; recovery error does not guide the optimizer. "
         "The actual returned estimate is reported separately because tied losses can select another simplex vertex.", "",
@@ -221,6 +268,15 @@ def main(args):
         "Relative to the earlier 512-trial study, both the noise assignment and optimization trial budget changed. "
         "This experiment does not separately estimate how much each change affects recovery.", "",
         f"[Predeclared plan]({Path(os.path.relpath(ROOT / 'docs/plans/2026-10-15-stable-kl-9000-rtx3060.md', out)).as_posix()}) · [Compact evidence](evidence.json)"]
+    if all(c["per_parameter_errors"] for c in returned):
+        lines += ["", "Returned effective parameters and absolute relative errors:", "",
+                  "| Parameter | Truth | Improvement 1 | Error | Original | Error |",
+                  "|---|---:|---:|---:|---:|---:|"]
+        for candidate, original in zip(returned[0]["per_parameter_errors"], returned[1]["per_parameter_errors"]):
+            name = candidate["parameter"] + (" (inactive; excluded)" if not candidate["included_in_mean"] else "")
+            lines.append(f'| {name} | {candidate["truth"]:.6g} | {candidate["effective"]:.6g} | '
+                         f'{100*candidate["absolute_relative_error"]:.3f}% | {original["effective"]:.6g} | '
+                         f'{100*original["absolute_relative_error"]:.3f}% |')
     if archive:
         lines += ["", "[Verified raw archive manifest](raw/manifest.json). The archive includes source, observations, traces, scores, logs and guard evidence."]
     (out / "README.md").write_text("\n".join(lines) + "\n", encoding="utf-8")

@@ -1,6 +1,6 @@
 {
-  "updated_utc": "2026-10-15T22:41:44.906836+00:00",
-  "final": false,
+  "updated_utc": "2026-10-15T23:04:28.183044+00:00",
+  "final": true,
   "preflight_failed": false,
   "scope": "One paired baseline start; repaired K-L in both arms, 9000 fitting and scoring trials per condition",
   "active_study": {
@@ -28,18 +28,9 @@
     "deadline_utc": "2026-10-15T23:24:24+00:00",
     "script": "/home/anik278/ratcliff-kl-9000-20261015-v2/checkout/scripts/validate_early_stopping.py",
     "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
-    "last_checked_utc": "2026-10-15T22:41:29.275491+00:00",
-    "matching_pids": [
-      [
-        630,
-        false
-      ],
-      [
-        23587,
-        true
-      ]
-    ],
-    "status": "watching"
+    "last_checked_utc": "2026-10-15T22:46:31.482780+00:00",
+    "matching_pids": [],
+    "status": "benchmark_processes_exited"
   },
   "configuration": {
     "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
@@ -124,7 +115,7 @@
     "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB, 3356 MiB, 100 %, 86, 76.74 W",
     "sampled_utc": "2026-10-15T18:07:42.880797+00:00"
   },
-  "reporter_sha256": "01de0cb68207ad29e8cd8466d6cc2e82911295c07dd4c28ba0804a0db1c262d7",
+  "reporter_sha256": "3c5b5a1c5c30dbcd043f5910c76be4d9753ced051627730492d069092f1123da",
   "source_files_verified": 84,
   "recorded_jobs": [
     {
@@ -1452,6 +1443,168 @@
         "basis_cache_size": 2
       },
       "data_sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
+    },
+    {
+      "action": "score",
+      "scenario": "baseline",
+      "variant": "legacy",
+      "start_seed": 1,
+      "status": "completed",
+      "settings": {
+        "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
+        "worker": true,
+        "pilot_only": false,
+        "allow_cpu": false,
+        "stable_kl_noise": true,
+        "gpu_kind": "3060",
+        "scenarios": "baseline,lower_boundary,higher_boundary",
+        "micro_variants": "legacy,blocked_full,early_stop",
+        "scenario": "baseline",
+        "action": "score",
+        "variant": "legacy",
+        "result_file": "/home/anik278/ratcliff-kl-9000-20261015-v2/study/score-baseline-1-legacy.json",
+        "fit_file": "/home/anik278/ratcliff-kl-9000-20261015-v2/study/fit-baseline-1-legacy.json",
+        "data_source": null,
+        "deadline_utc": null,
+        "start_seed": 1,
+        "nsim": 9000,
+        "data_nsim": 9000,
+        "score_nsim": 9000,
+        "chunk": 8,
+        "sim_seeds": 1,
+        "repeats": 1,
+        "maxiter": 1000,
+        "starts": 1,
+        "start_seeds": null,
+        "baseline_extra_starts": 0,
+        "start_spread": 0.2,
+        "basis_cache_size": 2,
+        "checkpoint_every": 25,
+        "max_score_checkpoints": 2,
+        "error_limit": 0.05,
+        "budget_seconds": 7200,
+        "fit_seconds_limit": 8100.0,
+        "score_reserve_seconds": 0,
+        "reserve_seconds": 180
+      },
+      "truth_g2_by_seed": [
+        35.759875899308355,
+        34.32428210141598,
+        84.07194683565632
+      ],
+      "score_seeds": [
+        999,
+        5001,
+        5002
+      ],
+      "scored_checkpoints": [
+        {
+          "eval": 86,
+          "fit_elapsed_seconds": 8119.597295149,
+          "training_loss": 140.0596398878069,
+          "params": [
+            215.10038573690824,
+            57.971929439483404,
+            9.03624883660623,
+            2.3543918349102384,
+            11.185717931622008,
+            10.02175832428938,
+            0.5648111435799454,
+            14.142249432518796,
+            10.007123945313367,
+            6.460310707977662,
+            14.854653385513302,
+            10.889948790173719,
+            8.503245830582646
+          ],
+          "mean_active_effective_parameter_error": 0.07959561528952373,
+          "independent_g2_by_seed": [
+            143.19938243759134,
+            144.96014564151912,
+            169.27024394330448
+          ],
+          "independent_g2_median": 144.96014564151912,
+          "target_pass": false
+        }
+      ],
+      "observed_time_to_target_seconds": null,
+      "target_reached": false,
+      "final_params": [
+        215.10038573690824,
+        57.971929439483404,
+        9.03624883660623,
+        2.3543918349102384,
+        11.185717931622008,
+        10.02175832428938,
+        0.5648111435799454,
+        14.142249432518796,
+        10.007123945313367,
+        6.460310707977662,
+        14.854653385513302,
+        10.889948790173719,
+        8.503245830582646
+      ],
+      "score_nsim": 9000,
+      "target_note": "Earliest scored checkpoint; not an exact crossing time or global accuracy guarantee.",
+      "metadata": {
+        "utc": "2026-10-15T22:46:15.903087+00:00",
+        "commit": "322bd1fb3893d394727f724947147b249eebb098",
+        "source_snapshot": {
+          "commit": "322bd1fb3893d394727f724947147b249eebb098",
+          "source_tar_sha256": "704aa3cbf72bdf107c3d13d60613f5ce988ec317ba3fec8ade5e34d768008fc9",
+          "manifest_sha256": "83795face5e2675e59eff93c793c050db77b6a72ca90cdd12d31617545fb2bb0",
+          "file_count": 84
+        },
+        "implementation_sha256": "077149ab5e2d5a64fbb4324b2fb2311ca72b70de22e5aa19b520ab0578834689",
+        "hashed_files": [
+          "shared/blocked.py",
+          "shared/staged_fit.py",
+          "shared/benchmark_stats.py",
+          "shared/prng.py",
+          "model_a/simulate.py",
+          "model_a/objective.py",
+          "model_a/fit.py",
+          "model_b/simulate.py",
+          "model_b/objective.py",
+          "model_b/fit.py",
+          "model_b/grf_kl.py",
+          "model_b/grf.py",
+          "scripts/benchmark_speedups.py"
+        ],
+        "backend": "gpu",
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "packages": {
+          "jax": "0.10.2",
+          "jaxlib": "0.10.2",
+          "jax-cuda12-plugin": "0.10.2",
+          "jax-cuda12-pjrt": "0.10.2",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1"
+        },
+        "devices": [
+          "cuda:0"
+        ],
+        "device_kind": "NVIDIA GeForce RTX 3060 Laptop GPU",
+        "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB",
+        "matmul_precision": "default",
+        "device_allocator_memory": {
+          "num_allocs": 9449,
+          "bytes_in_use": 524711424,
+          "peak_bytes_in_use": 1484056064,
+          "largest_alloc_size": 536870912,
+          "bytes_limit": 3221225472,
+          "bytes_reserved": 0,
+          "peak_bytes_reserved": 0,
+          "largest_free_block_bytes": 0,
+          "pool_bytes": 2153775104,
+          "peak_pool_bytes": 2153775104
+        },
+        "memory_note": "Allocator peak includes warm-up and the entire worker process.",
+        "x64": true,
+        "validation_driver_sha256": "3ed11cedeec3a9d43b233eb47ba0ef530dea1aab05054513b61a9eba6f4ed4ed",
+        "basis_cache_size": 2
+      },
+      "data_sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
     }
   ],
   "planned_jobs": [
@@ -2193,6 +2346,112 @@
       "status": "completed",
       "returned_error": 0.045864644254049625,
       "returned_error_below_5pct": true,
+      "per_parameter_errors": [
+        {
+          "parameter": "ter",
+          "truth": 200.0,
+          "returned": 207.01734765199973,
+          "effective": 207.01734765199973,
+          "absolute_relative_error": 0.03508673825999864,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "st",
+          "truth": 50.0,
+          "returned": 54.05860270970677,
+          "effective": 54.05860270970677,
+          "absolute_relative_error": 0.08117205419413542,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "cr",
+          "truth": 10.0,
+          "returned": 9.587299740838544,
+          "effective": 9.587299740838544,
+          "absolute_relative_error": 0.04127002591614559,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "crsd",
+          "truth": 2.0,
+          "returned": 2.3326986744783604,
+          "effective": 2.3326986744783604,
+          "absolute_relative_error": 0.16634933723918022,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "sis",
+          "truth": 12.0,
+          "returned": 11.359812663486869,
+          "effective": 11.359812663486869,
+          "absolute_relative_error": 0.05334894470942764,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "sig",
+          "truth": 10.0,
+          "returned": 9.902332104497788,
+          "effective": 9.902332104497788,
+          "absolute_relative_error": 0.009766789550221255,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "sv",
+          "truth": 0.5,
+          "returned": 0.4683787533580581,
+          "effective": 0.4683787533580581,
+          "absolute_relative_error": 0.06324249328388376,
+          "included_in_mean": false
+        },
+        {
+          "parameter": "av1_c1",
+          "truth": 15.0,
+          "returned": 14.89747823013479,
+          "effective": 14.89747823013479,
+          "absolute_relative_error": 0.006834784657680615,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "av2_c1",
+          "truth": 10.0,
+          "returned": 10.265541202348917,
+          "effective": 10.265541202348917,
+          "absolute_relative_error": 0.026554120234891787,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "av3_c1",
+          "truth": 8.0,
+          "returned": 7.601331355355374,
+          "effective": 7.601331355355374,
+          "absolute_relative_error": 0.049833580580578296,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "av1_c2",
+          "truth": 14.0,
+          "returned": 14.167171056799253,
+          "effective": 14.167171056799253,
+          "absolute_relative_error": 0.011940789771375249,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "av2_c2",
+          "truth": 11.0,
+          "returned": 11.088278747975831,
+          "effective": 11.088278747975831,
+          "absolute_relative_error": 0.008025340725075658,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "av3_c2",
+          "truth": 9.0,
+          "returned": 8.458260973111031,
+          "effective": 8.458260973111031,
+          "absolute_relative_error": 0.06019322520988546,
+          "included_in_mean": true
+        }
+      ],
       "recorded_evaluations": 563,
       "partial_trace_lines": 0,
       "joint_target_verified": false,
@@ -2446,7 +2705,7 @@
         "scenario": "baseline",
         "variant": "legacy",
         "start_seed": 1,
-        "status": "scoring_in_progress",
+        "status": "completed",
         "settings": {
           "output": "/home/anik278/ratcliff-kl-9000-20261015-v2/study",
           "worker": true,
@@ -2494,7 +2753,36 @@
           5001,
           5002
         ],
-        "scored_checkpoints": [],
+        "scored_checkpoints": [
+          {
+            "eval": 86,
+            "fit_elapsed_seconds": 8119.597295149,
+            "training_loss": 140.0596398878069,
+            "params": [
+              215.10038573690824,
+              57.971929439483404,
+              9.03624883660623,
+              2.3543918349102384,
+              11.185717931622008,
+              10.02175832428938,
+              0.5648111435799454,
+              14.142249432518796,
+              10.007123945313367,
+              6.460310707977662,
+              14.854653385513302,
+              10.889948790173719,
+              8.503245830582646
+            ],
+            "mean_active_effective_parameter_error": 0.07959561528952373,
+            "independent_g2_by_seed": [
+              143.19938243759134,
+              144.96014564151912,
+              169.27024394330448
+            ],
+            "independent_g2_median": 144.96014564151912,
+            "target_pass": false
+          }
+        ],
         "observed_time_to_target_seconds": null,
         "target_reached": false,
         "final_params": [
@@ -2515,7 +2803,7 @@
         "score_nsim": 9000,
         "target_note": "Earliest scored checkpoint; not an exact crossing time or global accuracy guarantee.",
         "metadata": {
-          "utc": "2026-10-15T22:41:11.837016+00:00",
+          "utc": "2026-10-15T22:46:15.903087+00:00",
           "commit": "322bd1fb3893d394727f724947147b249eebb098",
           "source_snapshot": {
             "commit": "322bd1fb3893d394727f724947147b249eebb098",
@@ -2556,8 +2844,8 @@
           "nvidia_smi": "NVIDIA GeForce RTX 3060 Laptop GPU, 596.36, 6144 MiB",
           "matmul_precision": "default",
           "device_allocator_memory": {
-            "num_allocs": 4778,
-            "bytes_in_use": 268703232,
+            "num_allocs": 9449,
+            "bytes_in_use": 524711424,
             "peak_bytes_in_use": 1484056064,
             "largest_alloc_size": 536870912,
             "bytes_limit": 3221225472,
@@ -2567,16 +2855,125 @@
             "pool_bytes": 2153775104,
             "peak_pool_bytes": 2153775104
           },
-          "memory_note": "Allocator peak includes warm-up and the entire worker process."
+          "memory_note": "Allocator peak includes warm-up and the entire worker process.",
+          "x64": true,
+          "validation_driver_sha256": "3ed11cedeec3a9d43b233eb47ba0ef530dea1aab05054513b61a9eba6f4ed4ed",
+          "basis_cache_size": 2
         },
         "data_sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
       },
       "status": "fit_time_limit",
       "returned_error": 0.07959561528952373,
       "returned_error_below_5pct": false,
+      "per_parameter_errors": [
+        {
+          "parameter": "ter",
+          "truth": 200.0,
+          "returned": 215.10038573690824,
+          "effective": 215.10038573690824,
+          "absolute_relative_error": 0.07550192868454109,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "st",
+          "truth": 50.0,
+          "returned": 57.971929439483404,
+          "effective": 57.971929439483404,
+          "absolute_relative_error": 0.1594385887896681,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "cr",
+          "truth": 10.0,
+          "returned": 9.03624883660623,
+          "effective": 9.03624883660623,
+          "absolute_relative_error": 0.09637511633937701,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "crsd",
+          "truth": 2.0,
+          "returned": 2.3543918349102384,
+          "effective": 2.3543918349102384,
+          "absolute_relative_error": 0.1771959174551192,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "sis",
+          "truth": 12.0,
+          "returned": 11.185717931622008,
+          "effective": 11.185717931622008,
+          "absolute_relative_error": 0.0678568390314993,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "sig",
+          "truth": 10.0,
+          "returned": 10.02175832428938,
+          "effective": 10.02175832428938,
+          "absolute_relative_error": 0.0021758324289380404,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "sv",
+          "truth": 0.5,
+          "returned": 0.5648111435799454,
+          "effective": 0.5648111435799454,
+          "absolute_relative_error": 0.12962228715989088,
+          "included_in_mean": false
+        },
+        {
+          "parameter": "av1_c1",
+          "truth": 15.0,
+          "returned": 14.142249432518796,
+          "effective": 14.142249432518796,
+          "absolute_relative_error": 0.05718337116541361,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "av2_c1",
+          "truth": 10.0,
+          "returned": 10.007123945313367,
+          "effective": 10.007123945313367,
+          "absolute_relative_error": 0.0007123945313367575,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "av3_c1",
+          "truth": 8.0,
+          "returned": 6.460310707977662,
+          "effective": 6.460310707977662,
+          "absolute_relative_error": 0.19246116150279224,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "av1_c2",
+          "truth": 14.0,
+          "returned": 14.854653385513302,
+          "effective": 14.854653385513302,
+          "absolute_relative_error": 0.06104667039380729,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "av2_c2",
+          "truth": 11.0,
+          "returned": 10.889948790173719,
+          "effective": 10.889948790173719,
+          "absolute_relative_error": 0.01000465543875284,
+          "included_in_mean": true
+        },
+        {
+          "parameter": "av3_c2",
+          "truth": 9.0,
+          "returned": 8.503245830582646,
+          "effective": 8.503245830582646,
+          "absolute_relative_error": 0.055194907713039365,
+          "included_in_mean": true
+        }
+      ],
       "recorded_evaluations": 86,
       "partial_trace_lines": 0,
-      "joint_target_verified": null,
+      "joint_target_verified": false,
       "observed_time_to_quality": null
     }
   ],
@@ -3768,6 +4165,263 @@
       ]
     }
   ],
+  "micro_pilot": {
+    "legacy": 93.89322813100011,
+    "blocked_full": 108.47780292000016,
+    "early_stop": 9.271234756000013,
+    "original_to_early_stop_ratio": 10.127370366739529,
+    "paired_trials": 18000,
+    "exact_rt_matches": 18000,
+    "exact_choice_matches": 18000
+  },
+  "job_inventory": {
+    "status_counts": {
+      "completed": 7,
+      "fit_time_limit": 1
+    },
+    "missing_jobs": []
+  },
   "observed_time_to_quality_ratio": null,
-  "raw_archive": null
+  "raw_archive": {
+    "archive": "repaired-kl-9000-study.tar.gz",
+    "bytes": 688438,
+    "sha256": "8e4fd6f936bc3e6559079042b022e98626429c2f6ed396ae25efb3c63e2c7126",
+    "files": [
+      {
+        "path": "study/data-baseline.npz",
+        "bytes": 1102,
+        "sha256": "841f8ba76a41d7a90575563bf408ac586c3811452fa37fd568cd7c14ee032cd2"
+      },
+      {
+        "path": "study/fit-baseline-1-early_stop.json",
+        "bytes": 13471,
+        "sha256": "bb3fd5c5d7509bc6889da9ade1ab16d7d4c9821f24ce13f41f1c203961064e86"
+      },
+      {
+        "path": "study/fit-baseline-1-early_stop.log",
+        "bytes": 1139,
+        "sha256": "3004371c89bd94d5ae385939729d75c58a4af10ffa7d62a6cc9c3dfb2c1829c1"
+      },
+      {
+        "path": "study/fit-baseline-1-early_stop.progress.json",
+        "bytes": 9209,
+        "sha256": "4ec318d27d98049c5619ce8b14c36cf532c8e6d5486cb59995cda402b8f7ad7c"
+      },
+      {
+        "path": "study/fit-baseline-1-legacy.json",
+        "bytes": 6618,
+        "sha256": "03a983fd019309d07241a1f6632577762ac61203811be54050b2dfa3d8a88055"
+      },
+      {
+        "path": "study/fit-baseline-1-legacy.log",
+        "bytes": 177,
+        "sha256": "7ce6bad392d535a08c6996f50f41904b93f89fc90a7532eb19851c09d7dfaf75"
+      },
+      {
+        "path": "study/fit-baseline-1-legacy.progress.json",
+        "bytes": 1795,
+        "sha256": "5e5d5dfe10fb89a662081c364c427a905c852cdd0ad46a45920d26b2ab5a8dcf"
+      },
+      {
+        "path": "study/micro-baseline-0-blocked_full.json",
+        "bytes": 3442,
+        "sha256": "6c624afdb0f3b2700db79cce23397a8b5aefb3b00d75ae0ac3d533d8b18ce240"
+      },
+      {
+        "path": "study/micro-baseline-0-blocked_full.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "study/micro-baseline-0-early_stop.json",
+        "bytes": 3434,
+        "sha256": "6e5537c9f12d3ab0f93ac3bc0427f658d37411db3d047cb0479b2166a51ff138"
+      },
+      {
+        "path": "study/micro-baseline-0-early_stop.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "study/micro-baseline-0-legacy.json",
+        "bytes": 3422,
+        "sha256": "a8a075698a57c6623db324df402838b0b15793aed99941f781574eeb56118789"
+      },
+      {
+        "path": "study/micro-baseline-0-legacy.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "study/planned-jobs.json",
+        "bytes": 863,
+        "sha256": "6d48b6c7378e0b6e6005e8ed0d8f2bd3e15c7f120047457d35eecaccdfa8f233"
+      },
+      {
+        "path": "study/results.json",
+        "bytes": 46270,
+        "sha256": "26261bcfebc3545c1573de4e45a71c4ed27672313bd6f9cecf52bad19167fd66"
+      },
+      {
+        "path": "study/reused-data.json",
+        "bytes": 1955,
+        "sha256": "b55870fb0bf59b34a55ff418473f2b446c1db6bbb3b47c72423c18b766e1a648"
+      },
+      {
+        "path": "study/run-config.json",
+        "bytes": 1548,
+        "sha256": "9749ea614b3087ffbc2f1b49d64c45a55c384f732a94ac957bfc2ba6f7c43275"
+      },
+      {
+        "path": "study/samples-baseline-blocked_full-0.npz",
+        "bytes": 141479,
+        "sha256": "e1f260f8fcfe886e749828be88534a3cbc4a808a2317da009a486784dbeaa08c"
+      },
+      {
+        "path": "study/samples-baseline-early_stop-0.npz",
+        "bytes": 141479,
+        "sha256": "e1f260f8fcfe886e749828be88534a3cbc4a808a2317da009a486784dbeaa08c"
+      },
+      {
+        "path": "study/samples-baseline-legacy-0.npz",
+        "bytes": 141506,
+        "sha256": "b449d6b7cd14f2aa3f019792607c0d6d183d08575ed8be7b11814e578e7e1edf"
+      },
+      {
+        "path": "study/score-baseline-1-early_stop.json",
+        "bytes": 5620,
+        "sha256": "310a1a84162969cbcd30e209f495d976896ebab26f66bd916c4436174527ea6d"
+      },
+      {
+        "path": "study/score-baseline-1-early_stop.log",
+        "bytes": 96,
+        "sha256": "d24b2d86a9edefe12526212e35c8ecab1c305b7cb0a9aa168bba35e2bb6b5540"
+      },
+      {
+        "path": "study/score-baseline-1-legacy.json",
+        "bytes": 4839,
+        "sha256": "b79e0e8bade87d1951e92cb6e820281cbd46ff41548a93dc13aac304ff881ae2"
+      },
+      {
+        "path": "study/score-baseline-1-legacy.log",
+        "bytes": 43,
+        "sha256": "e11d90438fd092a088f5f862f84dc978c878212eada9900b7073b61e828d0982"
+      },
+      {
+        "path": "study/summary.json",
+        "bytes": 44359,
+        "sha256": "50b2686ac83017171bca045f62f8b843bc52e6c0d7a458534a16b3f446bfb782"
+      },
+      {
+        "path": "study/trace-baseline-1-early_stop.jsonl",
+        "bytes": 188865,
+        "sha256": "a6c1b8111e0db736edd9c86e0ad41feded32dcdaed913deddab93d7dda69c6be"
+      },
+      {
+        "path": "study/trace-baseline-1-legacy.jsonl",
+        "bytes": 28775,
+        "sha256": "fa15fac08c26720c4d06436c0ce0d74c8560e0bbba02df6c8c1b65e89a4ae522"
+      },
+      {
+        "path": "study/validation-driver-snapshot.py",
+        "bytes": 28192,
+        "sha256": "3ed11cedeec3a9d43b233eb47ba0ef530dea1aab05054513b61a9eba6f4ed4ed"
+      },
+      {
+        "path": "study/verify-baseline-0-blocked_full.json",
+        "bytes": 2430,
+        "sha256": "bd82f37f6eec2bdebb12bb00b2c5a541ec7688f004adb592ac7ca4a401feca7f"
+      },
+      {
+        "path": "study/verify-baseline-0-blocked_full.log",
+        "bytes": 491,
+        "sha256": "11a8f45c419a082a273907bd6629a550dd8aa60bc09950749773dc36b111797f"
+      },
+      {
+        "path": "control/active-study.json",
+        "bytes": 934,
+        "sha256": "3d306ceb38277b9cf8baa6d056cf9c2a130f87bfb94e7c4150c181e176ba3df4"
+      },
+      {
+        "path": "control/processes.json",
+        "bytes": 120,
+        "sha256": "59c37c195d36b7e4f02eb675f06d440a5d6d3fbd078f2eb2c81e827295ee075d"
+      },
+      {
+        "path": "control/guard-state.json",
+        "bytes": 345,
+        "sha256": "9b8b2abc768737836a634d602de296037429551ee0a1e91df4e27f2bad4330cc"
+      },
+      {
+        "path": "control/guard.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "control/guard.err",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "control/run.log",
+        "bytes": 749,
+        "sha256": "5c5f73f98af2c3447c2f04ccce389362db15d2f9a98902b8bbbde77d9efc2d79"
+      },
+      {
+        "path": "control/run.err",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "control/source.tar",
+        "bytes": 552960,
+        "sha256": "704aa3cbf72bdf107c3d13d60613f5ce988ec317ba3fec8ade5e34d768008fc9"
+      },
+      {
+        "path": "control/setup-evidence.json",
+        "bytes": 568,
+        "sha256": "c75fabeeef00136ec7b56462bbf9e66156978be8f191c9d2e31cde3e09c71802"
+      },
+      {
+        "path": "control/launch.py",
+        "bytes": 1520,
+        "sha256": "23306987c3eaf6418066cafa00695958d6a9d4356a9dba02ab2ba6b887a5e4ea"
+      },
+      {
+        "path": "control/prepare-run.py",
+        "bytes": 2044,
+        "sha256": "180cf3792dc5d09db08415a5109f3f5c9206b487d1d86f900bcd44d7b4223b0f"
+      },
+      {
+        "path": "control/keep-awake.py",
+        "bytes": 1118,
+        "sha256": "33bf5b62d7ff8aa6bef506d5317c38cca78f938b1059d3fdbdd19a2f7fec026a"
+      },
+      {
+        "path": "control/keep-awake-state.json",
+        "bytes": 107,
+        "sha256": "e4de0fcf81214336b4823e2aac39f2032cee5f37381506b86d46cc4a5c500092"
+      },
+      {
+        "path": "control/runtime-environment.json",
+        "bytes": 1146,
+        "sha256": "2f88ea6782e3fa0384e73053f9389e68152fecc5be34b6945beea7f64109af52"
+      },
+      {
+        "path": "source/benchmark-source.json",
+        "bytes": 258,
+        "sha256": "e047c9b65ebc4dbb23f36997697b4e28d34abaed7592a86604108fd41e361413"
+      },
+      {
+        "path": "source/source-manifest.json",
+        "bytes": 8664,
+        "sha256": "83795face5e2675e59eff93c793c050db77b6a72ca90cdd12d31617545fb2bb0"
+      },
+      {
+        "path": "reporting/report_stable_kl_validation.py",
+        "bytes": 15409,
+        "sha256": "01de0cb68207ad29e8cd8466d6cc2e82911295c07dd4c28ba0804a0db1c262d7"
+      }
+    ]
+  }
 }
