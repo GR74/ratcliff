@@ -2,51 +2,42 @@
 
 JAX port of Roger Ratcliff's spatially-extended diffusion decision models, with a Karhunen-Loève low-rank GRF generator and a web UI for interactive forward simulation, fitting, prediction, and comparison.
 
+Active work focuses on the scientific simulators and interactive web application.
+Cognitive Society research is paused and preserved in
+[`archive/cognitive_society/`](archive/cognitive_society/README.md).
+
 - **Model A** — 1D, `N=72` accumulators, Cholesky-correlated noise (`reference/gpgsq5deg3twod24.f`)
 - **Model B** — 2D, `100×160` accumulator field, FFT-based circulant-embedding GRF (`reference/benchtwod3mpi.f.new_accum.f.THIS_ONE_WORKS`), with Stage 6 K-L low-rank alternative
 
+## Illustrated lessons
+
+- [How a DDM works mathematically](docs/tutorials/DDM_MATH_VISUAL_GUIDE.md) — equations, a worked example, and the spatial model.
+- [How Gowrish sped up the models with JAX](docs/tutorials/JAX_SPEEDUP_VISUAL_GUIDE.md) — the algorithms, implementation changes, and recorded results.
+
 ## Headline benchmark (single rented H100, 2026-06-05)
 
-| Metric | Original Fortran 6-node MPI | This codebase (Stage 6 K-L) |
+| Metric | Original Fortran baseline | This codebase (Stage 6 K-L) |
 |---|---|---|
-| Per-call simulator at nsim=9000 | 11 sec | **4.7 sec** (~5×) |
-| Per-call simulator (1-node Fortran) | 36 sec | 4.7 sec (~16×) |
-| Full parameter recovery fit | "hours and hours" | **20.1 min** (~10-30×) |
-| Cost per fit | cluster time + queue | ~$0.80 of rented GPU |
-| All 12 active params within 7% of truth | yes | yes (avg 2.98% error) |
+| Per-call simulator at nsim=9000, 6-node MPI | 11 sec | **~4.7 sec** (~2.34×) |
+| Per-call simulator, 1-node Fortran | 36 sec | ~4.7 sec (~7.66×) |
+| Two-condition objective, 6-node MPI | ~22 sec (estimated as 2 × 11) | **4.71 sec** (~4.67×) |
+| Full synthetic parameter recovery run | "hours and hours" (reported, not precisely timed) | **20.1 min** |
+| Active parameters within 7% of synthetic truth | not reported here | **10/12** (avg 2.98% error) |
 
-Original Fortran ran on a 6-node MPI cluster with hand-tuned legacy code. The JAX port runs on a single rented GPU on the public cloud at ~$2/hr.
+Original Fortran ran on a 6-node MPI cluster with hand-tuned legacy code. The JAX port ran on one rented H100. The 20.1-minute recovery run stopped at its 100-iteration budget, with convergence flag false. These are recorded results, not new measurements. The [illustrated JAX guide](docs/tutorials/JAX_SPEEDUP_VISUAL_GUIDE.md) explains the workload distinctions and links the benchmark records.
 
 ## Interactive web interface
 
 The `frontend/` + `backend/` directories implement a React + FastAPI app for interactive use:
 
 - **Forward Sim** — drag 9 parameter sliders, see RT distributions update in real time
+- **Field (3D)** — visualize the accumulating evidence field and decision trajectory
+- **Phase Diagram** — sweep two parameters and compare response accuracy or mean RT
 - **Fit** — upload data (twod3datanew or generic CSV), watch the simplex loss descend live
 - **Predict** — generate per-condition RT distributions from fitted params
 - **Compare** — overlay two saved configurations
 
 Deploy as a single HF Space Docker image — see `HF_SPACE_README.md` for the publishing front-matter.
-
-## Cognitive Society (agentic layer)
-
-`cognitive_society/` is a scoped multi-agent system that grows out of the DDM work: each agent's
-decision-making *is* a diffusion model, agents communicate over a custom trust-weighted protocol,
-infer each other's cognitive styles, and adapt to novelty. It runs on **lightweight 1D NumPy agents**
-(no GPU, ~3s test suite) and can swap in the full 2D JAX model behind the same interface.
-
-**Headline result** (under confidently-wrong adversaries): collective accuracy
-flat **74%** → outcome-only-trust **93%** → cognitive-map-grounded + uncertainty-gated trust (ours)
-**96.5%**.
-
-```bash
-python -m cognitive_society.demo        # a society decides + reads each other's minds
-python -m cognitive_society.experiment  # the anchor robustness experiment
-pytest cognitive_society/tests/ -m "not slow"
-```
-
-See `cognitive_society/README.md`, the roadmap (`docs/plans/2026-06-05-OVERALL-PLAN-cognitive-society.md`),
-and the design notes (`docs/notes/2026-06-05-ddm-coupled-comms-design-notes.md`).
 
 ## Quick start (local development)
 
@@ -98,18 +89,13 @@ docker run -p 7860:7860 ratcliff-ddm
 - [x] Stage 3 — vectorized `fofs_new`, vmap over conditions, simplex fit driver
 - [x] Stage 3.5 — smooth-objective surrogate for L-BFGS gradient fits (Model A)
 - [x] Stage 4 — Model B GRF + accumulator port (parity-tested against Fortran archive outputs)
-- [x] Stage 5 — H100 benchmark, ~5x per-call vs 6-node MPI, full fit in 30 min
+- [x] Stage 5 — H100 benchmark, ~2x per simulator call vs 6-node MPI, full recovery run in 30 min
 - [x] Stage 6 — Karhunen-Loève low-rank GRF, ~2.25x per-eval over Stage 5, full fit in 20 min
 - [x] Stage 7.A — `model_b/api.py` CPU-friendly wrapper layer
 - [x] Stage 7.B — FastAPI backend + React frontend
 - [x] Stage 7.C — Dockerfile + HF Space configuration
 - [ ] Stage 7 deployment — push to HF Space and verify public URL (user action)
 - [x] Stage 8 — three.js evidence-field viz + decision-trajectory trace + phase diagram
-- [x] Cognitive Society — DDM agents, trust-weighted comms, cognitive mapping, adaptation (checkpoints 1-4 + anchor experiment + RL deference policy)
-- [~] Decentralized swarm (Phase 0-2) — graph topology + per-agent local maps + faithful
-  Byzantine baselines (W-MSR / A-RepC). **Demonstrated:** per captured victim, outcome-grounded
-  trust isolates a colluding cluster (AUC 1.0) where agreement-trust inverts (AUC ~0.0) once the
-  cluster is the local majority (`docs/notes/2026-06-10-phase2-swarm-result.md`). Phase 3 (scale) next.
 - [x] Track B — amortized SBI for the 2D model, **validated at scale** (N=3000 on H100:
   20.9% recovery, calibration c2st≈0.50; `scripts/sbi_mvp.py`,
   `docs/notes/2026-06-10-track-b-sbi-validation.md`). Extensions (vmap gen, real-data,

@@ -12,6 +12,7 @@ node_modules/
 frontend/dist/
 frontend/node_modules/
 docs/
+archive/
 scripts/_diag_kl_spectrum.py
 *.txt
 !h100_section4.txt

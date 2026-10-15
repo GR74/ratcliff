@@ -1,0 +1,489 @@
+{
+  "archived_on": "2026-10-07",
+  "reason": "Focus active project on the scientific simulators and interactive web application",
+  "entries": [
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/__init__.py",
+      "archived_path": "cognitive_society/__init__.py",
+      "sha256": "ef4844391907492aefea2c50d8dbe324b915f564a3c7abaeb9dacef68823d120",
+      "bytes": 787
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/adversary.py",
+      "archived_path": "cognitive_society/adversary.py",
+      "sha256": "ac5f8dc407f7feb9ac93ff3205565d93fe63b21c79b6f477b8697526eccb0970",
+      "bytes": 11287
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/agent.py",
+      "archived_path": "cognitive_society/agent.py",
+      "sha256": "c4bac87e9cfb11b5361ddfa873c38fe1415e819e7e5a5de0de467d52bceedb55",
+      "bytes": 5716
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/baselines.py",
+      "archived_path": "cognitive_society/baselines.py",
+      "sha256": "571f891dcfaa6cb797c90f770214028ce875a1c99258c11ab2179fc6b1973f63",
+      "bytes": 23231
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/belief_loop.py",
+      "archived_path": "cognitive_society/belief_loop.py",
+      "sha256": "6e20a4607db5ccb0258faf0cd227d637da8bc87275e2cdad5ec1dc725d656923",
+      "bytes": 11272
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/comms.py",
+      "archived_path": "cognitive_society/comms.py",
+      "sha256": "94a00a8bb31944245bc6f9f7d662fe283832910b82353683991977703824e96a",
+      "bytes": 4708
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/confidence_woc_ddm.py",
+      "archived_path": "cognitive_society/confidence_woc_ddm.py",
+      "sha256": "4e9fc1ae2e35bd3c372a1c317a00080dda72d0d622c9fce9f807beed8193b7c0",
+      "bytes": 8040
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/confidence_woc_nd.py",
+      "archived_path": "cognitive_society/confidence_woc_nd.py",
+      "sha256": "d16b02c050f3c526598f6dd53f6fe83de5a203b1450e2a0e14f7de57f27ff14b",
+      "bytes": 7500
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/confidence_woc.py",
+      "archived_path": "cognitive_society/confidence_woc.py",
+      "sha256": "b1e750419372675c4c22a831bb02699531fe4d8bfa4c46f7f672efa93c6a4451",
+      "bytes": 9869
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/demo.py",
+      "archived_path": "cognitive_society/demo.py",
+      "sha256": "d91e7eeb9e805aa5f7cba6e72fbe574c4ed02596fcbfbe2e43c18b839540d9e8",
+      "bytes": 4368
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/engine.py",
+      "archived_path": "cognitive_society/engine.py",
+      "sha256": "41a779645d9be27c4209f3696f852b1bca64a0cbd61cbe3834947aa9f8550945",
+      "bytes": 4025
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/experiment.py",
+      "archived_path": "cognitive_society/experiment.py",
+      "sha256": "db86453ec397d38510cbd8fe225279a305470a81050080e6bb924745dd6d7579",
+      "bytes": 6496
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/ez_diffusion.py",
+      "archived_path": "cognitive_society/ez_diffusion.py",
+      "sha256": "c1c6d5bdcffa2d6d3a5d16b9c56558a9cc49de37ba13fe44d9518f7b50d8e912",
+      "bytes": 5018
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/label_aggregation.py",
+      "archived_path": "cognitive_society/label_aggregation.py",
+      "sha256": "6ab5477ce984af918d16926a6a360ee6c96da058ce741eafd9d1072b93bd6ec6",
+      "bytes": 4794
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/model_routing.py",
+      "archived_path": "cognitive_society/model_routing.py",
+      "sha256": "c606ccbf531e65a37405ebb024a1286a411d6ebf7ddda5e938cff684d18cefc1",
+      "bytes": 5244
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/phase2_experiment.py",
+      "archived_path": "cognitive_society/phase2_experiment.py",
+      "sha256": "ca85ee5035fdcb3b110cef5b0e18be2f7cedb1d190c3b36b22c9cdfc3f9b473e",
+      "bytes": 26234
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/phase2_per_victim.py",
+      "archived_path": "cognitive_society/phase2_per_victim.py",
+      "sha256": "0f4e3ee1a04513c202132fa3aff7aedc1ec556c4490ceb4f234ae5b7b63e9654",
+      "bytes": 8320
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/phase3_scale.py",
+      "archived_path": "cognitive_society/phase3_scale.py",
+      "sha256": "2614e650caf76fbc3b9f97b7a8c464dfcdcef52c7bb983cd74501b51654678ed",
+      "bytes": 3404
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/phase3_tipping.py",
+      "archived_path": "cognitive_society/phase3_tipping.py",
+      "sha256": "550167e5c75e4278b5818c44424ba43798b1137ca5156612a58a223f493dffde",
+      "bytes": 3521
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/phase4_consensus.py",
+      "archived_path": "cognitive_society/phase4_consensus.py",
+      "sha256": "52200c3d3d0742a827a5888e961f9cfcef011026c4119c6067c8889e46f2651e",
+      "bytes": 6391
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/README.md",
+      "archived_path": "cognitive_society/README.md",
+      "sha256": "4b4c1c2ec32f6b8f4a1fa8820fa9bc1ba48aa9b9ed3d10a593806473b2d2b592",
+      "bytes": 12005
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/real_confidence_replication.py",
+      "archived_path": "cognitive_society/real_confidence_replication.py",
+      "sha256": "4ed29182c322645969d7c7aa65c7b5e6c4ab1e3eb7d859b6aa002debff0abb72",
+      "bytes": 5300
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/real_label_aggregation.py",
+      "archived_path": "cognitive_society/real_label_aggregation.py",
+      "sha256": "2d6b1ab04bc6c5ce9e28289bf7805e02cdcba27d5a05cf70a3982a6ccd3bf24c",
+      "bytes": 4719
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/rl_experiment.py",
+      "archived_path": "cognitive_society/rl_experiment.py",
+      "sha256": "48c0f53c403b42987ddcc3f3ac3e2d4d85b99eb0f000a53b675d3ded9d613156",
+      "bytes": 5652
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/rl.py",
+      "archived_path": "cognitive_society/rl.py",
+      "sha256": "174f462405112b0e43187ee419aa0fff6e750e365123f9e294c8d8fd80360af6",
+      "bytes": 5294
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/router_bench.py",
+      "archived_path": "cognitive_society/router_bench.py",
+      "sha256": "1e772f3fa80dadf312ee6bc7721668df2e88e595e2f3b874366786ece705ac88",
+      "bytes": 13571
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/society.py",
+      "archived_path": "cognitive_society/society.py",
+      "sha256": "487302f66cd1d0f3aed26acfd589d550afd558f74a6eb3b60b5a2384f22e40c8",
+      "bytes": 13387
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/swarm_experiment.py",
+      "archived_path": "cognitive_society/swarm_experiment.py",
+      "sha256": "83cf2163099b99eb5adae05c1571439dbf1f8e5bc7b88761f5c9073d4944e627",
+      "bytes": 4193
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/swarm_metrics.py",
+      "archived_path": "cognitive_society/swarm_metrics.py",
+      "sha256": "5cf5c8b517048b1fb8e0788fac443ed71298fb05be6abfbd548b216b04a741e7",
+      "bytes": 13316
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/topology.py",
+      "archived_path": "cognitive_society/topology.py",
+      "sha256": "829dc7a419397e8071892faaa202681d518f2d93c82c9fb9253d75e788f3c582",
+      "bytes": 6030
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/__init__.py",
+      "archived_path": "cognitive_society/tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_agent.py",
+      "archived_path": "cognitive_society/tests/test_agent.py",
+      "sha256": "d4959b2a9fc1fce5d8be64fa14040eb9ae2aceab847dd97797e313ac3ba29711",
+      "bytes": 3445
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_belief_loop.py",
+      "archived_path": "cognitive_society/tests/test_belief_loop.py",
+      "sha256": "fad241e041f16ae54c14d804f6fd16ef10ed7caa7617967b8533c198d9d299a7",
+      "bytes": 4060
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_comms.py",
+      "archived_path": "cognitive_society/tests/test_comms.py",
+      "sha256": "d26dffb4010e35b77bbdfcad4494d1cf885c3ee5d874e3d16252b54e2b227650",
+      "bytes": 2247
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_confidence_woc_ddm.py",
+      "archived_path": "cognitive_society/tests/test_confidence_woc_ddm.py",
+      "sha256": "b01708da2d56aa00e640712418db1ce0b4c05c3be7c3c574628c393515456fed",
+      "bytes": 1547
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_confidence_woc_nd.py",
+      "archived_path": "cognitive_society/tests/test_confidence_woc_nd.py",
+      "sha256": "edb5e7a69558357be57c803b852c65540566f1d129cce41da73f33a1258d9191",
+      "bytes": 1577
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_confidence_woc.py",
+      "archived_path": "cognitive_society/tests/test_confidence_woc.py",
+      "sha256": "004a7ba7645c0ffa54697b5c26dca3a65ab06e0609dfdc4256d5996c555d336b",
+      "bytes": 3309
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_engine.py",
+      "archived_path": "cognitive_society/tests/test_engine.py",
+      "sha256": "70ee9b42f6a237d4a9848f2e6b33564b2424cf2b56fabb52265b106dfa42e196",
+      "bytes": 2132
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_ez_diffusion.py",
+      "archived_path": "cognitive_society/tests/test_ez_diffusion.py",
+      "sha256": "04324a4b63e29e48e588cc93bb8ee5335d4319bdb81c6ee543380c69c18e2df8",
+      "bytes": 3920
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_label_aggregation.py",
+      "archived_path": "cognitive_society/tests/test_label_aggregation.py",
+      "sha256": "8fc3c12b2852193f1a781889ad019424084b8c666b0c16d18bf0d6fab3ff674e",
+      "bytes": 1025
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_phase2_per_victim.py",
+      "archived_path": "cognitive_society/tests/test_phase2_per_victim.py",
+      "sha256": "9485ee02669b78b347687f35dd517b241bf31bec82cb9c0dc037ccca6661377d",
+      "bytes": 1046
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_phase2.py",
+      "archived_path": "cognitive_society/tests/test_phase2.py",
+      "sha256": "b8f6367fe27e1c0004a42ee14f4836015199d15ead9f142f826409bfd16667a7",
+      "bytes": 13294
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_phase4.py",
+      "archived_path": "cognitive_society/tests/test_phase4.py",
+      "sha256": "70824f6f2623eb7df1dd25d71ab57a38aa34bbd71a0dbbf618c14eb21e56ba73",
+      "bytes": 1556
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_rl.py",
+      "archived_path": "cognitive_society/tests/test_rl.py",
+      "sha256": "95e4e267e81f4ab833b6b6efcb72f1d2da70607a449882a6c9dd5b6f1345a537",
+      "bytes": 4448
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_society.py",
+      "archived_path": "cognitive_society/tests/test_society.py",
+      "sha256": "b123153f7ed55c1ffe3fe08902cee2ee99b01128c542a0f24224fefaadd328fb",
+      "bytes": 3020
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_swarm.py",
+      "archived_path": "cognitive_society/tests/test_swarm.py",
+      "sha256": "802b07f981e9ac5537d76bc538604e9f42a1849a5ce3c781fae5a501b3fe88f6",
+      "bytes": 2521
+    },
+    {
+      "operation": "move",
+      "original_path": "cognitive_society/tests/test_topology.py",
+      "archived_path": "cognitive_society/tests/test_topology.py",
+      "sha256": "f9481eaa2acd23610f0e1ddb23d5d8dbe3d1b04332e6057a8c35e0914bf717f9",
+      "bytes": 3141
+    },
+    {
+      "operation": "move",
+      "original_path": "docs/COLLECTIVE_COGNITION.md",
+      "archived_path": "docs/COLLECTIVE_COGNITION.md",
+      "sha256": "54b5fdcc48f15474065169d1c85f176e17ec8f27dc6847848c6bc9132807c7a5",
+      "bytes": 10191
+    },
+    {
+      "operation": "move",
+      "original_path": "docs/plans/2026-06-05-OVERALL-PLAN-cognitive-society.md",
+      "archived_path": "docs/plans/2026-06-05-OVERALL-PLAN-cognitive-society.md",
+      "sha256": "6b548f268980af450ef3974957ca4f139fafc0ba1d56c5e0ea0c0994fb7e68df",
+      "bytes": 13603
+    },
+    {
+      "operation": "move",
+      "original_path": "docs/notes/2026-06-05-ddm-coupled-comms-design-notes.md",
+      "archived_path": "docs/notes/2026-06-05-ddm-coupled-comms-design-notes.md",
+      "sha256": "a3035504a0533c62265f468b9957a6669dafa2575f37f7dab8991655ad5becca",
+      "bytes": 6291
+    },
+    {
+      "operation": "move",
+      "original_path": "docs/notes/2026-06-10-swarm-coordination-research-synthesis.md",
+      "archived_path": "docs/notes/2026-06-10-swarm-coordination-research-synthesis.md",
+      "sha256": "6de81c13fb935a121ff3d89fde0bbbfa8c837a1f109a99e7a678cbbc1b7d828a",
+      "bytes": 8656
+    },
+    {
+      "operation": "move",
+      "original_path": "docs/notes/2026-06-10-phase2-swarm-result.md",
+      "archived_path": "docs/notes/2026-06-10-phase2-swarm-result.md",
+      "sha256": "0a5f5f29451b418ee0dd86bb5a83648b9c1b606a1cf98a9b33796b38ff15f7c3",
+      "bytes": 16481
+    },
+    {
+      "operation": "move",
+      "original_path": "docs/notes/2026-06-10-session-summary.md",
+      "archived_path": "docs/notes/2026-06-10-session-summary.md",
+      "sha256": "56c8a397b29cecd25b08c610fb4cd6ac7fb498c41adc68fea38670d162f24335",
+      "bytes": 4840
+    },
+    {
+      "operation": "move",
+      "original_path": "docs/notes/2026-07-21-cognitive-digital-twin-research-program.md",
+      "archived_path": "docs/notes/2026-07-21-cognitive-digital-twin-research-program.md",
+      "sha256": "18d640931eccb1c3614eb18a1c815ad1949f98520808698e89ada927e4eb2c83",
+      "bytes": 14300
+    },
+    {
+      "operation": "move",
+      "original_path": "docs/notes/2026-07-21-grounded-collective-cognition-theory-spine.md",
+      "archived_path": "docs/notes/2026-07-21-grounded-collective-cognition-theory-spine.md",
+      "sha256": "718d182c5373e6c2361220eb8c8bffe35dec98ab5e1f7e84f04886006180f298",
+      "bytes": 9637
+    },
+    {
+      "operation": "move",
+      "original_path": "docs/notes/2026-07-21-papers-1-and-2-spec.md",
+      "archived_path": "docs/notes/2026-07-21-papers-1-and-2-spec.md",
+      "sha256": "c8dae0f79489a182e0feb5b5593fa3e046037f1cf6ec7f5b4b618b4396bdfcee",
+      "bytes": 11294
+    },
+    {
+      "operation": "move",
+      "original_path": "docs_v2/08-cognitive-society.md",
+      "archived_path": "docs_v2/08-cognitive-society.md",
+      "sha256": "09b57a1c8f7e88650beb92d0329e176ecc19044064b3920cd2c752a6238886e6",
+      "bytes": 5182
+    },
+    {
+      "operation": "copy",
+      "original_path": "README.md",
+      "archived_path": "snapshots/README.md",
+      "sha256": "e73045e083fe72d43c36e5cd542db7d4e9bd82c0f93e0880921ed4be780b7494",
+      "bytes": 6518
+    },
+    {
+      "operation": "copy",
+      "original_path": "AGENTS.md",
+      "archived_path": "snapshots/AGENTS.original.md",
+      "sha256": "dddaa95fc9c77d16ffdd54502e152aafac4217028dea8496f396b78f57d3af45",
+      "bytes": 3060
+    },
+    {
+      "operation": "copy",
+      "original_path": "docs_v2/START-HERE.md",
+      "archived_path": "snapshots/docs_v2/START-HERE.md",
+      "sha256": "f7c54f2d1488ffe7d38f3b7b945152ddfa5d4ba3b2c659b06dd45a450f8f564e",
+      "bytes": 1993
+    },
+    {
+      "operation": "copy",
+      "original_path": "docs_v2/00-overview.md",
+      "archived_path": "snapshots/docs_v2/00-overview.md",
+      "sha256": "c753319d9cf526244f8a54728adc57d0cd6145e7816d132666238f7a3a3b0cf0",
+      "bytes": 3713
+    },
+    {
+      "operation": "copy",
+      "original_path": "docs_v2/01-ddm-foundations.md",
+      "archived_path": "snapshots/docs_v2/01-ddm-foundations.md",
+      "sha256": "01dbab921d7422da495648434d89f31e2a8ba2f0ada532fa37659aec45df2889",
+      "bytes": 3812
+    },
+    {
+      "operation": "copy",
+      "original_path": "docs_v2/02-repository-map.md",
+      "archived_path": "snapshots/docs_v2/02-repository-map.md",
+      "sha256": "c6430d37cebee25b5da0860a4297815cb6a721bb95ce7cce6fd71b985ebe6892",
+      "bytes": 3045
+    },
+    {
+      "operation": "copy",
+      "original_path": "docs_v2/05-data-fitting-validation.md",
+      "archived_path": "snapshots/docs_v2/05-data-fitting-validation.md",
+      "sha256": "323c2c8fc115893402cd96109b126a9a611cd80fb1171716afb1997f0b28af2c",
+      "bytes": 4797
+    },
+    {
+      "operation": "copy",
+      "original_path": "docs_v2/09-research-experiments.md",
+      "archived_path": "snapshots/docs_v2/09-research-experiments.md",
+      "sha256": "544ecf631c9de918c8caaa20f91ba8843dd4e91b36f004e2e22bc951873ea246",
+      "bytes": 6751
+    },
+    {
+      "operation": "copy",
+      "original_path": "docs_v2/11-build-history.md",
+      "archived_path": "snapshots/docs_v2/11-build-history.md",
+      "sha256": "ab571bcd95bf685e4f00272a6fc60543ac0c476af7b67e4a26a900f08c3f9a05",
+      "bytes": 4927
+    },
+    {
+      "operation": "copy",
+      "original_path": "docs_v2/12-glossary.md",
+      "archived_path": "snapshots/docs_v2/12-glossary.md",
+      "sha256": "0b086b4953d5a7c03215f2ddf95d1f6856b5410b504cd34e932baa26a937d3b2",
+      "bytes": 4193
+    },
+    {
+      "operation": "copy",
+      "original_path": "docs_v2/13-file-by-file-reference.md",
+      "archived_path": "snapshots/docs_v2/13-file-by-file-reference.md",
+      "sha256": "a4f0071bb637e4e8904aad38674d9f587050660e1e3eb3a77f898916f6f16fda",
+      "bytes": 5619
+    },
+    {
+      "operation": "copy",
+      "original_path": "docs/plans/2026-06-05-stage-11-sbi-research-design.md",
+      "archived_path": "snapshots/docs/plans/2026-06-05-stage-11-sbi-research-design.md",
+      "sha256": "2fc6d132325c8891efbd7d780eead9ba658f4b9624872199fb08e8f9c5ae2658",
+      "bytes": 7820
+    }
+  ]
+}
