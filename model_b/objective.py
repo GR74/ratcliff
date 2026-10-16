@@ -9,6 +9,8 @@ Param layout (13 elements):
 
 Note: `si` (zone width) is fixed at 6.0, not a fit parameter.
 """
+from functools import partial
+
 import jax
 import jax.numpy as jnp
 
@@ -51,7 +53,7 @@ def clamp_b(params):
     ])
 
 
-def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
+def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant, soft_tau_ms=0.0):
     """
     G² contribution from one Model B condition (5 categories).
 
@@ -62,6 +64,10 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
     obs_prop  : (5,) observed proportions per category.
     obs_count : (5,) observed counts per category.
     obs_quant : (5, 5) observed RT quantiles per category. (NQ, MC)
+    soft_tau_ms : 0 keeps the hard count of rt <= quantile (Fortran-identical).
+        > 0 replaces each indicator by sigmoid((quantile - rt) / tau), so the
+        loss changes smoothly as simulated RTs move past an observed quantile
+        (pass 3; tau -> 0 recovers the hard count). Category assignment stays hard.
     """
     mmn = obs_count.sum()
 
@@ -69,8 +75,13 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
         in_cat = (cat == (i + 1))
         pxy = jnp.mean(in_cat)
         denom = jnp.maximum(in_cat.sum(), 1)
-        rt_i = jnp.where(in_cat, rt, jnp.inf)
-        qc = jnp.array([(rt_i <= obs_quant[j, i]).sum() / denom for j in range(NQ)])
+        if soft_tau_ms > 0:
+            w = in_cat.astype(rt.dtype)
+            qc = jnp.array([(w * jax.nn.sigmoid((obs_quant[j, i] - rt) / soft_tau_ms)
+                             ).sum() / denom for j in range(NQ)])
+        else:
+            rt_i = jnp.where(in_cat, rt, jnp.inf)
+            qc = jnp.array([(rt_i <= obs_quant[j, i]).sum() / denom for j in range(NQ)])
 
         c_full = mmn * obs_prop[i] * PQQ[0] * jnp.log(
             obs_prop[i] * PQQ[0] / (pxy * qc[0] + 1e-5))
@@ -88,18 +99,13 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
     return jnp.array([per_cat(i) for i in range(MC)]).sum()
 
 
-def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
+def simulate_conditions_b(params, key, nsim=512, chunk_size=4, use_kl=False,
                 time_block_size=0, stop_early=True, compact=True,
                 kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False,
                 separable_kl=False):
-    """
-    Vectorized G2 objective for Model B, summed across 2 conditions.
+    """Simulated (rts, cats), each (2, nsim), for both conditions of Model B.
 
-    params : (13,) parameter vector. See clamp_b docstring for layout.
-    data   : dict with "prop" (2, 5), "count" (2, 5), "quant" (2, 5, 5).
-    key    : JAX typed key.
-    use_kl : if True, use Stage 6 K-L low-rank GRF inside simulate_b.
-    Returns scalar G2.
+    The simulation half of fofs_b_new; see it for the arguments.
     """
     # Local imports to avoid hard top-level dependency cycle risk
     from model_b import simulate as sim_b
@@ -158,15 +164,36 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
         )
     # rts, cats: (2, nsim)
 
-    return _g2_total(rts, cats, data["prop"], data["count"], data["quant"])
+    return rts, cats
 
 
-@jax.jit
-def _g2_total(rts, cats, prop, count, quant):
+def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
+                time_block_size=0, stop_early=True, compact=True,
+                kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False,
+                separable_kl=False, soft_tau_ms=0.0):
+    """
+    Vectorized G2 objective for Model B, summed across 2 conditions.
+
+    params : (13,) parameter vector. See clamp_b docstring for layout.
+    data   : dict with "prop" (2, 5), "count" (2, 5), "quant" (2, 5, 5).
+    key    : JAX typed key.
+    use_kl : if True, use Stage 6 K-L low-rank GRF inside simulate_b.
+    soft_tau_ms : soft-count width for condition_g2_b (0 = hard count).
+    Returns scalar G2.
+    """
+    rts, cats = simulate_conditions_b(
+        params, key, nsim, chunk_size, use_kl, time_block_size, stop_early,
+        compact, kl_bucketed, cumulative_kl, stable_kl_noise, separable_kl)
+    return _g2_total(rts, cats, data["prop"], data["count"], data["quant"],
+                     float(soft_tau_ms))
+
+
+@partial(jax.jit, static_argnums=5)
+def _g2_total(rts, cats, prop, count, quant, soft_tau_ms=0.0):
     """Sum of condition_g2_b over conditions, compiled once per nsim.
 
     Pass 3: the eager vmap dispatched ~20,000 tiny ops per evaluation and took
     ~60% of a small-nsim fit evaluation on CPU. Same math, now one XLA program.
     """
-    return jax.vmap(condition_g2_b, in_axes=(0, 0, 0, 0, 0))(
-        rts, cats, prop, count, quant).sum()
+    return jax.vmap(partial(condition_g2_b, soft_tau_ms=soft_tau_ms),
+                    in_axes=(0, 0, 0, 0, 0))(rts, cats, prop, count, quant).sum()
