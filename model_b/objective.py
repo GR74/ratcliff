@@ -90,7 +90,8 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
 
 def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
                 time_block_size=0, stop_early=True, compact=True,
-                kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False):
+                kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False,
+                separable_kl=False):
     """
     Vectorized G2 objective for Model B, summed across 2 conditions.
 
@@ -106,8 +107,10 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
 
     if (kl_bucketed or cumulative_kl) and (not time_block_size or not use_kl):
         raise ValueError("K-L extensions require blocked simulation and use_kl=True")
-    if stable_kl_noise and not use_kl:
-        raise ValueError("stable K-L noise requires use_kl=True")
+    if (stable_kl_noise or separable_kl) and not use_kl:
+        raise ValueError("stable/separable K-L noise requires use_kl=True")
+    if separable_kl and not time_block_size:
+        raise ValueError("separable K-L requires blocked simulation")
 
     p = clamp_b(params)
     ter, st, cr, crsd, sis, sig = p[0], p[1], p[2], p[3], p[4], p[5]
@@ -139,7 +142,7 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
             avs[ci, 0], avs[ci, 1], avs[ci, 2],
             sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
             time_block_size, stop_early, compact,
-            kl_bucketed, cumulative_kl, stable_kl_noise,
+            kl_bucketed, cumulative_kl, stable_kl_noise, separable_kl,
         ) for ci in range(2)]
         rts = jnp.stack([out[0] for out in outputs])
         cats = jnp.stack([out[1] for out in outputs])
@@ -155,7 +158,15 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
         )
     # rts, cats: (2, nsim)
 
-    # vmap condition_g2_b over (rts[ci], cats[ci], data[ci, :])
-    g2_vmap = jax.vmap(condition_g2_b, in_axes=(0, 0, 0, 0, 0))
-    g2_per_cond = g2_vmap(rts, cats, data["prop"], data["count"], data["quant"])
-    return g2_per_cond.sum()
+    return _g2_total(rts, cats, data["prop"], data["count"], data["quant"])
+
+
+@jax.jit
+def _g2_total(rts, cats, prop, count, quant):
+    """Sum of condition_g2_b over conditions, compiled once per nsim.
+
+    Pass 3: the eager vmap dispatched ~20,000 tiny ops per evaluation and took
+    ~60% of a small-nsim fit evaluation on CPU. Same math, now one XLA program.
+    """
+    return jax.vmap(condition_g2_b, in_axes=(0, 0, 0, 0, 0))(
+        rts, cats, prop, count, quant).sum()

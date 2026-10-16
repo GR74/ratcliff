@@ -29,7 +29,7 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
                   on_update=None, trial_schedule=None, time_block_size=0,
                   stop_early=True, compact=True, on_stage=None,
                   optimize_active_only=False, kl_bucketed=False, cumulative_kl=False,
-                  stable_kl_noise=False):
+                  stable_kl_noise=False, separable_kl=False):
     """
     Scipy Nelder-Mead simplex fit for Model B.
 
@@ -49,6 +49,7 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
     optimize_active_only removes the inert sv coordinate from the search while
     preserving the public 13-parameter result/callbacks and its initial sv value.
     kl_bucketed/cumulative_kl are optional blocked K-L simulation extensions.
+    separable_kl evaluates the same K-L field in factored row x column form.
     """
     template = np.asarray(x0, dtype=float).copy()
     if template.shape != (13,):
@@ -68,7 +69,7 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
             p, data, key, nsim=stage_nsim, chunk_size=chunk_size, use_kl=use_kl,
             time_block_size=time_block_size, stop_early=stop_early, compact=compact,
             kl_bucketed=kl_bucketed, cumulative_kl=cumulative_kl,
-            stable_kl_noise=stable_kl_noise,
+            stable_kl_noise=stable_kl_noise, separable_kl=separable_kl,
         )
 
     def progress(number, loss, params):

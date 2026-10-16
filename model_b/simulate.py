@@ -17,6 +17,7 @@ import jax.numpy as jnp
 
 from model_b import grf
 from model_b import grf_kl
+from model_b import grf_separable
 from shared import blocked, prng
 
 # Model B field dimensions
@@ -37,11 +38,15 @@ _J = jnp.arange(M, dtype=jnp.float64)
 _I_GRID, _J_GRID = jnp.meshgrid(_I, _J, indexing="ij")  # both (N, M)
 
 
+@jax.jit
 def drift_bumps(sis: float):
     """
     Three drift Gaussian bumps centered at (UI=50, UJ=80/30/130) with stddev `sis`.
 
     Returns (v1, v2, v3), each shape (N, M).
+
+    Jitted (pass 3): run eagerly, each call dispatched ~20 tiny grid ops and
+    cost ~0.4 s per fit evaluation on CPU, dwarfing small-nsim simulation.
     """
     s3 = 2.0 * sis * sis
     s4 = sis * jnp.sqrt(2.0 * jnp.pi)
@@ -331,12 +336,16 @@ def _simulate_b_blocked_core(key, ter, st, cr, crsd, drift, k_zone, basis,
             # Keep normal draws fixed across basis capacities; padding removal
             # must not silently replace the retained modes' random weights.
             if mode_ids is None:
+                width = (2 * basis[3].shape[0] if isinstance(basis, tuple)
+                         else basis.shape[1])
                 z = blocked.normal_blocks(keys, time_block_size, 2 * grf_kl.DEFAULT_K_MAX,
-                                           jnp.float32)[..., :basis.shape[1]]
+                                           jnp.float32)[..., :width]
             else:
                 z = grf_kl.mode_normal_blocks(keys, mode_ids, time_block_size, jnp.float32)
             if cumulative_kl:
                 z = jnp.cumsum(z, axis=1)
+            if isinstance(basis, tuple):   # separable K-L (grf_separable)
+                return grf_separable.project(z, *basis)
             return jnp.einsum("bsk,Nk->bsN", z, basis)
         n_pad, m_pad = basis.shape
         n_fft = (time_block_size + 1) // 2
@@ -367,12 +376,21 @@ def _simulate_b_blocked_core(key, ter, st, cr, crsd, drift, k_zone, basis,
     return rts.reshape(-1)[:nsim], cats.reshape(-1)[:nsim], work.sum()
 
 
+@jax.jit
+def _drift_field(sis, av1, av2, av3):
+    """Weighted sum of the three drift bumps, compiled once (see drift_bumps)."""
+    v1, v2, v3 = drift_bumps(sis=sis)
+    return (jnp.asarray(av1, dtype=jnp.float32) * v1.astype(jnp.float32)
+            + jnp.asarray(av2, dtype=jnp.float32) * v2.astype(jnp.float32)
+            + jnp.asarray(av3, dtype=jnp.float32) * v3.astype(jnp.float32))
+
+
 def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
                                  sis, sig, si, nsim, chunk_size=64,
                                  use_kl=True, time_block_size=32,
                                  stop_early=True, compact=True,
                                  kl_bucketed=False, cumulative_kl=False,
-                                 stable_kl_noise=False):
+                                 stable_kl_noise=False, separable_kl=False):
     """Optional blocked Model B with unchanged FFT/K-L covariance/categories.
 
     stop_early=False is the paired full-horizon control. Keep time_block_size
@@ -380,14 +398,19 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
     """
     if nsim < 1 or chunk_size < 1:
         raise ValueError("nsim and chunk_size must be positive")
-    if (kl_bucketed or cumulative_kl or stable_kl_noise) and not use_kl:
+    if (kl_bucketed or cumulative_kl or stable_kl_noise or separable_kl) and not use_kl:
         raise ValueError("K-L extensions require use_kl=True")
-    v1, v2, v3 = drift_bumps(sis=sis)
-    drift = (jnp.asarray(av1, dtype=jnp.float32) * v1.astype(jnp.float32)
-             + jnp.asarray(av2, dtype=jnp.float32) * v2.astype(jnp.float32)
-             + jnp.asarray(av3, dtype=jnp.float32) * v3.astype(jnp.float32))
+    if separable_kl and kl_bucketed:
+        raise ValueError("separable_kl always uses k_max capacity")
+    drift = _drift_field(sis, av1, av2, av3)
     mode_ids = None
-    if use_kl:
+    if separable_kl:
+        # Same modes, scaling and random coefficients as the dense K-L basis,
+        # evaluated as Re(P W Q^T) (see grf_separable). Builds in milliseconds.
+        sb = grf_separable.separable_basis(float(sig), n=N, m=M)
+        basis = sb.arrays
+        mode_ids = sb.mode_ids if stable_kl_noise else None
+    elif use_kl:
         result = grf_kl.calc_kl_basis(
             sig=float(sig), n=N, m=M, pad_to_k_max=True,
             mode_buckets=grf_kl.DEFAULT_MODE_BUCKETS if kl_bucketed else None,
@@ -407,11 +430,12 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
 def simulate_b_blocked(key, ter, st, cr, crsd, av1, av2, av3,
                        sis, sig, si, nsim, chunk_size=64, use_kl=True,
                        time_block_size=32, stop_early=True, compact=True,
-                       kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False):
+                       kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False,
+                       separable_kl=False):
     """RT/category-only interface for optional time blocking."""
     rt, cat, _work = simulate_b_blocked_with_work(
         key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim,
         chunk_size, use_kl, time_block_size, stop_early, compact,
-        kl_bucketed, cumulative_kl, stable_kl_noise,
+        kl_bucketed, cumulative_kl, stable_kl_noise, separable_kl,
     )
     return rt, cat

@@ -159,18 +159,25 @@ def _calc_kl_basis_impl(sig: float, n: int, m: int, k_max: int,
 
     result = (jnp.asarray(V), K, variance_captured)
     if return_mode_ids:
-        mode_ids = np.full(capacity, np.uint32(0xffffffff), dtype=np.uint32)
-        conjugates = ((-i_star) % n_pad) * m_pad + ((-j_star) % m_pad)
-        canonical = np.minimum(top_idx, conjugates)
-        selected = set(top_idx.tolist())
-        paired = np.asarray([c != i and c in selected for i, c in zip(top_idx, conjugates)])
-        reverse = top_idx != canonical
-        components = (paired & reverse).astype(np.uint32)
-        codes = 2 * canonical.astype(np.uint32) + components
-        codes |= np.where(reverse, MODE_ORIENTATION_BIT, np.uint32(0))
-        mode_ids[:K] = codes
-        return (*result, jnp.asarray(mode_ids))
+        return (*result, jnp.asarray(mode_ids_for(top_idx, n_pad, m_pad, capacity)))
     return result
+
+
+def mode_ids_for(top_idx, n_pad, m_pad, capacity):
+    """uint32 mode codes for retained flat Fourier indices (see calc_kl_basis)."""
+    top_idx = np.asarray(top_idx)
+    i_star, j_star = top_idx // m_pad, top_idx % m_pad
+    mode_ids = np.full(capacity, np.uint32(0xffffffff), dtype=np.uint32)
+    conjugates = ((-i_star) % n_pad) * m_pad + ((-j_star) % m_pad)
+    canonical = np.minimum(top_idx, conjugates)
+    selected = set(top_idx.tolist())
+    paired = np.asarray([c != i and c in selected for i, c in zip(top_idx, conjugates)])
+    reverse = top_idx != canonical
+    components = (paired & reverse).astype(np.uint32)
+    codes = 2 * canonical.astype(np.uint32) + components
+    codes |= np.where(reverse, MODE_ORIENTATION_BIT, np.uint32(0))
+    mode_ids[:len(top_idx)] = codes
+    return mode_ids
 
 
 def mode_normal_blocks(keys, mode_ids, block_size, dtype=jnp.float32):
