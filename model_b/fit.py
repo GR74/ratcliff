@@ -29,7 +29,8 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
                   on_update=None, trial_schedule=None, time_block_size=0,
                   stop_early=True, compact=True, on_stage=None,
                   optimize_active_only=False, kl_bucketed=False, cumulative_kl=False,
-                  stable_kl_noise=False, separable_kl=False, soft_tau_ms=0.0):
+                  stable_kl_noise=False, separable_kl=False, soft_tau_ms=0.0,
+                  maxfev=None):
     """
     Scipy Nelder-Mead simplex fit for Model B.
 
@@ -82,8 +83,64 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
         loss_numpy, template[active] if optimize_active_only else template,
         nsim=nsim, maxiter=maxiter, tol=tol,
         schedule=trial_schedule, on_update=progress, on_stage=on_stage,
+        maxfev=maxfev,
     )
     return FitResult(
         params=jnp.asarray(expand(res.params)), loss=res.loss, n_iters=res.n_iters,
         converged=res.converged, n_evals=res.n_evals, stages=res.stages,
     )
+
+
+# Search units for CMA-ES, one per parameter (layout as in objective.clamp_b):
+# roughly the size of a meaningful change, so one step size fits them all.
+CMAES_SCALE_B = np.array([10.0, 10.0, 1.0, 1.0, 1.0, 1.0, 0.1,
+                          1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+# clamp_b's fixed bounds (st <= 1.5 ter and crsd <= cr/2 stay with clamp_b).
+LOWER_B = np.array([175.0, 10.0, 1.0, 0.01, -np.inf, 0.2, 0.2] + [0.01] * 6)
+UPPER_B = np.array([np.inf] * 5 + [17.0] + [np.inf] * 7)
+
+
+def fit_cmaes_b(data, key, x0, nsim: int = 2048, max_evals: int = 2000,
+                seed: int = 0, popsize=None, sigma0: float = 0.5, restarts: int = 0,
+                chunk_size: int = 64, time_block_size: int = 32,
+                stable_kl_noise: bool = True, separable_kl: bool = True,
+                soft_tau_ms: float = 0.0, optimize_active_only: bool = True,
+                on_update=None, on_generation=None):
+    """CMA-ES fit for Model B with the same objective as fit_simplex_b.
+
+    key is the simulator root key (fixed across evaluations); seed drives the
+    CMA-ES sampling only. Returns FitResult; n_iters counts generations and
+    stages holds one summary per (IPOP) run.
+    """
+    from shared.cmaes_fit import minimize_cmaes
+
+    template = np.asarray(x0, dtype=float).copy()
+    if template.shape != (13,):
+        raise ValueError("Model B x0 must have 13 parameters")
+    active = (np.asarray([i for i in range(13) if i != 6]) if optimize_active_only
+              else np.arange(13))
+
+    def expand(p_np):
+        full = template.copy()
+        full[active] = p_np
+        return full
+
+    def loss_numpy(p_np, stage_nsim):
+        return float(obj_b.fofs_b_new(
+            jnp.asarray(expand(p_np)), data, key, nsim=stage_nsim,
+            chunk_size=chunk_size, use_kl=True, time_block_size=time_block_size,
+            stable_kl_noise=stable_kl_noise, separable_kl=separable_kl,
+            soft_tau_ms=soft_tau_ms))
+
+    def progress(number, loss, params):
+        if on_update is not None:
+            on_update(number, loss, expand(params).copy())
+
+    res = minimize_cmaes(
+        loss_numpy, template[active], CMAES_SCALE_B[active], nsim=nsim,
+        max_evals=max_evals, seed=seed, popsize=popsize, sigma0=sigma0,
+        restarts=restarts, lower=LOWER_B[active], upper=UPPER_B[active],
+        on_update=progress, on_generation=on_generation)
+    return FitResult(params=jnp.asarray(expand(res.params)), loss=res.loss,
+                     n_iters=res.n_generations, converged=res.converged,
+                     n_evals=res.n_evals, stages=res.restarts)

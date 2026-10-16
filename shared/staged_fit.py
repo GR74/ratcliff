@@ -38,12 +38,13 @@ def validate_schedule(nsim, maxiter, schedule):
 
 def minimize_staged(loss: Callable, x0, *, nsim, maxiter, tol,
                     schedule: Sequence[TrialStage] | None = None,
-                    on_update=None, on_stage=None):
+                    on_update=None, on_stage=None, maxfev=None):
     """loss(params, stage_nsim) must use the same fixed data and root seed.
 
     Carry only parameter guesses forward. Rebuild the simplex and recompute
     its losses at every new trial count; never mix losses from two budgets.
     The final stage performs optimization at full nsim, not just a final check.
+    maxfev optionally caps evaluations per stage (equal-budget comparisons).
     """
     from scipy.optimize import minimize
 
@@ -66,7 +67,8 @@ def minimize_staged(loss: Callable, x0, *, nsim, maxiter, tol,
         result = minimize(
             objective, params, method="Nelder-Mead",
             options={"maxiter": stage.maxiter, "xatol": tol,
-                     "fatol": tol, "disp": False},
+                     "fatol": tol, "disp": False,
+                     **({"maxfev": maxfev} if maxfev else {})},
         )
         params = result.x.copy()
         iterations += int(result.nit)
