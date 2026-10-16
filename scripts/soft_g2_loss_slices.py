@@ -16,6 +16,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 import jax
+
+jax.config.update("jax_enable_x64", True)   # as in backend/main.py (production)
 import jax.numpy as jnp
 import numpy as np
 
