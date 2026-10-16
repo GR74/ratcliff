@@ -84,6 +84,35 @@ def zone_array(si: float = 6.0):
     return k
 
 
+def zone_array_fit(si: float = 6.0):
+    """Zones as in the fitting program twod3fitmpi.f (all versions), not bench.
+
+    Thresholds come from the zone Gaussian itself: ar = mean b at distance 4
+    and 5 from the centre (b(50,76), b(50,75)), ab = mean b at 14 and 15
+    (b(50,66), b(50,65)). For si = 6 that is radius ~4.5 for zone 1 and ~14.5
+    for zones 2-4, versus ~7.6 and ~19.7 for benchtwod3mpi.f's fixed .03/.0003.
+    """
+    s1 = 2.0 * si * si
+    s2 = si * jnp.sqrt(2.0 * jnp.pi)
+
+    def at_distance(d):
+        return jnp.exp(-(d * d) / s1) / s2
+
+    ar = (at_distance(4.0) + at_distance(5.0)) / 2.0
+    ab = (at_distance(14.0) + at_distance(15.0)) / 2.0
+
+    def b_field(uj):
+        return jnp.exp(-((_J_GRID - uj) ** 2 + (_I_GRID - UI) ** 2) / s1) / s2
+
+    k = jnp.full((N, M), 5, dtype=jnp.int32)
+    b1 = b_field(UJ1)
+    k = jnp.where(b1 > ab, jnp.int32(2), k)
+    k = jnp.where(b1 > ar, jnp.int32(1), k)
+    k = jnp.where(b_field(UJ2) > ab, jnp.int32(3), k)
+    k = jnp.where(b_field(UJ3) > ab, jnp.int32(4), k)
+    return k
+
+
 def _simulate_chunk_b(key, ter, st, cr, crsd, av1, av2, av3,
                      LAM, v1, v2, v3, k_zone, chunk_size):
     """
@@ -324,11 +353,11 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
     )
 
 
-@partial(jax.jit, static_argnums=(8, 9, 10, 11, 12, 13, 14))
+@partial(jax.jit, static_argnums=(8, 9, 10, 11, 12, 13, 14, 17))
 def _simulate_b_blocked_core(key, ter, st, cr, crsd, drift, k_zone, basis,
                              nsim, chunk_size, time_block_size,
                              stop_early, compact, use_kl, cumulative_kl=False,
-                             mode_ids=None):
+                             mode_ids=None, sv=0.0, fortran_variant=None):
     n_chunks = (nsim + chunk_size - 1) // chunk_size
 
     def sample_noise(keys):
@@ -362,14 +391,26 @@ def _simulate_b_blocked_core(key, ter, st, cr, crsd, drift, k_zone, basis,
         u, noise_keys = blocked.trial_inputs(key, indices, jnp.float64)
         thresholds = (cr + crsd * (u[:, 4] - 0.5)).astype(jnp.float32)
         ndt = (ter + st * (0.5 - u[:, 9])) / E
+        fortran = fortran_variant is not None
+        # Fortran gu1(8): per-trial drift scale vs (benchtwod3mpi.f and twod3fitmpi.f).
+        drift_scale = (1.0 + sv * (u[:, 7] - 0.5)) if fortran else None
         result = blocked.first_passage(
             noise_keys, thresholds, drift, indices < nsim, sample_noise,
             n_steps=NSTEP, block_size=time_block_size,
             stop_early=stop_early, compact=compact,
             noise_is_path=cumulative_kl,
+            drift_scale=drift_scale, center_noise=fortran_variant != "fit",
         )
-        cat = jnp.where(result.crossed, k_zone[result.positions], 5)
-        rt = (result.steps.astype(jnp.float64) + ndt) * E
+        if fortran:
+            # Fortran: a trial that never crosses ends its loop at j = nstep+1
+            # and is categorised by where its maximum sits at that point.
+            cat = jnp.where(result.crossed, k_zone[result.positions],
+                            k_zone[result.final_positions])
+            steps = jnp.where(result.crossed, result.steps, NSTEP + 1)
+        else:
+            cat = jnp.where(result.crossed, k_zone[result.positions], 5)
+            steps = result.steps
+        rt = (steps.astype(jnp.float64) + ndt) * E
         return rt, cat, result.computed_trial_steps
 
     rts, cats, work = jax.lax.map(run_chunk, jnp.arange(n_chunks))
@@ -390,11 +431,19 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
                                  use_kl=True, time_block_size=32,
                                  stop_early=True, compact=True,
                                  kl_bucketed=False, cumulative_kl=False,
-                                 stable_kl_noise=False, separable_kl=False):
+                                 stable_kl_noise=False, separable_kl=False,
+                                 sv=0.0, fortran_variant=None):
     """Optional blocked Model B with unchanged FFT/K-L covariance/categories.
 
     stop_early=False is the paired full-horizon control. Keep time_block_size
     fixed in paired comparisons: another block size changes the noise layout.
+
+    fortran_variant (default None = the original port, unchanged):
+      "bench": benchtwod3mpi.f, the program behind Ratcliff's TACC subject-1
+               fit: adds the per-trial drift scale sv and the Fortran
+               non-crosser rule (zones and joint centring already match).
+      "fit":   twod3fitmpi*.f: as "bench", plus its smaller zones
+               (zone_array_fit) and drift-only centring.
     """
     if nsim < 1 or chunk_size < 1:
         raise ValueError("nsim and chunk_size must be positive")
@@ -403,6 +452,11 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
     if separable_kl and kl_bucketed:
         raise ValueError("separable_kl always uses k_max capacity")
     drift = _drift_field(sis, av1, av2, av3)
+    if fortran_variant not in (None, "bench", "fit"):
+        raise ValueError(f"unknown fortran_variant {fortran_variant!r}")
+    if fortran_variant == "fit":
+        drift = drift - drift.mean()   # twod3fitmpi: a += drift - mean(drift) + noise
+    zones = zone_array_fit(si) if fortran_variant == "fit" else zone_array(si)
     mode_ids = None
     if separable_kl:
         # Same modes, scaling and random coefficients as the dense K-L basis,
@@ -421,9 +475,9 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
     else:
         basis = grf.calc_LAM(s1=sig, s2=sig).astype(jnp.float32)
     return _simulate_b_blocked_core(
-        key, ter, st, cr, crsd, drift.reshape(-1), zone_array(si).reshape(-1),
+        key, ter, st, cr, crsd, drift.reshape(-1), zones.reshape(-1),
         basis, nsim, chunk_size, time_block_size, stop_early, compact, use_kl,
-        cumulative_kl, mode_ids,
+        cumulative_kl, mode_ids, jnp.asarray(sv, jnp.float64), fortran_variant,
     )
 
 
@@ -431,11 +485,12 @@ def simulate_b_blocked(key, ter, st, cr, crsd, av1, av2, av3,
                        sis, sig, si, nsim, chunk_size=64, use_kl=True,
                        time_block_size=32, stop_early=True, compact=True,
                        kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False,
-                       separable_kl=False):
+                       separable_kl=False, sv=0.0, fortran_variant=None):
     """RT/category-only interface for optional time blocking."""
     rt, cat, _work = simulate_b_blocked_with_work(
         key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim,
         chunk_size, use_kl, time_block_size, stop_early, compact,
         kl_bucketed, cumulative_kl, stable_kl_noise, separable_kl,
+        sv, fortran_variant,
     )
     return rt, cat

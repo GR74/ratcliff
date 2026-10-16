@@ -26,7 +26,7 @@ NCUT = 10  # Fortran benchtwod3mpi uses ncut=10 (vs ncut=8 for Model A)
 PQQ = jnp.array([0.1, 0.2, 0.2, 0.2, 0.2, 0.1])
 
 
-def clamp_b(params):
+def clamp_b(params, ter_min=175.0):
     """
     Bounds for Model B's 13-parameter vector.
 
@@ -39,7 +39,7 @@ def clamp_b(params):
       sv  >= 0.2
       av1..av6 (indices 7-12) >= 0.01
     """
-    ter = jnp.maximum(params[0], 175.0)
+    ter = jnp.maximum(params[0], ter_min)   # twod3fitmpi.f uses 150
     st = jnp.clip(params[1], 10.0, ter * 1.5)
     cr = jnp.maximum(params[2], 1.0)
     crsd = jnp.clip(params[3], 0.01, cr / 2.0)
@@ -53,7 +53,32 @@ def clamp_b(params):
     ])
 
 
-def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant, soft_tau_ms=0.0):
+E_MS = 10.0      # ms per simulator step (simulate.E)
+NSTEP_BINS = 400  # Fortran nstep: RT histogram bins used by qant1
+
+
+def _cdf_fortran_binned(rt, in_cat, q_ms):
+    """CDF at observed quantile q_ms as twod3fitmpi.f/accum + qant1 compute it.
+
+    RTs (in steps, ndt included) are truncated to integer bins 1..400; bins
+    beyond 400 are ignored. rr(1) = 0 and rr(i) = rr(i-1) + r(i), normalised
+    by rr(400); the CDF at art = q/E is linearly interpolated between
+    rr(int(art)) and rr(int(art)+1), floored at 0.01.
+    """
+    bins = jnp.floor(rt / E_MS).astype(jnp.int32)
+    counts = jnp.zeros(NSTEP_BINS + 2, rt.dtype).at[
+        jnp.clip(bins, 0, NSTEP_BINS + 1)].add(in_cat.astype(rt.dtype))
+    r = counts[1:NSTEP_BINS + 1]                      # r(1..400)
+    rr = jnp.concatenate([jnp.zeros(1, rt.dtype), jnp.cumsum(r[1:])])
+    rr = rr / jnp.maximum(rr[-1], 1e-12)
+    art = q_ms / E_MS
+    irt = jnp.clip(jnp.floor(art).astype(jnp.int32), 1, NSTEP_BINS - 1)
+    q = rr[irt - 1] + (art - irt) * (rr[irt] - rr[irt - 1])
+    return jnp.maximum(q, 0.01)
+
+
+def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant, soft_tau_ms=0.0,
+                   fortran_binned=False):
     """
     G² contribution from one Model B condition (5 categories).
 
@@ -68,6 +93,8 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant, soft_tau_ms=0.0):
         > 0 replaces each indicator by sigmoid((quantile - rt) / tau), so the
         loss changes smoothly as simulated RTs move past an observed quantile
         (pass 3; tau -> 0 recovers the hard count). Category assignment stays hard.
+    fortran_binned : use the Fortran binned + interpolated CDF instead
+        (see _cdf_fortran_binned); overrides soft_tau_ms.
     """
     mmn = obs_count.sum()
 
@@ -75,7 +102,10 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant, soft_tau_ms=0.0):
         in_cat = (cat == (i + 1))
         pxy = jnp.mean(in_cat)
         denom = jnp.maximum(in_cat.sum(), 1)
-        if soft_tau_ms > 0:
+        if fortran_binned:
+            qc = jnp.array([_cdf_fortran_binned(rt, in_cat, obs_quant[j, i])
+                            for j in range(NQ)])
+        elif soft_tau_ms > 0:
             w = in_cat.astype(rt.dtype)
             qc = jnp.array([(w * jax.nn.sigmoid((obs_quant[j, i] - rt) / soft_tau_ms)
                              ).sum() / denom for j in range(NQ)])
@@ -102,10 +132,13 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant, soft_tau_ms=0.0):
 def simulate_conditions_b(params, key, nsim=512, chunk_size=4, use_kl=False,
                 time_block_size=0, stop_early=True, compact=True,
                 kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False,
-                separable_kl=False):
+                separable_kl=False, fortran_variant=None):
     """Simulated (rts, cats), each (2, nsim), for both conditions of Model B.
 
     The simulation half of fofs_b_new; see it for the arguments.
+    fortran_variant "bench" or "fit" follows benchtwod3mpi.f or twod3fitmpi.f
+    (see simulate_b_blocked_with_work) and makes sv (params[6]) active; "fit"
+    also lowers the ter bound to 150, as that program does.
     """
     # Local imports to avoid hard top-level dependency cycle risk
     from model_b import simulate as sim_b
@@ -117,9 +150,11 @@ def simulate_conditions_b(params, key, nsim=512, chunk_size=4, use_kl=False,
         raise ValueError("stable/separable K-L noise requires use_kl=True")
     if separable_kl and not time_block_size:
         raise ValueError("separable K-L requires blocked simulation")
+    if fortran_variant is not None and not time_block_size:
+        raise ValueError("fortran_variant requires blocked simulation")
 
-    p = clamp_b(params)
-    ter, st, cr, crsd, sis, sig = p[0], p[1], p[2], p[3], p[4], p[5]
+    p = clamp_b(params, ter_min=150.0 if fortran_variant == "fit" else 175.0)
+    ter, st, cr, crsd, sis, sig, sv = p[0], p[1], p[2], p[3], p[4], p[5], p[6]
     si = 6.0  # zone width, fixed
 
     # Per-condition drift vectors (2 conditions x 3 drifts each)
@@ -149,6 +184,7 @@ def simulate_conditions_b(params, key, nsim=512, chunk_size=4, use_kl=False,
             sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
             time_block_size, stop_early, compact,
             kl_bucketed, cumulative_kl, stable_kl_noise, separable_kl,
+            sv, fortran_variant,
         ) for ci in range(2)]
         rts = jnp.stack([out[0] for out in outputs])
         cats = jnp.stack([out[1] for out in outputs])
@@ -170,7 +206,7 @@ def simulate_conditions_b(params, key, nsim=512, chunk_size=4, use_kl=False,
 def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
                 time_block_size=0, stop_early=True, compact=True,
                 kl_bucketed=False, cumulative_kl=False, stable_kl_noise=False,
-                separable_kl=False, soft_tau_ms=0.0):
+                separable_kl=False, soft_tau_ms=0.0, fortran_variant=None):
     """
     Vectorized G2 objective for Model B, summed across 2 conditions.
 
@@ -179,21 +215,26 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
     key    : JAX typed key.
     use_kl : if True, use Stage 6 K-L low-rank GRF inside simulate_b.
     soft_tau_ms : soft-count width for condition_g2_b (0 = hard count).
+    fortran_variant : None (original port), "bench" (benchtwod3mpi.f, the
+        program behind Ratcliff's TACC fit) or "fit" (twod3fitmpi*.f); both
+        Fortran variants also use the Fortran binned CDF for G2.
     Returns scalar G2.
     """
     rts, cats = simulate_conditions_b(
         params, key, nsim, chunk_size, use_kl, time_block_size, stop_early,
-        compact, kl_bucketed, cumulative_kl, stable_kl_noise, separable_kl)
+        compact, kl_bucketed, cumulative_kl, stable_kl_noise, separable_kl,
+        fortran_variant)
     return _g2_total(rts, cats, data["prop"], data["count"], data["quant"],
-                     float(soft_tau_ms))
+                     float(soft_tau_ms), fortran_variant is not None)
 
 
-@partial(jax.jit, static_argnums=5)
-def _g2_total(rts, cats, prop, count, quant, soft_tau_ms=0.0):
+@partial(jax.jit, static_argnums=(5, 6))
+def _g2_total(rts, cats, prop, count, quant, soft_tau_ms=0.0, fortran_binned=False):
     """Sum of condition_g2_b over conditions, compiled once per nsim.
 
     Pass 3: the eager vmap dispatched ~20,000 tiny ops per evaluation and took
     ~60% of a small-nsim fit evaluation on CPU. Same math, now one XLA program.
     """
-    return jax.vmap(partial(condition_g2_b, soft_tau_ms=soft_tau_ms),
+    return jax.vmap(partial(condition_g2_b, soft_tau_ms=soft_tau_ms,
+                            fortran_binned=fortran_binned),
                     in_axes=(0, 0, 0, 0, 0))(rts, cats, prop, count, quant).sum()

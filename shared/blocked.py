@@ -16,6 +16,7 @@ class PassageResult(NamedTuple):
     positions: jax.Array
     crossed: jax.Array
     computed_trial_steps: jax.Array
+    final_positions: jax.Array   # argmax of the accumulator at the end (non-crossers)
 
 
 class _State(NamedTuple):
@@ -62,7 +63,8 @@ def _batch_sizes(size):
 
 def first_passage(noise_keys, thresholds, drift, valid_trials,
                   sample_noise: Callable, *, n_steps=400, block_size=32,
-                  stop_early=True, compact=True, noise_is_path=False):
+                  stop_early=True, compact=True, noise_is_path=False,
+                  drift_scale=None, center_noise=True):
     """Return first crossings, preserving the shared upper-boundary rule.
 
     sample_noise(keys) returns (batch, block_size, locations). It receives
@@ -74,6 +76,12 @@ def first_passage(noise_keys, thresholds, drift, valid_trials,
 
     Keep the condition loop outside vmap: batched conditional predicates can
     execute all lax.switch branches and defeat the purpose of compaction.
+
+    drift_scale : optional (trials,) multiplier on drift (Fortran vs = 1 +
+        sv*(u - .5)); None means 1. center_noise=False subtracts nothing at
+        each step: the caller passes an already-centred drift field and the
+        noise field is left uncentred, as in twod3fitmpi.f. The default
+        (True) centres drift + noise jointly, as in benchtwod3mpi.f.
     """
     if not isinstance(block_size, int) or not 1 <= block_size <= n_steps:
         raise ValueError(f"block_size must be an integer in [1, {n_steps}]")
@@ -91,6 +99,8 @@ def first_passage(noise_keys, thresholds, drift, valid_trials,
         jnp.int32(0),
     )
     sizes = _batch_sizes(size) if stop_early and compact else (size,)
+    scale_all = (jnp.ones((size,), dtype=drift.dtype) if drift_scale is None
+                 else drift_scale.astype(drift.dtype))
 
     def make_branch(batch_size):
         def advance(s):
@@ -103,13 +113,16 @@ def first_passage(noise_keys, thresholds, drift, valid_trials,
                 noise_keys[indices],
             )
             noise = sample_noise(block_keys)
+            trial_drift = scale_all[indices, None, None] * drift[None, None, :]
             if noise_is_path:
                 times = jnp.arange(1, block_size + 1, dtype=drift.dtype)
-                paths = noise + times[None, :, None] * drift[None, None, :]
-                paths -= paths.mean(axis=-1, keepdims=True)
+                paths = noise + times[None, :, None] * trial_drift
+                if center_noise:
+                    paths -= paths.mean(axis=-1, keepdims=True)
             else:
-                increments = noise + drift[None, None, :]
-                increments -= increments.mean(axis=-1, keepdims=True)
+                increments = noise + trial_drift
+                if center_noise:
+                    increments -= increments.mean(axis=-1, keepdims=True)
                 paths = jnp.cumsum(increments, axis=1)
             paths += s.accumulator[indices, None, :]
             start = s.block * block_size
@@ -150,5 +163,6 @@ def first_passage(noise_keys, thresholds, drift, valid_trials,
         return jax.lax.switch(branch, branches, s)
 
     result = jax.lax.while_loop(cond, body, state)
+    final = jnp.argmax(result.accumulator, axis=-1).astype(jnp.int32)
     return PassageResult(result.steps, result.positions, result.crossed,
-                         result.computed_trial_steps)
+                         result.computed_trial_steps, final)
