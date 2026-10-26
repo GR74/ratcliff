@@ -30,7 +30,7 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
                   stop_early=True, compact=True, on_stage=None,
                   optimize_active_only=False, kl_bucketed=False, cumulative_kl=False,
                   stable_kl_noise=False, separable_kl=False, soft_tau_ms=0.0,
-                  maxfev=None):
+                  maxfev=None, fortran_variant=None):
     """
     Scipy Nelder-Mead simplex fit for Model B.
 
@@ -49,6 +49,8 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
     Returns FitResult.
     optimize_active_only removes the inert sv coordinate from the search while
     preserving the public 13-parameter result/callbacks and its initial sv value.
+    sv is inert only in the original port: under fortran_variant ("bench" or
+    "fit", see objective.fofs_b_new) it is active and always kept.
     kl_bucketed/cumulative_kl are optional blocked K-L simulation extensions.
     separable_kl evaluates the same K-L field in factored row x column form.
     soft_tau_ms > 0 fits the soft-count G2 (see objective.condition_g2_b).
@@ -56,6 +58,7 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
     template = np.asarray(x0, dtype=float).copy()
     if template.shape != (13,):
         raise ValueError("Model B x0 must have 13 parameters")
+    optimize_active_only = optimize_active_only and fortran_variant is None
     active = np.asarray([i for i in range(13) if i != 6])
 
     def expand(p_np):
@@ -72,7 +75,7 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
             time_block_size=time_block_size, stop_early=stop_early, compact=compact,
             kl_bucketed=kl_bucketed, cumulative_kl=cumulative_kl,
             stable_kl_noise=stable_kl_noise, separable_kl=separable_kl,
-            soft_tau_ms=soft_tau_ms,
+            soft_tau_ms=soft_tau_ms, fortran_variant=fortran_variant,
         )
 
     def progress(number, loss, params):
@@ -105,20 +108,27 @@ def fit_cmaes_b(data, key, x0, nsim: int = 2048, max_evals: int = 2000,
                 chunk_size: int = 64, time_block_size: int = 32,
                 stable_kl_noise: bool = True, separable_kl: bool = True,
                 soft_tau_ms: float = 0.0, optimize_active_only: bool = True,
-                on_update=None, on_generation=None):
+                on_update=None, on_generation=None, use_kl: bool = True,
+                fortran_variant=None):
     """CMA-ES fit for Model B with the same objective as fit_simplex_b.
 
     key is the simulator root key (fixed across evaluations); seed drives the
     CMA-ES sampling only. Returns FitResult; n_iters counts generations and
-    stages holds one summary per (IPOP) run.
+    stages holds one summary per (IPOP) run. use_kl=False uses the exact
+    circulant (FFT) field. Under fortran_variant sv is active and always kept
+    in the search, and "fit" lowers the ter bound to 150 as that program does.
     """
     from shared.cmaes_fit import minimize_cmaes
 
     template = np.asarray(x0, dtype=float).copy()
     if template.shape != (13,):
         raise ValueError("Model B x0 must have 13 parameters")
+    optimize_active_only = optimize_active_only and fortran_variant is None
     active = (np.asarray([i for i in range(13) if i != 6]) if optimize_active_only
               else np.arange(13))
+    lower = LOWER_B.copy()
+    if fortran_variant == "fit":
+        lower[0] = 150.0
 
     def expand(p_np):
         full = template.copy()
@@ -128,9 +138,10 @@ def fit_cmaes_b(data, key, x0, nsim: int = 2048, max_evals: int = 2000,
     def loss_numpy(p_np, stage_nsim):
         return float(obj_b.fofs_b_new(
             jnp.asarray(expand(p_np)), data, key, nsim=stage_nsim,
-            chunk_size=chunk_size, use_kl=True, time_block_size=time_block_size,
-            stable_kl_noise=stable_kl_noise, separable_kl=separable_kl,
-            soft_tau_ms=soft_tau_ms))
+            chunk_size=chunk_size, use_kl=use_kl, time_block_size=time_block_size,
+            stable_kl_noise=stable_kl_noise and use_kl,
+            separable_kl=separable_kl and use_kl,
+            soft_tau_ms=soft_tau_ms, fortran_variant=fortran_variant))
 
     def progress(number, loss, params):
         if on_update is not None:
@@ -139,7 +150,7 @@ def fit_cmaes_b(data, key, x0, nsim: int = 2048, max_evals: int = 2000,
     res = minimize_cmaes(
         loss_numpy, template[active], CMAES_SCALE_B[active], nsim=nsim,
         max_evals=max_evals, seed=seed, popsize=popsize, sigma0=sigma0,
-        restarts=restarts, lower=LOWER_B[active], upper=UPPER_B[active],
+        restarts=restarts, lower=lower[active], upper=UPPER_B[active],
         on_update=progress, on_generation=on_generation)
     return FitResult(params=jnp.asarray(expand(res.params)), loss=res.loss,
                      n_iters=res.n_generations, converged=res.converged,

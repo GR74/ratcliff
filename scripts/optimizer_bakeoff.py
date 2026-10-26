@@ -5,6 +5,12 @@ at TRUTH with its own key (data key != fit key, so the fit cannot reuse the
 data's noise). Equal evaluation budgets. Writes one JSON per run; aggregate
 across start seeds (the start, not the eval, is the unit of replication).
 
+Data and the final hard-G2 rescoring use the REFERENCE engine: the exact FFT
+field simulated as benchtwod3mpi.f (fortran_variant "bench", sv active), the
+model the port was shown to reproduce (replicate_ratcliff_subject1.py). The
+fit uses --engine; a K-L fit engine therefore carries its truncation bias
+into recovery, which is the point of comparing them.
+
     python scripts/optimizer_bakeoff.py --optimizer cmaes --start-seed 0
     python scripts/optimizer_bakeoff.py --optimizer nm    --start-seed 0
 """
@@ -33,8 +39,18 @@ TRUTH = np.array([188.064, 47.726, 17.492, 6.894, 10.864, 9.192, 0.521,
 NAMES = ["ter_ms", "st_ms", "cr", "crsd", "sis", "sig", "sv",
          "av1_c1", "av2_c1", "av3_c1", "av1_c2", "av2_c2", "av3_c2"]
 DATA_KEY, FIT_KEY, SCORE_KEYS = 999, 321, (5001, 5002, 5003)
-ENGINE = dict(chunk_size=64, use_kl=True, time_block_size=32,
-              stable_kl_noise=True, separable_kl=True)
+REFERENCE = "fft_bench"
+ENGINES = {
+    "fft_bench": dict(chunk_size=16, use_kl=False, time_block_size=32,
+                      fortran_variant="bench"),
+    "separable_kl_bench": dict(chunk_size=64, use_kl=True, time_block_size=32,
+                               stable_kl_noise=True, separable_kl=True,
+                               fortran_variant="bench"),
+    # The original port (no sv, unbinned G2, non-crossers -> category 5): the
+    # model of the pass-1/2 fits, kept only to reproduce them.
+    "separable_kl_legacy": dict(chunk_size=64, use_kl=True, time_block_size=32,
+                                stable_kl_noise=True, separable_kl=True),
+}
 
 
 def summary_from_samples(rts, cats):
@@ -51,9 +67,9 @@ def summary_from_samples(rts, cats):
             "quant": jnp.asarray(np.array(quant))}
 
 
-def hard_g2(params, data, nsim, seed):
+def hard_g2(params, data, nsim, seed, engine):
     return float(obj_b.fofs_b_new(jnp.asarray(params), data, jax.random.key(seed),
-                                  nsim=nsim, **ENGINE))
+                                  nsim=nsim, **ENGINES[engine]))
 
 
 def main():
@@ -68,11 +84,16 @@ def main():
     ap.add_argument("--soft-tau", type=float, default=0.0)
     ap.add_argument("--popsize", type=int, default=0)
     ap.add_argument("--restarts", type=int, default=0)
+    ap.add_argument("--engine", choices=list(ENGINES), default="separable_kl_bench",
+                    help="fit engine; data and rescoring use " + REFERENCE)
     ap.add_argument("--out-dir", default=os.path.join(ROOT, "results", "pass3", "bakeoff"))
     args = ap.parse_args()
 
+    # Legacy runs keep the legacy model throughout, so they reproduce pass 1/2.
+    ref = "separable_kl_legacy" if args.engine == "separable_kl_legacy" else REFERENCE
+    engine = ENGINES[args.engine]
     rts, cats = obj_b.simulate_conditions_b(jnp.asarray(TRUTH), jax.random.key(DATA_KEY),
-                                            nsim=args.data_nsim, **ENGINE)
+                                            nsim=args.data_nsim, **ENGINES[ref])
     data = summary_from_samples(np.asarray(rts), np.asarray(cats))
     x0 = TRUTH * np.random.default_rng(args.start_seed).uniform(.9, 1.1, 13)
 
@@ -85,23 +106,25 @@ def main():
         res = fit_b.fit_simplex_b(
             data, jax.random.key(FIT_KEY), x0, nsim=args.fit_nsim, maxiter=10 * args.max_evals,
             maxfev=args.max_evals, tol=1e-7, optimize_active_only=True,
-            soft_tau_ms=args.soft_tau, on_update=on_update, **ENGINE)
+            soft_tau_ms=args.soft_tau, on_update=on_update, **engine)
     else:
         res = fit_b.fit_cmaes_b(
             data, jax.random.key(FIT_KEY), x0, nsim=args.fit_nsim, max_evals=args.max_evals,
             seed=args.start_seed, popsize=args.popsize or None, restarts=args.restarts,
             soft_tau_ms=args.soft_tau, on_update=on_update,
-            **{k: v for k, v in ENGINE.items() if k != "use_kl"})
+            **engine)
     wall_s = time.perf_counter() - t0
 
     fitted = np.asarray(res.params)
     err_pct = 100 * np.abs(fitted - TRUTH) / np.abs(TRUTH)
-    active = [i for i in range(13) if i != 6]
+    # sv is inert, so not recoverable, only in the legacy model.
+    active = [i for i in range(13) if i != 6 or "fortran_variant" in engine]
     # Rescore with the HARD count on fresh keys: comparable across tau and optimizers.
-    score_fit = [hard_g2(fitted, data, args.score_nsim, s) for s in SCORE_KEYS]
-    score_truth = [hard_g2(TRUTH, data, args.score_nsim, s) for s in SCORE_KEYS]
+    score_fit = [hard_g2(fitted, data, args.score_nsim, s, ref) for s in SCORE_KEYS]
+    score_truth = [hard_g2(TRUTH, data, args.score_nsim, s, ref) for s in SCORE_KEYS]
     out = dict(
-        settings=vars(args) | dict(truth=TRUTH.tolist(), x0=x0.tolist(), engine=ENGINE,
+        settings=vars(args) | dict(truth=TRUTH.tolist(), x0=x0.tolist(), engine=engine,
+                                   reference_engine=ENGINES[ref],
                                    device=str(jax.devices()[0]),
                                    keys=dict(data=DATA_KEY, fit=FIT_KEY, score=SCORE_KEYS)),
         params=dict(zip(NAMES, fitted.tolist())),
@@ -111,7 +134,8 @@ def main():
         hard_g2_fit=score_fit, hard_g2_truth=score_truth,
         trace=trace, stages=res.stages)
     os.makedirs(args.out_dir, exist_ok=True)
-    name = f"{args.optimizer}_tau{args.soft_tau:g}_start{args.start_seed}.json"
+    name = (f"{args.optimizer}_{args.engine}_tau{args.soft_tau:g}"
+            f"_start{args.start_seed}.json")
     with open(os.path.join(args.out_dir, name), "w") as f:
         json.dump(out, f, indent=1, default=float)
     print(f"{args.optimizer} start {args.start_seed}: mean err {out['mean_err_pct_active']:.2f}% "

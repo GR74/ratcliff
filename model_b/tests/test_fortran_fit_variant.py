@@ -63,3 +63,27 @@ def test_sv_matters_only_in_fortran_variants():
     for variant in ("bench", "fit"):
         c, d = run(0.0, variant), run(0.9, variant)
         assert not np.array_equal(c[0], d[0])
+
+
+def test_fits_search_sv_only_under_fortran_variants(monkeypatch):
+    """sv is inert only in the original port, so only there may fits freeze it."""
+    from model_b import fit as fit_b
+    target = np.array([190., 45., 17., 7., 11., 9., 0.9, 16., 11., 7., 14., 11., 8.])
+    x0 = target.copy()
+    x0[6] = 0.5
+
+    def quadratic(params, data, key, nsim, **kw):
+        return jnp.sum(((params - target) / fit_b.CMAES_SCALE_B) ** 2)
+    monkeypatch.setattr(fit_b.obj_b, "fofs_b_new", quadratic)
+
+    for variant in (None, "bench"):
+        nm = fit_b.fit_simplex_b({}, None, x0, nsim=8, maxfev=600,
+                                 optimize_active_only=True, fortran_variant=variant)
+        cm = fit_b.fit_cmaes_b({}, None, x0, nsim=8, max_evals=400,
+                               fortran_variant=variant)
+        for res in (nm, cm):
+            sv = float(res.params[6])
+            if variant is None:
+                assert sv == 0.5
+            else:
+                assert abs(sv - 0.9) < 0.1, sv

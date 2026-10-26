@@ -14,7 +14,8 @@ after each simplex restart) with the G2 the Fortran computed for them.
              his final point with the same scorer (same keys, hard count).
 
     python scripts/replicate_ratcliff_subject1.py fidelity --keys 5
-    python scripts/replicate_ratcliff_subject1.py fit --optimizer cmaes --max-evals 1500
+    python scripts/replicate_ratcliff_subject1.py fit --optimizer cmaes --max-evals 1500 \
+        --fit-engine separable_kl_bench --engines fft_bench
 """
 import argparse
 import json
@@ -109,13 +110,13 @@ def fit(args):
         trace.append((n, time.perf_counter() - t0, float(loss)))
 
     common = dict(nsim=args.fit_nsim, soft_tau_ms=args.soft_tau, on_update=on_update)
+    eng = ENGINES[args.fit_engine]
     if args.optimizer == "nm":
         res = fit_b.fit_simplex_b(data, jax.random.key(args.fit_key), START,
                                   maxiter=10 * args.max_evals, maxfev=args.max_evals,
                                   tol=1e-7, optimize_active_only=True,
-                                  **ENGINES["separable_kl"], **common)
+                                  **eng, **common)
     else:
-        eng = {k: v for k, v in ENGINES["separable_kl"].items() if k != "use_kl"}
         res = fit_b.fit_cmaes_b(data, jax.random.key(args.fit_key), START,
                                 max_evals=args.max_evals, seed=args.fit_key,
                                 restarts=args.restarts, **eng, **common)
@@ -144,6 +145,7 @@ def main():
     ap.add_argument("--engines", nargs="+", default=list(ENGINES))
     ap.add_argument("--optimizer", choices=["nm", "cmaes"], default="cmaes")
     ap.add_argument("--fit-nsim", type=int, default=2048)
+    ap.add_argument("--fit-engine", choices=list(ENGINES), default="separable_kl_bench")
     ap.add_argument("--fit-key", type=int, default=321)
     ap.add_argument("--max-evals", type=int, default=1500)
     ap.add_argument("--restarts", type=int, default=0)
@@ -155,7 +157,8 @@ def main():
                                            ratcliff_nsim=RATCLIFF_NSIM)
     out = args.out or os.path.join(ROOT, "results", "pass3", "replication",
                                    f"subject{args.subject + 1}_{args.mode}"
-                                   + (f"_{args.optimizer}" if args.mode == "fit" else "")
+                                   + (f"_{args.optimizer}_{args.fit_engine}"
+                                      if args.mode == "fit" else "")
                                    + ".json")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w") as f:
