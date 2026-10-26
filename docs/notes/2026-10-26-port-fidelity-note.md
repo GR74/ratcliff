@@ -64,6 +64,20 @@ parameter set, say the final checkpoint, about 10 times with different clock
 seeds and send us the G² values? Their spread would tell us whether the early
 gap is evaluation noise or a fourth difference we haven't found.
 
+**A refit of subject 1 under the corrected model.** We fit from your start point
+with CMA-ES (3,000 evaluations, about 43 min on one RTX 4090). Both points were
+scored the same way (exact field, 9,984 trials, 5 fresh keys):
+
+- our fit: G² 96.9 ± 1.4;
+- your final parameters: G² 139.7 ± 1.7.
+
+That holds under the port, which still disagrees with your log at checkpoints
+1–4, so we don't yet claim it for your program. The fit had not converged.
+Most of the difference is along one direction: all six drift amplitudes and
+`sis` are higher (drift 1, condition 1: 20.1 vs 16.2; `sis` 12.8 vs 10.9),
+and `st` is lower (36.6 vs 47.7). That looks like a ridge of near-equivalent
+fits rather than a single well-defined optimum.
+
 **What changes for the earlier work.**
 - **All earlier fits are affected:** pass 1 and 2, including Aniket's recovery
   results, were fit with the uncorrected port. The speed-ups still stand.
