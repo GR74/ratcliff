@@ -75,15 +75,16 @@ That holds under the port, which still disagrees with your log at checkpoints
 1–4, so we don't yet claim it for your program. The fit had not converged.
 Most of the difference is along one direction: all six drift amplitudes and
 `sis` are higher (drift 1, condition 1: 20.1 vs 16.2; `sis` 12.8 vs 10.9),
-and `st` is lower (36.6 vs 47.7). That looks like a ridge of near-equivalent
-fits rather than a single well-defined optimum.
+and `st` is lower (36.6 vs 47.7). The drifts and `sis` rose together: drift 1
+divided by `sis` barely changed (1.56 vs 1.49). So the fit mostly scaled the
+drift amplitudes up while widening the bumps.
 
 **What changes for the earlier work.**
 - **All earlier fits are affected:** pass 1 and 2, including Aniket's recovery
   results, were fit with the uncorrected port. The speed-ups still stand.
 - **The corrected model is opt-in:** it sits behind a flag
-  (`fortran_variant="bench"`). We are rerunning the optimizer comparison and the
-  subject-1 fit on it.
+  (`fortran_variant="bench"`). The subject-1 refit above uses it, and we are
+  rerunning the optimizer comparison on it.
 - **`twod3fitmpi.f`** differs again: smaller category zones, drift-only centring
   and a ter floor of 150. The port supports it too (`fortran_variant="fit"`).
   Which program should be the reference for the other 15 subjects?
