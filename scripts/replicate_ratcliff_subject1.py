@@ -62,6 +62,12 @@ ENGINES = {
                                fortran_variant="bench"),
     "fft_fitprog": dict(chunk_size=16, use_kl=False, time_block_size=32,
                         fortran_variant="fit"),
+    # twod3fitmpi1.f: same 6-restart schedule as the log (restart 1 freezes
+    # ter and st, as the log shows); smaller zones, joint centring.
+    "fft_bench_alt_zones": dict(chunk_size=16, use_kl=False, time_block_size=32,
+                                fortran_variant="bench_alt_zones"),
+    "fft_fit1": dict(chunk_size=16, use_kl=False, time_block_size=32,
+                     fortran_variant="fit1"),
 }
 SCORE_SEED0 = 7000
 

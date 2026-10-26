@@ -55,9 +55,13 @@ def drift_bumps(sis: float):
     return bump(UJ1), bump(UJ2), bump(UJ3)
 
 
-def zone_array(si: float = 6.0):
+def zone_array(si: float = 6.0, inner=0.03, outer=0.0003):
     """
     5-category zone array k(i,j) from the drift bump positions.
+
+    inner/outer are the b thresholds for zone 1 and zones 2-4. The defaults
+    are the active lines in benchtwod3mpi.f; it also carries commented-out
+    alternatives .05/.016 (ZONES_COMMENTED_OUT).
 
     Mirrors Fortran accum lines 432-450:
       - Initialize k = 5 (background).
@@ -73,15 +77,20 @@ def zone_array(si: float = 6.0):
     k = jnp.full((N, M), 5, dtype=jnp.int32)
     # Around UJ1 (cat 1 innermost, cat 2 outer ring)
     b1 = b_field(UJ1)
-    k = jnp.where(b1 > 0.0003, jnp.int32(2), k)
-    k = jnp.where(b1 > 0.03,   jnp.int32(1), k)
+    k = jnp.where(b1 > outer, jnp.int32(2), k)
+    k = jnp.where(b1 > inner, jnp.int32(1), k)
     # Around UJ2 -> cat 3
     b2 = b_field(UJ2)
-    k = jnp.where(b2 > 0.0003, jnp.int32(3), k)
+    k = jnp.where(b2 > outer, jnp.int32(3), k)
     # Around UJ3 -> cat 4
     b3 = b_field(UJ3)
-    k = jnp.where(b3 > 0.0003, jnp.int32(4), k)
+    k = jnp.where(b3 > outer, jnp.int32(4), k)
     return k
+
+
+# benchtwod3mpi.f's commented-out zone thresholds (C  if(b(i,j).gt..05)k(i,j)=1,
+# C  if(b(i,j).gt..016)k(i,j)=2..4): radius ~4.5 for zone 1, ~10.1 for 2-4.
+ZONES_COMMENTED_OUT = dict(inner=0.05, outer=0.016)
 
 
 def zone_array_fit(si: float = 6.0):
@@ -442,8 +451,12 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
       "bench": benchtwod3mpi.f, the program behind Ratcliff's TACC subject-1
                fit: adds the per-trial drift scale sv and the Fortran
                non-crosser rule (zones and joint centring already match).
-      "fit":   twod3fitmpi*.f: as "bench", plus its smaller zones
+      "fit":   twod3fitmpi.f (Aug 2017): as "bench", plus its smaller zones
                (zone_array_fit) and drift-only centring.
+      "bench_alt_zones": as "bench" with its commented-out zone thresholds.
+      "fit1":  twod3fitmpi1.f (Jan 19 2017, two days after the TACC log, same
+               6-restart schedule): as "bench" with the smaller zones only,
+               joint centring kept.
     """
     if nsim < 1 or chunk_size < 1:
         raise ValueError("nsim and chunk_size must be positive")
@@ -452,11 +465,16 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
     if separable_kl and kl_bucketed:
         raise ValueError("separable_kl always uses k_max capacity")
     drift = _drift_field(sis, av1, av2, av3)
-    if fortran_variant not in (None, "bench", "fit"):
+    if fortran_variant not in (None, "bench", "bench_alt_zones", "fit", "fit1"):
         raise ValueError(f"unknown fortran_variant {fortran_variant!r}")
     if fortran_variant == "fit":
         drift = drift - drift.mean()   # twod3fitmpi: a += drift - mean(drift) + noise
-    zones = zone_array_fit(si) if fortran_variant == "fit" else zone_array(si)
+    if fortran_variant in ("fit", "fit1"):
+        zones = zone_array_fit(si)
+    elif fortran_variant == "bench_alt_zones":
+        zones = zone_array(si, **ZONES_COMMENTED_OUT)
+    else:
+        zones = zone_array(si)
     mode_ids = None
     if separable_kl:
         # Same modes, scaling and random coefficients as the dense K-L basis,

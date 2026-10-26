@@ -127,8 +127,7 @@ def fit_cmaes_b(data, key, x0, nsim: int = 2048, max_evals: int = 2000,
     active = (np.asarray([i for i in range(13) if i != 6]) if optimize_active_only
               else np.arange(13))
     lower = LOWER_B.copy()
-    if fortran_variant == "fit":
-        lower[0] = 150.0
+    lower[0] = obj_b.TER_MIN_MS.get(fortran_variant, lower[0])
 
     def expand(p_np):
         full = template.copy()

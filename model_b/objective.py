@@ -54,6 +54,8 @@ def clamp_b(params, ter_min=175.0):
 
 
 E_MS = 10.0      # ms per simulator step (simulate.E)
+# ter floor per Fortran program: twod3fitmpi.f 150, twod3fitmpi1.f 160, else 175.
+TER_MIN_MS = {"fit": 150.0, "fit1": 160.0}
 NSTEP_BINS = 400  # Fortran nstep: RT histogram bins used by qant1
 
 
@@ -153,7 +155,7 @@ def simulate_conditions_b(params, key, nsim=512, chunk_size=4, use_kl=False,
     if fortran_variant is not None and not time_block_size:
         raise ValueError("fortran_variant requires blocked simulation")
 
-    p = clamp_b(params, ter_min=150.0 if fortran_variant == "fit" else 175.0)
+    p = clamp_b(params, ter_min=TER_MIN_MS.get(fortran_variant, 175.0))
     ter, st, cr, crsd, sis, sig, sv = p[0], p[1], p[2], p[3], p[4], p[5], p[6]
     si = 6.0  # zone width, fixed
 
