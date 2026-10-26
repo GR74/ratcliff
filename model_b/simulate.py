@@ -479,7 +479,12 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
     if separable_kl:
         # Same modes, scaling and random coefficients as the dense K-L basis,
         # evaluated as Re(P W Q^T) (see grf_separable). Builds in milliseconds.
-        sb = grf_separable.separable_basis(float(sig), n=N, m=M)
+        if separable_kl is True:   # pass-3 default: 99%, k_max 2000
+            sb = grf_separable.separable_basis(float(sig), n=N, m=M)
+        else:                       # a float: that retained-variance fraction
+            sb = grf_separable.separable_basis(
+                float(sig), n=N, m=M, k_max=grf_separable.K_MAX_HIGH_VARIANCE,
+                variance_threshold=float(separable_kl))
         basis = sb.arrays
         mode_ids = sb.mode_ids if stable_kl_noise else None
     elif use_kl:

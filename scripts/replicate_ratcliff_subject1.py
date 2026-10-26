@@ -60,6 +60,11 @@ ENGINES = {
     "separable_kl_bench": dict(chunk_size=64, use_kl=True, time_block_size=32,
                                stable_kl_noise=True, separable_kl=True,
                                fortran_variant="bench"),
+    # 99.9% of field variance: about half the truncation bias, 1.7-2.1x the
+    # 99% engine's time, 2.2-2.7x faster than fft_bench (4090, nsim 2048).
+    "separable_kl999_bench": dict(chunk_size=64, use_kl=True, time_block_size=32,
+                                  stable_kl_noise=True, separable_kl=0.999,
+                                  fortran_variant="bench"),
     "fft_fitprog": dict(chunk_size=16, use_kl=False, time_block_size=32,
                         fortran_variant="fit"),
     # twod3fitmpi1.f: same 6-restart schedule as the log (restart 1 freezes
@@ -151,7 +156,7 @@ def main():
     ap.add_argument("--engines", nargs="+", default=list(ENGINES))
     ap.add_argument("--optimizer", choices=["nm", "cmaes"], default="cmaes")
     ap.add_argument("--fit-nsim", type=int, default=2048)
-    ap.add_argument("--fit-engine", choices=list(ENGINES), default="separable_kl_bench")
+    ap.add_argument("--fit-engine", choices=list(ENGINES), default="separable_kl999_bench")
     ap.add_argument("--fit-key", type=int, default=321)
     ap.add_argument("--max-evals", type=int, default=1500)
     ap.add_argument("--restarts", type=int, default=0)

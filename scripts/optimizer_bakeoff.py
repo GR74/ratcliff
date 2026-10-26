@@ -46,6 +46,11 @@ ENGINES = {
     "separable_kl_bench": dict(chunk_size=64, use_kl=True, time_block_size=32,
                                stable_kl_noise=True, separable_kl=True,
                                fortran_variant="bench"),
+    # 99.9% of field variance: about half the truncation bias, 1.7-2.1x the
+    # 99% engine's time, 2.2-2.7x faster than fft_bench (4090, nsim 2048).
+    "separable_kl999_bench": dict(chunk_size=64, use_kl=True, time_block_size=32,
+                                  stable_kl_noise=True, separable_kl=0.999,
+                                  fortran_variant="bench"),
     # The original port (no sv, unbinned G2, non-crossers -> category 5): the
     # model of the pass-1/2 fits, kept only to reproduce them.
     "separable_kl_legacy": dict(chunk_size=64, use_kl=True, time_block_size=32,
@@ -84,7 +89,7 @@ def main():
     ap.add_argument("--soft-tau", type=float, default=0.0)
     ap.add_argument("--popsize", type=int, default=0)
     ap.add_argument("--restarts", type=int, default=0)
-    ap.add_argument("--engine", choices=list(ENGINES), default="separable_kl_bench",
+    ap.add_argument("--engine", choices=list(ENGINES), default="separable_kl999_bench",
                     help="fit engine; data and rescoring use " + REFERENCE)
     ap.add_argument("--out-dir", default=os.path.join(ROOT, "results", "pass3", "bakeoff"))
     args = ap.parse_args()

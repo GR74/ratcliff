@@ -217,6 +217,10 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
     key    : JAX typed key.
     use_kl : if True, use Stage 6 K-L low-rank GRF inside simulate_b.
     soft_tau_ms : soft-count width for condition_g2_b (0 = hard count).
+    separable_kl : True = separable K-L at 99% variance, k_max 2000 (pass 3);
+        a float in (0, 1) = that variance fraction, k_max 4096. 0.999 roughly
+        halves the +5-8 G2 truncation bias (kl_truncation_bias.py) for 1.7-2.1x
+        the 99% time, still 2.2-2.7x faster than exact FFT (4090, nsim 2048).
     fortran_variant : None (original port), "bench" (benchtwod3mpi.f, the
         program behind Ratcliff's TACC fit) or "fit" (twod3fitmpi*.f); both
         Fortran variants also use the Fortran binned CDF for G2.

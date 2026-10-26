@@ -5,13 +5,13 @@
 #   bash scripts/runpod_pass3.sh bakeoff    # NM vs CMA-ES, hard and soft G2
 #   bash scripts/runpod_pass3.sh replicate  # fit subject 1 from the TACC start
 # Fits use the Fortran-faithful model (fortran_variant "bench"); ENGINES picks
-# the fit field: separable K-L (fast, +5-8 G2 bias) and/or exact FFT.
+# the fit field: separable K-L at 99.9% (fast, ~+3 G2 bias) and/or exact FFT.
 # Results land in results/pass3/; copy them off the pod before stopping it.
 set -euo pipefail
 export XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONUTF8=1
 STARTS=${STARTS:-"0 1 2 3 4"}      # replication unit = start point
 EVALS=${EVALS:-1500}
-ENGINES=${ENGINES:-"separable_kl_bench fft_bench"}
+ENGINES=${ENGINES:-"separable_kl999_bench fft_bench"}
 
 case "${1:-}" in
   setup)

@@ -70,6 +70,11 @@ def selected_modes(sig, n=100, m=160, k_max=2000, variance_threshold=0.99):
             float(cumvar[K - 1]))
 
 
+# Capacity for separable_kl given as a variance fraction (e.g. 0.999): 99.9%
+# needs 2284 modes at sig 9, 2891 at 8, 3775 at 7, so 4096 covers sig >= ~6.9;
+# below that the cap binds and variance_captured < the requested fraction.
+K_MAX_HIGH_VARIANCE = 4096
+
 _cache = {}
 _CACHE_MAXSIZE = 256   # entries are ~0.2 MB, unlike the 256 MB dense basis
 
