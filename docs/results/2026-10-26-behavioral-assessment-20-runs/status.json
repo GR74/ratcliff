@@ -1,0 +1,15 @@
+{
+  "status": "interrupted",
+  "phase": "stopped",
+  "pid": 17669,
+  "device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "completed_rounds": 12,
+  "maximum_rounds": 20,
+  "stopped_candidates": {},
+  "last_look": 10,
+  "detail": {
+    "reason": "Interrupted; completed batches and looks preserved"
+  },
+  "wall_seconds": 7287.676683262998,
+  "updated_utc": "2026-10-26T23:33:43.241444+00:00"
+}

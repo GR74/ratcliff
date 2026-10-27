@@ -1,0 +1,4632 @@
+{
+  "scope": "Unscheduled descriptive preview of core cases; no confidence bounds, tests, pass/fail labels or stopping decisions.",
+  "rounds": 2,
+  "rows": [
+    {
+      "case": "sig5_ordinary",
+      "condition": 1,
+      "method": "fft200",
+      "n": 18000,
+      "reference_low_support_percent": 24.78333333333333,
+      "candidate_low_support_percent": 24.672222222222224,
+      "low_support_difference_pp": -0.11111111111110905,
+      "region_differences_pp": [
+        0.3555555555555562,
+        -0.26666666666666505,
+        -0.11111111111111183,
+        -0.2777777777777782,
+        0.2999999999999947
+      ],
+      "maximum_region_difference_pp": 0.3555555555555562,
+      "mean_crossing_rt_difference_ms": 0.30731919368543004,
+      "worst_conditional_rt_quantile": {
+        "region": 1,
+        "quantile": 0.3,
+        "difference_ms": 1.9510836842532058,
+        "counts": [
+          2771,
+          2835
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 0.24395319891905842,
+          "counts": [
+            2771,
+            2835
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 1.9510836842532058,
+          "counts": [
+            2771,
+            2835
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 1.4738988013322682,
+          "counts": [
+            2771,
+            2835
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 1.3266275184764709,
+          "counts": [
+            2771,
+            2835
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 1.0940205529356035,
+          "counts": [
+            2771,
+            2835
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": -0.7688102072993672,
+          "counts": [
+            4241,
+            4193
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": -1.090583012100467,
+          "counts": [
+            4241,
+            4193
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": -0.33757786305199033,
+          "counts": [
+            4241,
+            4193
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": -0.375605596715161,
+          "counts": [
+            4241,
+            4193
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 0.2737646357974768,
+          "counts": [
+            4241,
+            4193
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 0.9004157152736241,
+          "counts": [
+            2959,
+            2939
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 0.7067298547264613,
+          "counts": [
+            2959,
+            2939
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 0.4418757456825233,
+          "counts": [
+            2959,
+            2939
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 0.4887388636027481,
+          "counts": [
+            2959,
+            2939
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 0.19646937490477967,
+          "counts": [
+            2959,
+            2939
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": -0.4434220804376139,
+          "counts": [
+            2015,
+            1965
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": -0.40410365838533835,
+          "counts": [
+            2015,
+            1965
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": -1.3407030941769449,
+          "counts": [
+            2015,
+            1965
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 0.34236235778263335,
+          "counts": [
+            2015,
+            1965
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 0.7321969609612893,
+          "counts": [
+            2015,
+            1965
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 0.2977993655878777,
+          "counts": [
+            6014,
+            6068
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 0.17521234429642618,
+          "counts": [
+            6014,
+            6068
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 0.26402823961723243,
+          "counts": [
+            6014,
+            6068
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 0.5690774006144466,
+          "counts": [
+            6014,
+            6068
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 0.3540494524201563,
+          "counts": [
+            6014,
+            6068
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.7435133397313928,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig5_ordinary",
+      "condition": 1,
+      "method": "repaired_kl",
+      "n": 18000,
+      "reference_low_support_percent": 24.78333333333333,
+      "candidate_low_support_percent": 15.411111111111111,
+      "low_support_difference_pp": -9.37222222222222,
+      "region_differences_pp": [
+        7.700000000000001,
+        4.183333333333334,
+        0.3944444444444445,
+        -0.3388888888888886,
+        -11.93888888888889
+      ],
+      "maximum_region_difference_pp": 11.93888888888889,
+      "mean_crossing_rt_difference_ms": 21.675892234697415,
+      "worst_conditional_rt_quantile": {
+        "region": 2,
+        "quantile": 0.9,
+        "difference_ms": 26.53894417405229,
+        "counts": [
+          4241,
+          4994
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 18.60130140643119,
+          "counts": [
+            2771,
+            4157
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 20.540590832930377,
+          "counts": [
+            2771,
+            4157
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 21.63413079462191,
+          "counts": [
+            2771,
+            4157
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 23.63230072546446,
+          "counts": [
+            2771,
+            4157
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 26.478094800394217,
+          "counts": [
+            2771,
+            4157
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 17.666943702940557,
+          "counts": [
+            4241,
+            4994
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 19.32176886632243,
+          "counts": [
+            4241,
+            4994
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 21.27314679658383,
+          "counts": [
+            4241,
+            4994
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 22.94159505305828,
+          "counts": [
+            4241,
+            4994
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 26.53894417405229,
+          "counts": [
+            4241,
+            4994
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 18.58525988018789,
+          "counts": [
+            2959,
+            3030
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 20.54353947808454,
+          "counts": [
+            2959,
+            3030
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 21.907696614841086,
+          "counts": [
+            2959,
+            3030
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 22.543227546880132,
+          "counts": [
+            2959,
+            3030
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 24.095292131008364,
+          "counts": [
+            2959,
+            3030
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 17.243171573823275,
+          "counts": [
+            2015,
+            1954
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 19.596814397004323,
+          "counts": [
+            2015,
+            1954
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 19.99059056873665,
+          "counts": [
+            2015,
+            1954
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 22.547309361913335,
+          "counts": [
+            2015,
+            1954
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 25.402462311064255,
+          "counts": [
+            2015,
+            1954
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 18.23199707709992,
+          "counts": [
+            6014,
+            3865
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 20.54084239191593,
+          "counts": [
+            6014,
+            3865
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 21.857283651040177,
+          "counts": [
+            6014,
+            3865
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 23.739945365477183,
+          "counts": [
+            6014,
+            3865
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 25.27377548176537,
+          "counts": [
+            6014,
+            3865
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 6.953304852766487,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig5_ordinary",
+      "condition": 1,
+      "method": "bucketed_kl",
+      "n": 18000,
+      "reference_low_support_percent": 24.78333333333333,
+      "candidate_low_support_percent": 15.055555555555555,
+      "low_support_difference_pp": -9.727777777777776,
+      "region_differences_pp": [
+        7.561111111111113,
+        4.644444444444446,
+        0.22222222222222088,
+        -0.5444444444444446,
+        -11.883333333333335
+      ],
+      "maximum_region_difference_pp": 11.883333333333335,
+      "mean_crossing_rt_difference_ms": 21.62546369666586,
+      "worst_conditional_rt_quantile": {
+        "region": 4,
+        "quantile": 0.9,
+        "difference_ms": 27.301148200272735,
+        "counts": [
+          2015,
+          1917
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 18.49738162691719,
+          "counts": [
+            2771,
+            4132
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 21.363459653749203,
+          "counts": [
+            2771,
+            4132
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 21.749969877222213,
+          "counts": [
+            2771,
+            4132
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 23.216649777931252,
+          "counts": [
+            2771,
+            4132
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 25.64729403494931,
+          "counts": [
+            2771,
+            4132
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 17.37162415877799,
+          "counts": [
+            4241,
+            5077
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 18.839093061648384,
+          "counts": [
+            4241,
+            5077
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 21.275505280938887,
+          "counts": [
+            4241,
+            5077
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 22.497278376947577,
+          "counts": [
+            4241,
+            5077
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 25.180818590695253,
+          "counts": [
+            4241,
+            5077
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 17.649966481666752,
+          "counts": [
+            2959,
+            2999
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 18.540511714477418,
+          "counts": [
+            2959,
+            2999
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 21.1728668230179,
+          "counts": [
+            2959,
+            2999
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 23.03592045578182,
+          "counts": [
+            2959,
+            2999
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 25.37916370252043,
+          "counts": [
+            2959,
+            2999
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 17.492608865869528,
+          "counts": [
+            2015,
+            1917
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 20.311237022870046,
+          "counts": [
+            2015,
+            1917
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 21.88773065301814,
+          "counts": [
+            2015,
+            1917
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 25.034359793276337,
+          "counts": [
+            2015,
+            1917
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 27.301148200272735,
+          "counts": [
+            2015,
+            1917
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 18.955317722037393,
+          "counts": [
+            6014,
+            3875
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 19.901577234203728,
+          "counts": [
+            6014,
+            3875
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 21.80920979147743,
+          "counts": [
+            6014,
+            3875
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 23.278520663098902,
+          "counts": [
+            6014,
+            3875
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 24.201771461892633,
+          "counts": [
+            6014,
+            3875
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 7.289971603631762,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig5_ordinary",
+      "condition": 2,
+      "method": "fft200",
+      "n": 18000,
+      "reference_low_support_percent": 23.633333333333333,
+      "candidate_low_support_percent": 23.799999999999997,
+      "low_support_difference_pp": 0.16666666666666496,
+      "region_differences_pp": [
+        -0.30555555555555614,
+        0.07222222222222352,
+        -0.2500000000000002,
+        -0.1166666666666677,
+        0.6000000000000005
+      ],
+      "maximum_region_difference_pp": 0.6000000000000005,
+      "mean_crossing_rt_difference_ms": 0.38639870210852223,
+      "worst_conditional_rt_quantile": {
+        "region": 3,
+        "quantile": 0.7,
+        "difference_ms": 1.5943161925922595,
+        "counts": [
+          3580,
+          3535
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": -0.5967235875538961,
+          "counts": [
+            2319,
+            2264
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 0.2719050032982864,
+          "counts": [
+            2319,
+            2264
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 0.15857383217320375,
+          "counts": [
+            2319,
+            2264
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 0.8973687073170709,
+          "counts": [
+            2319,
+            2264
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 0.8816065275037204,
+          "counts": [
+            2319,
+            2264
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 0.0638955238527501,
+          "counts": [
+            3720,
+            3733
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": -0.2712064491774413,
+          "counts": [
+            3720,
+            3733
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 1.3615431138869667,
+          "counts": [
+            3720,
+            3733
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 0.8424216524228427,
+          "counts": [
+            3720,
+            3733
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 0.6280939612842644,
+          "counts": [
+            3720,
+            3733
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 0.3030671692846738,
+          "counts": [
+            3580,
+            3535
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 0.81201596497948,
+          "counts": [
+            3580,
+            3535
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 1.5210161620856866,
+          "counts": [
+            3580,
+            3535
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 1.5943161925922595,
+          "counts": [
+            3580,
+            3535
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 0.72474566115676,
+          "counts": [
+            3580,
+            3535
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 0.6029850242900352,
+          "counts": [
+            2430,
+            2409
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 1.4088129419534994,
+          "counts": [
+            2430,
+            2409
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 0.48234029877551166,
+          "counts": [
+            2430,
+            2409
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 1.3966946942515506,
+          "counts": [
+            2430,
+            2409
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 0.2852283486370766,
+          "counts": [
+            2430,
+            2409
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 0.484937681895957,
+          "counts": [
+            5951,
+            6059
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 0.15862131062255003,
+          "counts": [
+            5951,
+            6059
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": -0.6759893958990233,
+          "counts": [
+            5951,
+            6059
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": -0.5721792960414973,
+          "counts": [
+            5951,
+            6059
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": -0.2334746658880249,
+          "counts": [
+            5951,
+            6059
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.4588206336582704,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig5_ordinary",
+      "condition": 2,
+      "method": "repaired_kl",
+      "n": 18000,
+      "reference_low_support_percent": 23.633333333333333,
+      "candidate_low_support_percent": 14.955555555555556,
+      "low_support_difference_pp": -8.677777777777779,
+      "region_differences_pp": [
+        6.022222222222223,
+        2.9,
+        2.355555555555555,
+        0.0222222222222207,
+        -11.300000000000002
+      ],
+      "maximum_region_difference_pp": 11.300000000000002,
+      "mean_crossing_rt_difference_ms": 22.064119601680318,
+      "worst_conditional_rt_quantile": {
+        "region": 1,
+        "quantile": 0.9,
+        "difference_ms": 26.90835895248506,
+        "counts": [
+          2319,
+          3403
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 17.830198439926505,
+          "counts": [
+            2319,
+            3403
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 20.389999910208417,
+          "counts": [
+            2319,
+            3403
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 20.99413271076054,
+          "counts": [
+            2319,
+            3403
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 23.036256584476064,
+          "counts": [
+            2319,
+            3403
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 26.90835895248506,
+          "counts": [
+            2319,
+            3403
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 17.642571880678616,
+          "counts": [
+            3720,
+            4242
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 19.736544018660993,
+          "counts": [
+            3720,
+            4242
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 21.77575474088627,
+          "counts": [
+            3720,
+            4242
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 23.19095055353688,
+          "counts": [
+            3720,
+            4242
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 26.035978000209013,
+          "counts": [
+            3720,
+            4242
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 19.974584170624325,
+          "counts": [
+            3580,
+            4004
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 21.824946288721492,
+          "counts": [
+            3580,
+            4004
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 22.387623945387872,
+          "counts": [
+            3580,
+            4004
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 24.301441195512325,
+          "counts": [
+            3580,
+            4004
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 25.66767890144763,
+          "counts": [
+            3580,
+            4004
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 19.404147163211235,
+          "counts": [
+            2430,
+            2434
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 21.484289423319353,
+          "counts": [
+            2430,
+            2434
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 21.923456473473095,
+          "counts": [
+            2430,
+            2434
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 23.04556179018448,
+          "counts": [
+            2430,
+            2434
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 25.84838309656965,
+          "counts": [
+            2430,
+            2434
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 19.60184143795763,
+          "counts": [
+            5951,
+            3917
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 20.443572611658396,
+          "counts": [
+            5951,
+            3917
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 21.5105580761919,
+          "counts": [
+            5951,
+            3917
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 23.223356814294846,
+          "counts": [
+            5951,
+            3917
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 26.28106170483869,
+          "counts": [
+            5951,
+            3917
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 5.331766332230357,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig5_ordinary",
+      "condition": 2,
+      "method": "bucketed_kl",
+      "n": 18000,
+      "reference_low_support_percent": 23.633333333333333,
+      "candidate_low_support_percent": 14.45,
+      "low_support_difference_pp": -9.183333333333335,
+      "region_differences_pp": [
+        6.2444444444444445,
+        2.644444444444444,
+        2.133333333333334,
+        0.06666666666666488,
+        -11.08888888888889
+      ],
+      "maximum_region_difference_pp": 11.08888888888889,
+      "mean_crossing_rt_difference_ms": 21.72551295656922,
+      "worst_conditional_rt_quantile": {
+        "region": 3,
+        "quantile": 0.9,
+        "difference_ms": 26.36602804804511,
+        "counts": [
+          3580,
+          3964
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 16.807227591010133,
+          "counts": [
+            2319,
+            3443
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 18.852325352669652,
+          "counts": [
+            2319,
+            3443
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 20.994861013465425,
+          "counts": [
+            2319,
+            3443
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 24.306121033317652,
+          "counts": [
+            2319,
+            3443
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 25.397135142638263,
+          "counts": [
+            2319,
+            3443
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 18.2275427213593,
+          "counts": [
+            3720,
+            4196
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 20.207347863899713,
+          "counts": [
+            3720,
+            4196
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 21.759646082463576,
+          "counts": [
+            3720,
+            4196
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 22.90276345142189,
+          "counts": [
+            3720,
+            4196
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 24.838967165353438,
+          "counts": [
+            3720,
+            4196
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 17.51162059844711,
+          "counts": [
+            3580,
+            3964
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 19.051601187362166,
+          "counts": [
+            3580,
+            3964
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 21.170747669506113,
+          "counts": [
+            3580,
+            3964
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 23.282832451390618,
+          "counts": [
+            3580,
+            3964
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 26.36602804804511,
+          "counts": [
+            3580,
+            3964
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 18.429127712066588,
+          "counts": [
+            2430,
+            2442
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 21.10071513890597,
+          "counts": [
+            2430,
+            2442
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 21.764321933221993,
+          "counts": [
+            2430,
+            2442
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 23.402143754829638,
+          "counts": [
+            2430,
+            2442
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 26.12437217350464,
+          "counts": [
+            2430,
+            2442
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 19.83740693684311,
+          "counts": [
+            5951,
+            3955
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 21.276751891417007,
+          "counts": [
+            5951,
+            3955
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 21.08283493471879,
+          "counts": [
+            5951,
+            3955
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 22.869270955696095,
+          "counts": [
+            5951,
+            3955
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 25.564111660192225,
+          "counts": [
+            5951,
+            3955
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 5.523008090408588,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig10_ordinary",
+      "condition": 1,
+      "method": "fft200",
+      "n": 18000,
+      "reference_low_support_percent": 27.505555555555556,
+      "candidate_low_support_percent": 27.744444444444444,
+      "low_support_difference_pp": 0.23888888888888848,
+      "region_differences_pp": [
+        -0.5333333333333329,
+        0.050000000000000044,
+        0.10000000000000009,
+        -0.28888888888888853,
+        0.6722222222222185
+      ],
+      "maximum_region_difference_pp": 0.6722222222222185,
+      "mean_crossing_rt_difference_ms": 0.24635117092100245,
+      "worst_conditional_rt_quantile": {
+        "region": 4,
+        "quantile": 0.9,
+        "difference_ms": -1.7163150034996875,
+        "counts": [
+          2086,
+          2034
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 0.17539895211035628,
+          "counts": [
+            2574,
+            2478
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 0.773218662863826,
+          "counts": [
+            2574,
+            2478
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 1.1271519408929294,
+          "counts": [
+            2574,
+            2478
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 1.248393122754237,
+          "counts": [
+            2574,
+            2478
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 1.3041341710185748,
+          "counts": [
+            2574,
+            2478
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": -0.06651365706022716,
+          "counts": [
+            3955,
+            3964
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 0.3598666127166439,
+          "counts": [
+            3955,
+            3964
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 0.8381527814772767,
+          "counts": [
+            3955,
+            3964
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": -0.12386492455647158,
+          "counts": [
+            3955,
+            3964
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": -1.442704284776653,
+          "counts": [
+            3955,
+            3964
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 0.6459445425159629,
+          "counts": [
+            2861,
+            2879
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 0.39625718968949286,
+          "counts": [
+            2861,
+            2879
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 1.548424222701101,
+          "counts": [
+            2861,
+            2879
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 0.5139425184361812,
+          "counts": [
+            2861,
+            2879
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 1.084322473569614,
+          "counts": [
+            2861,
+            2879
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 1.3384700498717166,
+          "counts": [
+            2086,
+            2034
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 0.39678924171403196,
+          "counts": [
+            2086,
+            2034
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 0.871459896970805,
+          "counts": [
+            2086,
+            2034
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": -0.5650515269849166,
+          "counts": [
+            2086,
+            2034
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": -1.7163150034996875,
+          "counts": [
+            2086,
+            2034
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 0.5031808705594472,
+          "counts": [
+            6524,
+            6645
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 0.4314269088365563,
+          "counts": [
+            6524,
+            6645
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 0.17424243635952053,
+          "counts": [
+            6524,
+            6645
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": -0.43974912020604506,
+          "counts": [
+            6524,
+            6645
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 0.08301689411797497,
+          "counts": [
+            6524,
+            6645
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.6230272127948152,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig10_ordinary",
+      "condition": 1,
+      "method": "repaired_kl",
+      "n": 18000,
+      "reference_low_support_percent": 27.505555555555556,
+      "candidate_low_support_percent": 27.516666666666666,
+      "low_support_difference_pp": 0.011111111111111738,
+      "region_differences_pp": [
+        -0.3166666666666651,
+        0.12222222222222079,
+        -0.17222222222222083,
+        0.027777777777777957,
+        0.3388888888888886
+      ],
+      "maximum_region_difference_pp": 0.3388888888888886,
+      "mean_crossing_rt_difference_ms": 1.5548174782519482,
+      "worst_conditional_rt_quantile": {
+        "region": 4,
+        "quantile": 0.9,
+        "difference_ms": 3.3290162938940284,
+        "counts": [
+          2086,
+          2091
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 1.498802888573266,
+          "counts": [
+            2574,
+            2517
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 0.7290863209718168,
+          "counts": [
+            2574,
+            2517
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 1.8516949406737808,
+          "counts": [
+            2574,
+            2517
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 1.5207841818682368,
+          "counts": [
+            2574,
+            2517
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 2.2323647136910836,
+          "counts": [
+            2574,
+            2517
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 0.9250937752552773,
+          "counts": [
+            3955,
+            3977
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 1.7824580197902264,
+          "counts": [
+            3955,
+            3977
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 1.7242151993200423,
+          "counts": [
+            3955,
+            3977
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 0.5146305987735218,
+          "counts": [
+            3955,
+            3977
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": -0.10408217874044112,
+          "counts": [
+            3955,
+            3977
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 1.0576198510117365,
+          "counts": [
+            2861,
+            2830
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 1.3313522512581244,
+          "counts": [
+            2861,
+            2830
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 2.1974389687511575,
+          "counts": [
+            2861,
+            2830
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 1.6787532767393145,
+          "counts": [
+            2861,
+            2830
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 1.8358863840635422,
+          "counts": [
+            2861,
+            2830
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 1.5494782441668917,
+          "counts": [
+            2086,
+            2091
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 1.4936607217459255,
+          "counts": [
+            2086,
+            2091
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 1.77391957556938,
+          "counts": [
+            2086,
+            2091
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 1.8761438642814596,
+          "counts": [
+            2086,
+            2091
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 3.3290162938940284,
+          "counts": [
+            2086,
+            2091
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 1.7107241103998945,
+          "counts": [
+            6524,
+            6585
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 1.5344565910089045,
+          "counts": [
+            6524,
+            6585
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 1.9127872612425563,
+          "counts": [
+            6524,
+            6585
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 1.3579276626371666,
+          "counts": [
+            6524,
+            6585
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 1.8486086437252425,
+          "counts": [
+            6524,
+            6585
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.5074009254280435,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig10_ordinary",
+      "condition": 1,
+      "method": "bucketed_kl",
+      "n": 18000,
+      "reference_low_support_percent": 27.505555555555556,
+      "candidate_low_support_percent": 27.155555555555555,
+      "low_support_difference_pp": -0.3500000000000003,
+      "region_differences_pp": [
+        -0.372222222222221,
+        0.3944444444444445,
+        0.34444444444444444,
+        -0.3888888888888886,
+        0.022222222222223476
+      ],
+      "maximum_region_difference_pp": 0.3944444444444445,
+      "mean_crossing_rt_difference_ms": 1.5180950531710096,
+      "worst_conditional_rt_quantile": {
+        "region": 4,
+        "quantile": 0.9,
+        "difference_ms": 2.889287480371422,
+        "counts": [
+          2086,
+          2016
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 1.0886697873590379,
+          "counts": [
+            2574,
+            2507
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 0.5860243323204486,
+          "counts": [
+            2574,
+            2507
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 0.705548192859851,
+          "counts": [
+            2574,
+            2507
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 1.253969823993998,
+          "counts": [
+            2574,
+            2507
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 2.126778519548054,
+          "counts": [
+            2574,
+            2507
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 1.712873125880094,
+          "counts": [
+            3955,
+            4026
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 1.9208868316148369,
+          "counts": [
+            3955,
+            4026
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 1.8808290638618246,
+          "counts": [
+            3955,
+            4026
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 1.154812649009159,
+          "counts": [
+            3955,
+            4026
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 0.3081297285593223,
+          "counts": [
+            3955,
+            4026
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 1.3879916231507536,
+          "counts": [
+            2861,
+            2923
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 0.9688446033343325,
+          "counts": [
+            2861,
+            2923
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 2.371851616965955,
+          "counts": [
+            2861,
+            2923
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 2.185978638113397,
+          "counts": [
+            2861,
+            2923
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 2.8177694266136655,
+          "counts": [
+            2861,
+            2923
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 2.8198548996642216,
+          "counts": [
+            2086,
+            2016
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 2.145825870927581,
+          "counts": [
+            2086,
+            2016
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 1.8420748464770327,
+          "counts": [
+            2086,
+            2016
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 1.5921141254605118,
+          "counts": [
+            2086,
+            2016
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 2.889287480371422,
+          "counts": [
+            2086,
+            2016
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 0.85229494093727,
+          "counts": [
+            6524,
+            6528
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 1.272462467892467,
+          "counts": [
+            6524,
+            6528
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 1.2709055983781354,
+          "counts": [
+            6524,
+            6528
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 0.5371714633492957,
+          "counts": [
+            6524,
+            6528
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 1.276131097303562,
+          "counts": [
+            6524,
+            6528
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.6591896308883148,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig10_ordinary",
+      "condition": 2,
+      "method": "fft200",
+      "n": 18000,
+      "reference_low_support_percent": 27.011111111111113,
+      "candidate_low_support_percent": 27.200000000000003,
+      "low_support_difference_pp": 0.18888888888888844,
+      "region_differences_pp": [
+        -0.3388888888888886,
+        -0.13333333333333253,
+        -0.03888888888888831,
+        0.3166666666666679,
+        0.19444444444444708
+      ],
+      "maximum_region_difference_pp": 0.3388888888888886,
+      "mean_crossing_rt_difference_ms": -0.49436675313762635,
+      "worst_conditional_rt_quantile": {
+        "region": 1,
+        "quantile": 0.1,
+        "difference_ms": -1.4568327270453665,
+        "counts": [
+          2090,
+          2029
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": -1.4568327270453665,
+          "counts": [
+            2090,
+            2029
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": -1.0533016374415638,
+          "counts": [
+            2090,
+            2029
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": -0.2904944706680226,
+          "counts": [
+            2090,
+            2029
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 0.058272957485542065,
+          "counts": [
+            2090,
+            2029
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 0.6300478096700317,
+          "counts": [
+            2090,
+            2029
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 0.5057753283937814,
+          "counts": [
+            3481,
+            3457
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": -0.8457543228558961,
+          "counts": [
+            3481,
+            3457
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": -1.1692393389848803,
+          "counts": [
+            3481,
+            3457
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": -1.094630280347701,
+          "counts": [
+            3481,
+            3457
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 0.12286280432982721,
+          "counts": [
+            3481,
+            3457
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": -1.337991645043644,
+          "counts": [
+            3402,
+            3395
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": -0.2881443107610835,
+          "counts": [
+            3402,
+            3395
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": -0.6319768324175925,
+          "counts": [
+            3402,
+            3395
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": -0.5753995518786041,
+          "counts": [
+            3402,
+            3395
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": -1.1833509370155184,
+          "counts": [
+            3402,
+            3395
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": -0.6172398764169316,
+          "counts": [
+            2401,
+            2458
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": -0.26141502599188016,
+          "counts": [
+            2401,
+            2458
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": -0.9151978520644661,
+          "counts": [
+            2401,
+            2458
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": -1.3319306741514083,
+          "counts": [
+            2401,
+            2458
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": -0.05821827842572702,
+          "counts": [
+            2401,
+            2458
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": -0.3946108769917487,
+          "counts": [
+            6626,
+            6661
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 0.3211391118733218,
+          "counts": [
+            6626,
+            6661
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 0.0908399356397922,
+          "counts": [
+            6626,
+            6661
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": -0.5099888415618352,
+          "counts": [
+            6626,
+            6661
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": -1.107564153128635,
+          "counts": [
+            6626,
+            6661
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.5701575649130972,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig10_ordinary",
+      "condition": 2,
+      "method": "repaired_kl",
+      "n": 18000,
+      "reference_low_support_percent": 27.011111111111113,
+      "candidate_low_support_percent": 26.05,
+      "low_support_difference_pp": -0.9611111111111126,
+      "region_differences_pp": [
+        0.20555555555555605,
+        -0.03888888888888831,
+        -0.016666666666667607,
+        0.4111111111111121,
+        -0.5611111111111122
+      ],
+      "maximum_region_difference_pp": 0.5611111111111122,
+      "mean_crossing_rt_difference_ms": 1.1742483215697348,
+      "worst_conditional_rt_quantile": {
+        "region": 2,
+        "quantile": 0.9,
+        "difference_ms": 3.457239590262759,
+        "counts": [
+          3481,
+          3474
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": -0.8271286511107405,
+          "counts": [
+            2090,
+            2127
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": -0.6008864892374959,
+          "counts": [
+            2090,
+            2127
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": -0.16990306903147712,
+          "counts": [
+            2090,
+            2127
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 0.6430919351732882,
+          "counts": [
+            2090,
+            2127
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 1.4489901448168325,
+          "counts": [
+            2090,
+            2127
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 2.9877467839681344,
+          "counts": [
+            3481,
+            3474
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 1.791689203273279,
+          "counts": [
+            3481,
+            3474
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 1.3629444489979505,
+          "counts": [
+            3481,
+            3474
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 1.3452351162945888,
+          "counts": [
+            3481,
+            3474
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 3.457239590262759,
+          "counts": [
+            3481,
+            3474
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": -0.28323316149152333,
+          "counts": [
+            3402,
+            3399
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 0.9874529026952246,
+          "counts": [
+            3402,
+            3399
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 0.5443989865368053,
+          "counts": [
+            3402,
+            3399
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 0.7765573688333234,
+          "counts": [
+            3402,
+            3399
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 0.6997578598633822,
+          "counts": [
+            3402,
+            3399
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": -0.33512951766329024,
+          "counts": [
+            2401,
+            2475
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 1.2527219748349694,
+          "counts": [
+            2401,
+            2475
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 1.3819786455412668,
+          "counts": [
+            2401,
+            2475
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 1.1959563319917947,
+          "counts": [
+            2401,
+            2475
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 0.9743864609373531,
+          "counts": [
+            2401,
+            2475
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 1.115260700588351,
+          "counts": [
+            6626,
+            6525
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 1.0661571294540408,
+          "counts": [
+            6626,
+            6525
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 1.477327171760976,
+          "counts": [
+            6626,
+            6525
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 1.7284869841450927,
+          "counts": [
+            6626,
+            6525
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 2.003045994570698,
+          "counts": [
+            6626,
+            6525
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.7559573929817955,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig10_ordinary",
+      "condition": 2,
+      "method": "bucketed_kl",
+      "n": 18000,
+      "reference_low_support_percent": 27.011111111111113,
+      "candidate_low_support_percent": 26.572222222222226,
+      "low_support_difference_pp": -0.43888888888888866,
+      "region_differences_pp": [
+        -0.32222222222222235,
+        -0.3500000000000003,
+        0.7777777777777772,
+        -0.2555555555555561,
+        0.15000000000000013
+      ],
+      "maximum_region_difference_pp": 0.7777777777777772,
+      "mean_crossing_rt_difference_ms": 1.3584777387972622,
+      "worst_conditional_rt_quantile": {
+        "region": 1,
+        "quantile": 0.9,
+        "difference_ms": 2.527433032213878,
+        "counts": [
+          2090,
+          2032
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 0.059247015796472624,
+          "counts": [
+            2090,
+            2032
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": -0.8976982564734044,
+          "counts": [
+            2090,
+            2032
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": -0.12470733876983786,
+          "counts": [
+            2090,
+            2032
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": -0.21055659942277316,
+          "counts": [
+            2090,
+            2032
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 2.527433032213878,
+          "counts": [
+            2090,
+            2032
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 1.7114810098142357,
+          "counts": [
+            3481,
+            3418
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 1.7626600760069095,
+          "counts": [
+            3481,
+            3418
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 2.255774977391411,
+          "counts": [
+            3481,
+            3418
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 1.5334887978273173,
+          "counts": [
+            3481,
+            3418
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 1.314275824864751,
+          "counts": [
+            3481,
+            3418
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 0.33302257309520655,
+          "counts": [
+            3402,
+            3542
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 1.3969503116488795,
+          "counts": [
+            3402,
+            3542
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 1.4198526982280555,
+          "counts": [
+            3402,
+            3542
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 1.5196900885616174,
+          "counts": [
+            3402,
+            3542
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 0.3356765556335404,
+          "counts": [
+            3402,
+            3542
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": -0.11752150809525119,
+          "counts": [
+            2401,
+            2355
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 1.59760165130848,
+          "counts": [
+            2401,
+            2355
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 1.7727774934264744,
+          "counts": [
+            2401,
+            2355
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 2.0517101848702737,
+          "counts": [
+            2401,
+            2355
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 0.7784836754204889,
+          "counts": [
+            2401,
+            2355
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 0.8064919737362857,
+          "counts": [
+            6626,
+            6653
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 1.2869382922917225,
+          "counts": [
+            6626,
+            6653
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 1.7552639370880456,
+          "counts": [
+            6626,
+            6653
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 1.7710191423076367,
+          "counts": [
+            6626,
+            6653
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 1.795290218541652,
+          "counts": [
+            6626,
+            6653
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 1.1704628411371512,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig15_ordinary",
+      "condition": 1,
+      "method": "fft200",
+      "n": 18000,
+      "reference_low_support_percent": 29.616666666666667,
+      "candidate_low_support_percent": 29.733333333333334,
+      "low_support_difference_pp": 0.11666666666666492,
+      "region_differences_pp": [
+        -0.31111111111110923,
+        -0.15000000000000013,
+        0.5888888888888888,
+        -0.07777777777777661,
+        -0.050000000000000044
+      ],
+      "maximum_region_difference_pp": 0.5888888888888888,
+      "mean_crossing_rt_difference_ms": -0.027776367799106083,
+      "worst_conditional_rt_quantile": {
+        "region": 4,
+        "quantile": 0.9,
+        "difference_ms": 5.605203822546628,
+        "counts": [
+          2093,
+          2079
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": -0.611496384072268,
+          "counts": [
+            2576,
+            2520
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": -0.027352085178335983,
+          "counts": [
+            2576,
+            2520
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 0.36299306844841794,
+          "counts": [
+            2576,
+            2520
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 0.5290503141891918,
+          "counts": [
+            2576,
+            2520
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 0.7971194725800501,
+          "counts": [
+            2576,
+            2520
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": -0.8075791612426428,
+          "counts": [
+            3576,
+            3549
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 0.02041341655802853,
+          "counts": [
+            3576,
+            3549
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 0.4832917222429387,
+          "counts": [
+            3576,
+            3549
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": -0.5376357330562769,
+          "counts": [
+            3576,
+            3549
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": -0.4832549808020872,
+          "counts": [
+            3576,
+            3549
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": -0.18432084071639565,
+          "counts": [
+            2819,
+            2925
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 1.1558120549418618,
+          "counts": [
+            2819,
+            2925
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": -0.6202776345392635,
+          "counts": [
+            2819,
+            2925
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 0.2093042384217938,
+          "counts": [
+            2819,
+            2925
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 0.05186822317182305,
+          "counts": [
+            2819,
+            2925
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 0.5198391662484028,
+          "counts": [
+            2093,
+            2079
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 0.31857342497210084,
+          "counts": [
+            2093,
+            2079
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 1.2411631313829048,
+          "counts": [
+            2093,
+            2079
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 2.9752417509968154,
+          "counts": [
+            2093,
+            2079
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 5.605203822546628,
+          "counts": [
+            2093,
+            2079
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": -0.6293884121129736,
+          "counts": [
+            6936,
+            6927
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": -0.3198508903980155,
+          "counts": [
+            6936,
+            6927
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": -0.8744036531031156,
+          "counts": [
+            6936,
+            6927
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": -0.9145557466332548,
+          "counts": [
+            6936,
+            6927
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 1.0173334861711965,
+          "counts": [
+            6936,
+            6927
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.7612935493998438,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig15_ordinary",
+      "condition": 1,
+      "method": "repaired_kl",
+      "n": 18000,
+      "reference_low_support_percent": 29.616666666666667,
+      "candidate_low_support_percent": 29.61111111111111,
+      "low_support_difference_pp": -0.0055555555555586444,
+      "region_differences_pp": [
+        -0.4277777777777769,
+        0.5833333333333329,
+        0.5500000000000005,
+        -0.30555555555555475,
+        -0.40000000000000036
+      ],
+      "maximum_region_difference_pp": 0.5833333333333329,
+      "mean_crossing_rt_difference_ms": 1.2727750882419855,
+      "worst_conditional_rt_quantile": {
+        "region": 1,
+        "quantile": 0.9,
+        "difference_ms": 3.9806115674272746,
+        "counts": [
+          2576,
+          2499
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 1.902265117783429,
+          "counts": [
+            2576,
+            2499
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 1.8338509663705622,
+          "counts": [
+            2576,
+            2499
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 2.315550192547448,
+          "counts": [
+            2576,
+            2499
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 2.82189131217433,
+          "counts": [
+            2576,
+            2499
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 3.9806115674272746,
+          "counts": [
+            2576,
+            2499
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 0.08661646645879273,
+          "counts": [
+            3576,
+            3681
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 0.1240921120869416,
+          "counts": [
+            3576,
+            3681
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": -0.016281523383383956,
+          "counts": [
+            3576,
+            3681
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": -0.27260390066930995,
+          "counts": [
+            3576,
+            3681
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 1.7679287960526153,
+          "counts": [
+            3576,
+            3681
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": -1.0319052200135275,
+          "counts": [
+            2819,
+            2918
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 1.8410219072425775,
+          "counts": [
+            2819,
+            2918
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 0.7245707777710777,
+          "counts": [
+            2819,
+            2918
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 1.7387215571313277,
+          "counts": [
+            2819,
+            2918
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 2.9056058733103214,
+          "counts": [
+            2819,
+            2918
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 3.8153711199881855,
+          "counts": [
+            2093,
+            2038
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 1.7959822663692648,
+          "counts": [
+            2093,
+            2038
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 1.568000783526827,
+          "counts": [
+            2093,
+            2038
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 2.695794378929122,
+          "counts": [
+            2093,
+            2038
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 2.4570230674927416,
+          "counts": [
+            2093,
+            2038
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 1.4415563109037635,
+          "counts": [
+            6936,
+            6864
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 0.9811719152403953,
+          "counts": [
+            6936,
+            6864
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 1.1973004355774037,
+          "counts": [
+            6936,
+            6864
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 0.5811366270143594,
+          "counts": [
+            6936,
+            6864
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 2.3327442627514188,
+          "counts": [
+            6936,
+            6864
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 1.003831791234794,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig15_ordinary",
+      "condition": 1,
+      "method": "bucketed_kl",
+      "n": 18000,
+      "reference_low_support_percent": 29.616666666666667,
+      "candidate_low_support_percent": 28.994444444444444,
+      "low_support_difference_pp": -0.622222222222224,
+      "region_differences_pp": [
+        -0.005555555555555869,
+        0.2944444444444444,
+        0.28888888888888853,
+        0.06666666666666765,
+        -0.6444444444444475
+      ],
+      "maximum_region_difference_pp": 0.6444444444444475,
+      "mean_crossing_rt_difference_ms": 1.1053885995450514,
+      "worst_conditional_rt_quantile": {
+        "region": 4,
+        "quantile": 0.9,
+        "difference_ms": 3.2750721410425854,
+        "counts": [
+          2093,
+          2105
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 0.11219870403368759,
+          "counts": [
+            2576,
+            2575
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 0.4768418992258603,
+          "counts": [
+            2576,
+            2575
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 1.7478120416094498,
+          "counts": [
+            2576,
+            2575
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 2.105628275519109,
+          "counts": [
+            2576,
+            2575
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 3.1339264826023054,
+          "counts": [
+            2576,
+            2575
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 0.7855558902369353,
+          "counts": [
+            3576,
+            3629
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 0.6521924185177568,
+          "counts": [
+            3576,
+            3629
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 1.1728633569566114,
+          "counts": [
+            3576,
+            3629
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 0.9685522861697109,
+          "counts": [
+            3576,
+            3629
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 2.3652281647254085,
+          "counts": [
+            3576,
+            3629
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": -0.3899153709554639,
+          "counts": [
+            2819,
+            2871
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 1.6042991294020226,
+          "counts": [
+            2819,
+            2871
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 1.830020182330827,
+          "counts": [
+            2819,
+            2871
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 2.4108894544547184,
+          "counts": [
+            2819,
+            2871
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 1.8739572757318115,
+          "counts": [
+            2819,
+            2871
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 3.183312002952505,
+          "counts": [
+            2093,
+            2105
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 1.0886029842071139,
+          "counts": [
+            2093,
+            2105
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 0.520179128617599,
+          "counts": [
+            2093,
+            2105
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 2.004187728233603,
+          "counts": [
+            2093,
+            2105
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 3.2750721410425854,
+          "counts": [
+            2093,
+            2105
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 0.06867422034957826,
+          "counts": [
+            6936,
+            6820
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 0.21678568119875763,
+          "counts": [
+            6936,
+            6820
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 0.21092253059202903,
+          "counts": [
+            6936,
+            6820
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 0.3030822163069047,
+          "counts": [
+            6936,
+            6820
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 2.342116308273262,
+          "counts": [
+            6936,
+            6820
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.5439386557393016,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig15_ordinary",
+      "condition": 2,
+      "method": "fft200",
+      "n": 18000,
+      "reference_low_support_percent": 29.16111111111111,
+      "candidate_low_support_percent": 28.933333333333334,
+      "low_support_difference_pp": -0.22777777777777675,
+      "region_differences_pp": [
+        0.18333333333333257,
+        -0.37777777777777966,
+        0.4555555555555535,
+        0.20555555555555605,
+        -0.4666666666666708
+      ],
+      "maximum_region_difference_pp": 0.4666666666666708,
+      "mean_crossing_rt_difference_ms": -0.1506237615587338,
+      "worst_conditional_rt_quantile": {
+        "region": 4,
+        "quantile": 0.9,
+        "difference_ms": -1.9257683495359856,
+        "counts": [
+          2408,
+          2445
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": -1.7123594058796812,
+          "counts": [
+            2065,
+            2098
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 0.2286345026654999,
+          "counts": [
+            2065,
+            2098
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 0.38236296324987507,
+          "counts": [
+            2065,
+            2098
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 0.4588084424137264,
+          "counts": [
+            2065,
+            2098
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": -1.050689079307972,
+          "counts": [
+            2065,
+            2098
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": -0.27777118595270167,
+          "counts": [
+            3218,
+            3150
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": -1.089451645779377,
+          "counts": [
+            3218,
+            3150
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": -0.1652801073761907,
+          "counts": [
+            3218,
+            3150
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 0.19860978379136895,
+          "counts": [
+            3218,
+            3150
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": -1.6514057898715464,
+          "counts": [
+            3218,
+            3150
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": -0.7830718415303295,
+          "counts": [
+            3280,
+            3362
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": -1.1093763154441376,
+          "counts": [
+            3280,
+            3362
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": -1.1808163312316537,
+          "counts": [
+            3280,
+            3362
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": -0.8029485605835589,
+          "counts": [
+            3280,
+            3362
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": -0.24950911086347105,
+          "counts": [
+            3280,
+            3362
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": -0.5315274476787408,
+          "counts": [
+            2408,
+            2445
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": -0.5202801794525271,
+          "counts": [
+            2408,
+            2445
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": -0.7013942916121323,
+          "counts": [
+            2408,
+            2445
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": -1.116263850087421,
+          "counts": [
+            2408,
+            2445
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": -1.9257683495359856,
+          "counts": [
+            2408,
+            2445
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 0.7374894435396868,
+          "counts": [
+            7029,
+            6945
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 1.5393768369539202,
+          "counts": [
+            7029,
+            6945
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 0.8232142065638186,
+          "counts": [
+            7029,
+            6945
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 0.3505111138829875,
+          "counts": [
+            7029,
+            6945
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": -0.43594289310908607,
+          "counts": [
+            7029,
+            6945
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.753100164799311,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig15_ordinary",
+      "condition": 2,
+      "method": "repaired_kl",
+      "n": 18000,
+      "reference_low_support_percent": 29.16111111111111,
+      "candidate_low_support_percent": 28.47222222222222,
+      "low_support_difference_pp": -0.6888888888888889,
+      "region_differences_pp": [
+        0.47777777777777697,
+        -0.1388888888888884,
+        0.6888888888888889,
+        -0.09444444444444422,
+        -0.933333333333336
+      ],
+      "maximum_region_difference_pp": 0.933333333333336,
+      "mean_crossing_rt_difference_ms": 1.6061423823036876,
+      "worst_conditional_rt_quantile": {
+        "region": 3,
+        "quantile": 0.9,
+        "difference_ms": 2.590200206118709,
+        "counts": [
+          3280,
+          3404
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 0.22530095588331278,
+          "counts": [
+            2065,
+            2151
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 1.5519823018775583,
+          "counts": [
+            2065,
+            2151
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 0.9254208602994822,
+          "counts": [
+            2065,
+            2151
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 1.0412685838655307,
+          "counts": [
+            2065,
+            2151
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 1.0616777061704852,
+          "counts": [
+            2065,
+            2151
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 1.5748937530412377,
+          "counts": [
+            3218,
+            3193
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 0.7612066422406656,
+          "counts": [
+            3218,
+            3193
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 0.8375199247191176,
+          "counts": [
+            3218,
+            3193
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 2.142849738461507,
+          "counts": [
+            3218,
+            3193
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 0.2981542447829497,
+          "counts": [
+            3218,
+            3193
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": 0.5299380909690967,
+          "counts": [
+            3280,
+            3404
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": 0.5761494619415544,
+          "counts": [
+            3280,
+            3404
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 1.3525917372044773,
+          "counts": [
+            3280,
+            3404
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 1.5184699501982095,
+          "counts": [
+            3280,
+            3404
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 2.590200206118709,
+          "counts": [
+            3280,
+            3404
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 1.5120015975871866,
+          "counts": [
+            2408,
+            2391
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 1.4483442228957415,
+          "counts": [
+            2408,
+            2391
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 0.7896453919361193,
+          "counts": [
+            2408,
+            2391
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": -0.1247824218676783,
+          "counts": [
+            2408,
+            2391
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": -0.45278384000062033,
+          "counts": [
+            2408,
+            2391
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 1.895918662113388,
+          "counts": [
+            7029,
+            6861
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 2.243270026513926,
+          "counts": [
+            7029,
+            6861
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 2.330256410611298,
+          "counts": [
+            7029,
+            6861
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 2.3869816786202023,
+          "counts": [
+            7029,
+            6861
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 2.415957138796273,
+          "counts": [
+            7029,
+            6861
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.8055072994002331,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    },
+    {
+      "case": "sig15_ordinary",
+      "condition": 2,
+      "method": "bucketed_kl",
+      "n": 18000,
+      "reference_low_support_percent": 29.16111111111111,
+      "candidate_low_support_percent": 28.066666666666666,
+      "low_support_difference_pp": -1.0944444444444423,
+      "region_differences_pp": [
+        0.24444444444444435,
+        0.24444444444444435,
+        0.38333333333333275,
+        0.27777777777777957,
+        -1.150000000000001
+      ],
+      "maximum_region_difference_pp": 1.150000000000001,
+      "mean_crossing_rt_difference_ms": 1.821033248344122,
+      "worst_conditional_rt_quantile": {
+        "region": 2,
+        "quantile": 0.7,
+        "difference_ms": 3.532327816691236,
+        "counts": [
+          3218,
+          3262
+        ]
+      },
+      "conditional_rt_quantile_differences": [
+        {
+          "region": 1,
+          "quantile": 0.1,
+          "difference_ms": 0.8590480302461856,
+          "counts": [
+            2065,
+            2109
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.3,
+          "difference_ms": 1.5897859442617346,
+          "counts": [
+            2065,
+            2109
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.5,
+          "difference_ms": 0.8236367379215039,
+          "counts": [
+            2065,
+            2109
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.7,
+          "difference_ms": 1.2884307264625932,
+          "counts": [
+            2065,
+            2109
+          ]
+        },
+        {
+          "region": 1,
+          "quantile": 0.9,
+          "difference_ms": 0.3357706377935301,
+          "counts": [
+            2065,
+            2109
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.1,
+          "difference_ms": 1.6761364832196932,
+          "counts": [
+            3218,
+            3262
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.3,
+          "difference_ms": 1.1983270306880058,
+          "counts": [
+            3218,
+            3262
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.5,
+          "difference_ms": 2.363486905418199,
+          "counts": [
+            3218,
+            3262
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.7,
+          "difference_ms": 3.532327816691236,
+          "counts": [
+            3218,
+            3262
+          ]
+        },
+        {
+          "region": 2,
+          "quantile": 0.9,
+          "difference_ms": 0.3553835678108044,
+          "counts": [
+            3218,
+            3262
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.1,
+          "difference_ms": -0.8544080316667646,
+          "counts": [
+            3280,
+            3349
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.3,
+          "difference_ms": -0.4057025547807598,
+          "counts": [
+            3280,
+            3349
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.5,
+          "difference_ms": 0.43135323314112384,
+          "counts": [
+            3280,
+            3349
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.7,
+          "difference_ms": 1.4284601439783273,
+          "counts": [
+            3280,
+            3349
+          ]
+        },
+        {
+          "region": 3,
+          "quantile": 0.9,
+          "difference_ms": 1.8211533613345523,
+          "counts": [
+            3280,
+            3349
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.1,
+          "difference_ms": 1.5669341055553332,
+          "counts": [
+            2408,
+            2458
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.3,
+          "difference_ms": 2.2477366331792155,
+          "counts": [
+            2408,
+            2458
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.5,
+          "difference_ms": 2.497923356157173,
+          "counts": [
+            2408,
+            2458
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.7,
+          "difference_ms": 1.540863318047684,
+          "counts": [
+            2408,
+            2458
+          ]
+        },
+        {
+          "region": 4,
+          "quantile": 0.9,
+          "difference_ms": 2.169460327390709,
+          "counts": [
+            2408,
+            2458
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.1,
+          "difference_ms": 2.4237290085314385,
+          "counts": [
+            7029,
+            6822
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.3,
+          "difference_ms": 2.9280590287889368,
+          "counts": [
+            7029,
+            6822
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.5,
+          "difference_ms": 2.280677160304606,
+          "counts": [
+            7029,
+            6822
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.7,
+          "difference_ms": 2.7067701018295907,
+          "counts": [
+            7029,
+            6822
+          ]
+        },
+        {
+          "region": 5,
+          "quantile": 0.9,
+          "difference_ms": 2.17002227113926,
+          "counts": [
+            7029,
+            6822
+          ]
+        }
+      ],
+      "empirical_spatial_sw1_pixels": 0.5771813108866901,
+      "reference_non_crossings": 0,
+      "candidate_non_crossings": 0
+    }
+  ]
+}

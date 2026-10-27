@@ -1,0 +1,78 @@
+{
+  "status": "complete",
+  "covariance_widths": 178,
+  "covariance_worst": {
+    "max_target_error": 7.993605777301127e-15,
+    "old_target_error": 7.993605777301127e-15,
+    "max_reference_error": 5.054186039511485e-15,
+    "max_fp32_target_error": 1.0768680303030465e-07,
+    "max_fp32_reference_error": 7.460011364202046e-08,
+    "demeaned_reference_error_upper_bound": 2.021674415804594e-14
+  },
+  "fft_comparisons": [
+    {
+      "phase": "steady",
+      "nsim": 128,
+      "pairs": 30,
+      "baseline_median": 0.4388828390000157,
+      "candidate_median": 0.40867519550000964,
+      "ratio": 0.9311715090778362,
+      "ci95": [
+        0.902808292857783,
+        0.9476288579679338
+      ],
+      "preliminary_speed_target": false
+    },
+    {
+      "phase": "steady",
+      "nsim": 1024,
+      "pairs": 30,
+      "baseline_median": 1.1790513715000088,
+      "candidate_median": 1.0092710880000197,
+      "ratio": 0.8560026411029132,
+      "ci95": [
+        0.8316212041966257,
+        0.8653643006246637
+      ],
+      "preliminary_speed_target": true
+    },
+    {
+      "phase": "steady",
+      "nsim": 9000,
+      "pairs": 30,
+      "baseline_median": 7.885973147000016,
+      "candidate_median": 6.54551757599998,
+      "ratio": 0.8300202719419643,
+      "ci95": [
+        0.8220441479839904,
+        0.8376614873468351
+      ],
+      "preliminary_speed_target": true
+    },
+    {
+      "phase": "changing_sig",
+      "nsim": 1024,
+      "pairs": 30,
+      "baseline_median": 1.1725009434999834,
+      "candidate_median": 1.0551133480000203,
+      "ratio": 0.8998827283246748,
+      "ci95": [
+        0.885947966442818,
+        0.9194140530799823
+      ],
+      "preliminary_speed_target": true
+    }
+  ],
+  "kl_controls": [
+    {
+      "method": "repaired_kl",
+      "calls": 5,
+      "median": 8.68008052099998
+    },
+    {
+      "method": "bucketed_kl",
+      "calls": 5,
+      "median": 7.144314890000004
+    }
+  ]
+}

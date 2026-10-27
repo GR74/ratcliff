@@ -90,7 +90,7 @@ def condition_g2_b(rt, cat, obs_prop, obs_count, obs_quant):
 
 def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
                 time_block_size=0, stop_early=True, compact=True,
-                kl_bucketed=False, cumulative_kl=False):
+                kl_bucketed=False, cumulative_kl=False, guarded_kl=False, fft200=False):
     """
     Vectorized G2 objective for Model B, summed across 2 conditions.
 
@@ -98,6 +98,8 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
     data   : dict with "prop" (2, 5), "count" (2, 5), "quant" (2, 5, 5).
     key    : JAX typed key.
     use_kl : if True, use Stage 6 K-L low-rank GRF inside simulate_b.
+    guarded_kl : opt-in 99.9% KL policy with full FFT fallback; requires use_kl.
+    fft200 : opt-in even full-spectrum FFT embedding; incompatible with KL.
     Returns scalar G2.
     """
     # Local imports to avoid hard top-level dependency cycle risk
@@ -106,6 +108,8 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
 
     if (kl_bucketed or cumulative_kl) and (not time_block_size or not use_kl):
         raise ValueError("K-L extensions require blocked simulation and use_kl=True")
+    if guarded_kl and (not use_kl or kl_bucketed or cumulative_kl):
+        raise ValueError("guarded_kl requires use_kl=True and no other K-L extensions")
 
     p = clamp_b(params)
     ter, st, cr, crsd, sis, sig = p[0], p[1], p[2], p[3], p[4], p[5]
@@ -137,19 +141,19 @@ def fofs_b_new(params, data, key, nsim=512, chunk_size=4, use_kl=False,
             avs[ci, 0], avs[ci, 1], avs[ci, 2],
             sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
             time_block_size, stop_early, compact,
-            kl_bucketed, cumulative_kl,
+            kl_bucketed, cumulative_kl, guarded_kl, fft200,
         ) for ci in range(2)]
         rts = jnp.stack([out[0] for out in outputs])
         cats = jnp.stack([out[1] for out in outputs])
     else:
         sim_vmap = jax.vmap(
             sim_b.simulate_b,
-            in_axes=(0, None, None, None, None, 0, 0, 0, None, None, None, None, None, None),
+            in_axes=(0, None, None, None, None, 0, 0, 0, None, None, None, None, None, None, None, None),
         )
         rts, cats = sim_vmap(
             cond_keys, ter, st, cr, crsd,
             avs[:, 0], avs[:, 1], avs[:, 2],
-            sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl,
+            sis_arr, sig_py, si_arr, nsim, chunk_size, use_kl, guarded_kl, fft200,
         )
     # rts, cats: (2, nsim)
 

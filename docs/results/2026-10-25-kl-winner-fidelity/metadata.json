@@ -1,0 +1,137 @@
+{
+  "utc": "2026-10-25T19:33:16.128529+00:00",
+  "parameters": {
+    "ter": 200.0,
+    "st": 50.0,
+    "cr": 10.0,
+    "crsd": 2.0,
+    "av1": 15.0,
+    "av2": 10.0,
+    "av3": 8.0,
+    "sis": 12.0,
+    "si": 6.0
+  },
+  "scenarios": {
+    "baseline": 1.0,
+    "weak_drift": 0.25,
+    "zero_drift": 0.0
+  },
+  "variants": {
+    "fft": [
+      1.0,
+      null
+    ],
+    "kl95_cap2000": [
+      0.95,
+      2000
+    ],
+    "kl99_cap2000": [
+      0.99,
+      2000
+    ],
+    "kl999_uncapped": [
+      0.999,
+      null
+    ]
+  },
+  "trials_per_cell": 1024,
+  "seed": 20261025,
+  "chunk": 1,
+  "steps": 400,
+  "sig": [
+    5.0,
+    10.0,
+    15.0
+  ],
+  "jax": "0.10.2",
+  "numpy": "2.5.4",
+  "python": "3.12.3",
+  "devices": [
+    "cuda:0 NVIDIA GeForce RTX 4060 Laptop GPU"
+  ],
+  "validation": [
+    {
+      "sig": 5.0,
+      "observer_fft_and_kl": "passed",
+      "basis_masked_fft_max_abs_error": 1.0728836059570312e-05,
+      "basis_modes": 2000,
+      "retained_variance": 0.7528654963946284
+    },
+    {
+      "sig": 10.0,
+      "observer_fft_and_kl": "passed",
+      "basis_masked_fft_max_abs_error": 6.4373016357421875e-06,
+      "basis_modes": 1325,
+      "retained_variance": 0.9900387952538491
+    },
+    {
+      "sig": 15.0,
+      "observer_fft_and_kl": "passed",
+      "basis_masked_fft_max_abs_error": 7.152557373046875e-06,
+      "basis_modes": 588,
+      "retained_variance": 0.9900260053687245
+    }
+  ],
+  "spectra": {
+    "5.0/fft": {
+      "complex_modes": 63481,
+      "variance_retained": 0.9999999999999597
+    },
+    "5.0/kl95_cap2000": {
+      "complex_modes": 2000,
+      "variance_retained": 0.7528654963946284
+    },
+    "5.0/kl99_cap2000": {
+      "complex_modes": 2000,
+      "variance_retained": 0.7528654963946284
+    },
+    "5.0/kl999_uncapped": {
+      "complex_modes": 7399,
+      "variance_retained": 0.9990002116645851
+    },
+    "10.0/fft": {
+      "complex_modes": 63481,
+      "variance_retained": 0.9999999999999916
+    },
+    "10.0/kl95_cap2000": {
+      "complex_modes": 936,
+      "variance_retained": 0.9500283220230124
+    },
+    "10.0/kl99_cap2000": {
+      "complex_modes": 1325,
+      "variance_retained": 0.9900387952538491
+    },
+    "10.0/kl999_uncapped": {
+      "complex_modes": 1850,
+      "variance_retained": 0.9990021857376763
+    },
+    "15.0/fft": {
+      "complex_modes": 63481,
+      "variance_retained": 0.9999999999999942
+    },
+    "15.0/kl95_cap2000": {
+      "complex_modes": 417,
+      "variance_retained": 0.9503011980131699
+    },
+    "15.0/kl99_cap2000": {
+      "complex_modes": 588,
+      "variance_retained": 0.9900260053687245
+    },
+    "15.0/kl999_uncapped": {
+      "complex_modes": 821,
+      "variance_retained": 0.999005163996585
+    }
+  },
+  "command": [
+    "scripts/check_kl_winner_fidelity.py",
+    "--trials",
+    "1024"
+  ],
+  "source_sha256": {
+    "/mnt/c/Users/Yash/repos/ratcliff/scripts/check_kl_winner_fidelity.py": "9d5dd7a387f62b5a009a36d65e01425efd0d09ab21bad8be66faf58e3038742b",
+    "model_b/grf.py": "43bd704356a29b9bd916f711776245e53c9c3ca31b1a102b2e8096f51928315a",
+    "model_b/grf_kl.py": "868d446281189b1264d3af9c0fc37f85aa238be89a4376795fc37d6c5c949a30",
+    "model_b/simulate.py": "68023db4c083f16984c61d8ab5d4c6f8a705fd7ead3c95633684db9d5799d67d"
+  },
+  "elapsed_seconds": 237.24247789382935
+}

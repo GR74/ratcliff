@@ -109,6 +109,38 @@ def assert_pd_embedding(n: int = DEFAULT_N, m: int = DEFAULT_M,
         )
 
 
+def even_embedding(n=DEFAULT_N, m=DEFAULT_M, s1=15.0, s2=15.0):
+    """Covariance on a 2n-by-2m torus, retaining all original-grid lags.
+
+    At the new Nyquist row/column, +n and -n (or +m and -m) are
+    the same periodic location. Average the two inversion conventions there.
+    These lags are never differences between points on the original n-by-m
+    grid. This is a new covariance embedding, not padding of the old spectrum.
+    """
+    iy = jnp.arange(2 * n)
+    ix = jnp.arange(2 * m)
+    dy = jnp.where(iy <= n, iy, iy - 2 * n)[:, None]
+    dx = jnp.where(ix <= m, ix, ix - 2 * m)[None, :]
+    covariance = _kernel_value(dx, dy, s1, s2)
+    inverse = covariance[(-iy) % (2 * n)][:, (-ix) % (2 * m)]
+    return (covariance + inverse) * .5
+
+
+def even_spectrum(n=DEFAULT_N, m=DEFAULT_M, s1=15.0, s2=15.0):
+    """Unclipped normalized spectrum, exposed for PSD/covariance audits."""
+    return jnp.fft.fft2(even_embedding(n, m, s1, s2)).real / (4 * n * m)
+
+
+def calc_LAM_even(n=DEFAULT_N, m=DEFAULT_M, s1=15.0, s2=15.0):
+    """Full-spectrum even embedding. Audit PSD before accepting a new domain.
+
+    Like the legacy JIT-compatible generator, clips negative roundoff. The
+    Model B opt-in wrapper restricts sig to the audited [0.2, 17] domain.
+    No positive modes are discarded. At n=100,m=160 this is 200-by-320.
+    """
+    return jnp.sqrt(jnp.maximum(even_spectrum(n, m, s1, s2), 0.))
+
+
 def circulant_grf(LAM, g1, g2):
     """
     Generate two independent GRF samples via one 2D FFT.

@@ -1,0 +1,16 @@
+{
+  "command": "JAX_PLATFORMS=cpu python -m pytest shared/tests/test_fft200_comparison_metrics.py -q",
+  "passed": 8,
+  "seconds": 1.31,
+  "checks": [
+    "Exact binary interval edges and difference direction",
+    "Sparse quantile intervals remain inconclusive",
+    "Order-statistic interval binomial coverage",
+    "Discrete-grid sliced Wasserstein matches direct weighted-distance calculation",
+    "Conservative spatial bound handles missing samples",
+    "Whole-replay pairing and first-replay exclusion",
+    "Non-crossing locations excluded from low-support wins",
+    "All four matched-fit arms use common data, cold initialization and independent reference scoring"
+  ],
+  "git_diff_check": "passed"
+}

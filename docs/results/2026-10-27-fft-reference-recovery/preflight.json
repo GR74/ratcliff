@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "checks": [
+    "one-based geometry and bench region cutoffs",
+    "qant1 histogram/interpolation, bin boundaries, overflow and empty-histogram failure",
+    "strict crossing, scaled drift, blocking/compaction, horizon, column-major ties",
+    "FFT199/FFT200 PSD and all required lag covariances over supported sig sweep",
+    "sv public wiring and noncrossing RT/category rule"
+  ],
+  "max_covariance_error": 5.02230833398133e-15,
+  "source_manifest_sha256": "80440d6f51a6b983df5d98785a7f6886f69bf8ccaea9e92ff55dd3302f3a9284",
+  "fft200_sha256": "a53f470a9f474c9ebfa9956f6a15b92f84077b094bffcd7155d17a471e6d7995",
+  "scope": "Fortran-informed JAX bench reference; direct executable qualification pending",
+  "unresolved": [
+    "Original MKL/MPI executable not run",
+    "Float32 accumulation versus Fortran double precision",
+    "JAX RNG differs from MKL; no path identity claim",
+    "Archived output provenance not sufficient for an executable equivalence certificate"
+  ]
+}

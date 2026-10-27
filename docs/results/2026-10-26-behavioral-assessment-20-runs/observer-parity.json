@@ -1,0 +1,22 @@
+[
+  {
+    "method": "fft199",
+    "status": "pass",
+    "trials": 18
+  },
+  {
+    "method": "fft200",
+    "status": "pass",
+    "trials": 18
+  },
+  {
+    "method": "repaired_kl",
+    "status": "pass",
+    "trials": 18
+  },
+  {
+    "method": "bucketed_kl",
+    "status": "pass",
+    "trials": 18
+  }
+]

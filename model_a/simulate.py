@@ -40,7 +40,7 @@ def drift_profile(av, si):
     return av * jnp.exp(-(IDX - U) ** 2 / (2.0 * si * si)) / (si * jnp.sqrt(2.0 * jnp.pi))
 
 
-def _simulate_chunk(key, ter, st, cr, crsd, L, v, chunk_size):
+def _accumulator_paths(key, ter, st, cr, crsd, L, v, chunk_size):
     """
     Simulate `chunk_size` trials in one fused XLA program.
 
@@ -54,7 +54,8 @@ def _simulate_chunk(key, ter, st, cr, crsd, L, v, chunk_size):
     typical trials. The clamp() function in jax_port.fofs enforces cr >= 1.0
     so this holds in production use.
 
-    Returns (rt, cat) each of shape (chunk_size,).
+    Returns paths (chunk_size, NSTEP, N), per-trial thresholds, and
+    per-trial nondecision time in steps.
     """
     ku, kz = jax.random.split(key)
 
@@ -73,6 +74,12 @@ def _simulate_chunk(key, ter, st, cr, crsd, L, v, chunk_size):
 
     # Accumulator paths
     a = jnp.cumsum(incr, axis=1)                        # (chunk_size, NSTEP, N)
+    return a, crr, ndt
+
+
+def _simulate_chunk(key, ter, st, cr, crsd, L, v, chunk_size):
+    """Reduce shared Model A accumulator histories to RT and category."""
+    a, crr, ndt = _accumulator_paths(key, ter, st, cr, crsd, L, v, chunk_size)
 
     # First crossing
     max_per_step = a.max(axis=-1)                       # (chunk_size, NSTEP)
@@ -93,6 +100,20 @@ def _simulate_chunk(key, ter, st, cr, crsd, L, v, chunk_size):
     cat = jnp.where((pos > IPA) & (pos < IPB), 1,
           jnp.where((pos <= IPC) | (pos >= IPD), 3, 2))
     return rt, cat
+
+
+@jax.jit
+def trial_history(key, ter, st, cr, crsd, si, sig, av):
+    """Full one-trial histories using exactly simulate(..., nsim=1, chunk_size=1).
+
+    The API truncates at first crossing; retaining fixed shapes here keeps JIT
+    compilation reusable. Threshold and nondecision draws are shared per trial.
+    """
+    trial_key = prng.trial_keys(key, 1)[0]
+    paths, thresholds, ndt = _accumulator_paths(
+        trial_key, ter, st, cr, crsd, chol_factor(sig), drift_profile(av, si), 1
+    )
+    return paths[0], thresholds[0], ndt[0] * E
 
 
 @partial(jax.jit, static_argnums=(8, 9))

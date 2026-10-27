@@ -27,10 +27,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from backend import jobs, parsers, byo_gpu
+from backend.circular import router as circular_router
+from backend.model_a_view import router as model_a_router
 from model_b import api as model_api
 
 
 app = FastAPI(title="Ratcliff DDM API", version="0.8.0")
+app.include_router(circular_router)
+app.include_router(model_a_router)
 
 # Warm-up state: the first simulate call JIT-compiles for minutes on CPU. We
 # kick that off in a background thread at startup so the first real user request

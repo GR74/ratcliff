@@ -29,7 +29,13 @@ const TABS = [
   { id: "fit", label: "Fit" },
   { id: "predict", label: "Predict" },
   { id: "compare", label: "Compare" },
+  { id: "model-a", label: "Ratcliff SCDM" },
+  { id: "scdm-origin", label: "SCDM Origin" },
+  { id: "circular", label: "Circular Diffusion" },
 ] as const;
+
+const CircularTab = lazy(() => import("./tabs/CircularTab").then((m) => ({ default: m.CircularTab })));
+const ModelATab = lazy(() => import("./tabs/ModelATab").then((m) => ({ default: m.ModelATab })));
 
 export function App() {
   const currentTab = useAppStore((s) => s.currentTab);
@@ -44,13 +50,14 @@ export function App() {
             2D spatial diffusion decision model
           </span>
         </div>
-        <nav className="px-4 flex gap-2 border-t">
+        <nav className="px-4 flex gap-2 border-t overflow-x-auto" aria-label="Models and tools">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
+              aria-current={currentTab === t.id ? "page" : undefined}
               className={
-                "px-4 py-2 text-sm border-b-2 -mb-px " +
+                "px-4 py-2 text-sm border-b-2 -mb-px whitespace-nowrap " +
                 (currentTab === t.id
                   ? "border-accent text-accent font-medium"
                   : "border-transparent text-slate-600 hover:text-slate-900")
@@ -73,10 +80,13 @@ export function App() {
           {currentTab === "fit" && <FitTab />}
           {currentTab === "predict" && <PredictTab />}
           {currentTab === "compare" && <CompareTab />}
+          {currentTab === "model-a" && <ModelATab />}
+          {currentTab === "scdm-origin" && <ModelATab origin />}
+          {currentTab === "circular" && <CircularTab />}
         </Suspense>
       </main>
       <footer className="border-t bg-white py-2 px-4 text-xs text-slate-500">
-        Powered by JAX + K-L low-rank GRF. Source:{" "}
+        Ratcliff models: JAX · Circular demo: NumPy. Source:{" "}
         <a
           className="underline"
           href="https://github.com/GR74/ratcliff"

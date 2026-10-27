@@ -1,0 +1,160 @@
+{
+  "timing": [
+    {
+      "sig": 5.0,
+      "paired_repetitions": 30,
+      "medians_seconds": {
+        "fft": 0.412700791000006,
+        "legacy_kl": 1.5650278705000034,
+        "guarded_kl": 0.42617438899999627
+      },
+      "candidate_control_ratios_95ci": {
+        "fft": [
+          1.0326473762440405,
+          0.9996180928168025,
+          1.0885495023050575
+        ],
+        "legacy_kl": [
+          0.2723110540286032,
+          0.25872346822600983,
+          0.2841218231356145
+        ]
+      }
+    },
+    {
+      "sig": 10.0,
+      "paired_repetitions": 30,
+      "medians_seconds": {
+        "fft": 0.3865466184999775,
+        "legacy_kl": 1.1560843980000044,
+        "guarded_kl": 1.5222524809999811
+      },
+      "candidate_control_ratios_95ci": {
+        "fft": [
+          3.9380825187585224,
+          3.7791863445875733,
+          4.171324565888098
+        ],
+        "legacy_kl": [
+          1.316731272935988,
+          1.2321609305701537,
+          1.4390081080301806
+        ]
+      }
+    },
+    {
+      "sig": 15.0,
+      "paired_repetitions": 30,
+      "medians_seconds": {
+        "fft": 0.38260148800000593,
+        "legacy_kl": 0.9151009014999829,
+        "guarded_kl": 0.9162434620000113
+      },
+      "candidate_control_ratios_95ci": {
+        "fft": [
+          2.394772343384083,
+          2.3103563347760385,
+          2.569633767780963
+        ],
+        "legacy_kl": [
+          1.0012485623149923,
+          0.9287492590155637,
+          1.130836499121893
+        ]
+      }
+    }
+  ],
+  "fidelity": [
+    {
+      "sig": 5.0,
+      "scenario": "baseline",
+      "delta_low_support_pp": 0.0,
+      "ci95": [
+        -0.42701796302083184,
+        0.42701796302083184
+      ],
+      "delta_mean_rt_ms": 0.0
+    },
+    {
+      "sig": 5.0,
+      "scenario": "weak_drift",
+      "delta_low_support_pp": 0.0,
+      "ci95": [
+        -0.42701796302083184,
+        0.42701796302083184
+      ],
+      "delta_mean_rt_ms": 0.0
+    },
+    {
+      "sig": 5.0,
+      "scenario": "zero_drift",
+      "delta_low_support_pp": 0.0,
+      "ci95": [
+        -0.42701796302083184,
+        0.42701796302083184
+      ],
+      "delta_mean_rt_ms": 0.0
+    },
+    {
+      "sig": 10.0,
+      "scenario": "baseline",
+      "delta_low_support_pp": 0.5859375,
+      "ci95": [
+        -0.9707143711122592,
+        2.1305324028150587
+      ],
+      "delta_mean_rt_ms": 0.12695312500000008
+    },
+    {
+      "sig": 10.0,
+      "scenario": "weak_drift",
+      "delta_low_support_pp": 0.29296875,
+      "ci95": [
+        -1.4784029601914725,
+        2.0596298208022947
+      ],
+      "delta_mean_rt_ms": 0.185546875
+    },
+    {
+      "sig": 10.0,
+      "scenario": "zero_drift",
+      "delta_low_support_pp": -0.09765625,
+      "ci95": [
+        -1.8678385734042031,
+        1.6740918905240785
+      ],
+      "delta_mean_rt_ms": 0.24414062500000006
+    },
+    {
+      "sig": 15.0,
+      "scenario": "baseline",
+      "delta_low_support_pp": 0.0,
+      "ci95": [
+        -1.7986550290633574,
+        1.7986550290633574
+      ],
+      "delta_mean_rt_ms": 0.380859375
+    },
+    {
+      "sig": 15.0,
+      "scenario": "weak_drift",
+      "delta_low_support_pp": -0.78125,
+      "ci95": [
+        -2.558554786066327,
+        1.008525775718321
+      ],
+      "delta_mean_rt_ms": 0.2734375
+    },
+    {
+      "sig": 15.0,
+      "scenario": "zero_drift",
+      "delta_low_support_pp": -0.68359375,
+      "ci95": [
+        -2.188354982833295,
+        0.8360206154902847
+      ],
+      "delta_mean_rt_ms": 0.498046875
+    }
+  ],
+  "all_settings_speed_target_met": false
+}

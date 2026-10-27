@@ -2,8 +2,8 @@
 Karhunen-Loève low-rank GRF generator for Model B.
 
 For our block-circulant covariance, the K-L eigendecomposition equals the FFT
-of the kernel. Top-K modes by spectral magnitude capture ~99.9% of variance at
-sig=10 with K ≈ 100. Runtime sampling is one batched GEMM instead of a 2D FFT.
+of the kernel. At sig=10, about 1,850 complex modes capture 99.9% of variance.
+Runtime sampling is one batched GEMM instead of a 2D FFT.
 
 See docs/plans/2026-06-05-model-b-stage-6-design.md for math + design rationale.
 """
@@ -23,6 +23,46 @@ DEFAULT_K_MAX = 2000
 DEFAULT_MODE_BUCKETS = (512, 1024, 1536, 2000)
 _basis_cache = {}
 _basis_cache_order = []
+
+GUARDED_VARIANCE_TARGET = 0.999
+
+
+@functools.lru_cache(maxsize=64)
+def _guarded_selection(sig, n, m, target, capacity):
+    """Inspect only the spectrum; never allocate a dense basis to decide fallback."""
+    lam = grf_circulant.calc_LAM(n=n, m=m, s1=sig, s2=sig)
+    values = np.asarray(lam ** 2).ravel()
+    total = float(values.sum())
+    if not np.isfinite(values).all() or total <= 0:
+        raise ValueError("Guarded KL requires a finite, positive covariance spectrum")
+    cumulative = np.cumsum(np.sort(values)[::-1]) / total
+    required = min(int(np.searchsorted(cumulative, target)) + 1, len(values))
+    eligible = required <= capacity and cumulative[required - 1] >= target
+    return required, float(cumulative[min(capacity, len(values)) - 1]), eligible, float(cumulative[required - 1])
+
+
+def guarded_kl_diagnostics(sig, n=100, m=160):
+    """Describe the opt-in 99.9%/2,000-mode policy without building a KL basis.
+
+    The variance is relative to the existing clipped circulant spectrum, not
+    an independent validation of the intended covariance or behavioral fidelity.
+    KL uses the legacy six-decimal sig cache convention; FFT uses caller sig.
+    """
+    sig = float(sig)
+    if not np.isfinite(sig) or sig <= 0:
+        raise ValueError("sig must be finite and positive")
+    if n < 1 or m < 1:
+        raise ValueError("Grid dimensions must be positive")
+    required, at_cap, eligible, achieved = _guarded_selection(
+        round(sig, 6), n, m, GUARDED_VARIANCE_TARGET, DEFAULT_K_MAX,
+    )
+    return {"policy": "guarded_kl_999", "requested_variance": GUARDED_VARIANCE_TARGET,
+            "required_modes": required, "capacity": DEFAULT_K_MAX,
+            "cap_hit": required > DEFAULT_K_MAX, "variance_at_cap": at_cap,
+            "generator": "kl" if eligible else "fft",
+            "retained_modes": required if eligible else (2*n-1)*(2*m-1),
+            "achieved_variance": achieved if eligible else 1.0,
+            "sig": sig, "kl_basis_sig": round(sig, 6)}
 
 
 def _cached_calc_kl_basis(sig_key, n, m, k_max, variance_threshold, pad_to_k_max,

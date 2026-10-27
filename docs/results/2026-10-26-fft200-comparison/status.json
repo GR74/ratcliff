@@ -1,0 +1,26 @@
+{
+  "status": "stopped_by_user",
+  "phase": "finished_early",
+  "utc": "2026-10-26T15:07:06.253817+00:00",
+  "pid": 7971,
+  "device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "raw_directory": "/mnt/c/Users/Yash/repos/ratcliff/.benchmark-results/2026-10-26-fft200-comparison",
+  "gates": {
+    "observer": "pass",
+    "precision_plan": "inconclusive",
+    "behavior": "inconclusive",
+    "replay_speed": "promising descriptive result; stopped before planned 30 rounds",
+    "matched_fits": "not run; behavioral qualification remains inconclusive"
+  },
+  "elapsed_seconds": 22124.494227015,
+  "updated_utc": "2026-10-26T20:48:50.134050+00:00",
+  "method": "fft199",
+  "case": "archived_fit",
+  "batch": 0,
+  "trials_per_condition": 4096,
+  "warmup": 2,
+  "repetition": 24,
+  "vector": 6,
+  "total_vectors": 30,
+  "termination": "SIGINT requested by user; process exit and idle GPU verified."
+}

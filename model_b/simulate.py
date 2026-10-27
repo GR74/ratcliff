@@ -227,12 +227,11 @@ def _simulate_chunk_b_kl(key, ter, st, cr, crsd, av1, av2, av3,
     return rt, cat
 
 
-@partial(jax.jit, static_argnums=(11, 12))
+@partial(jax.jit, static_argnums=(11, 12, 13))
 def _simulate_b_fft(key, ter, st, cr, crsd, av1, av2, av3,
-                    sis, sig, si, nsim, chunk_size):
-    """FFT-path inner core for simulate_b. Bit-for-bit identical to the
-    pre-Stage-6 simulate_b body."""
-    LAM = grf.calc_LAM(s1=sig, s2=sig)
+                    sis, sig, si, nsim, chunk_size, fft200=False):
+    """FFT core; the default preserves the pre-Stage-6 sampler exactly."""
+    LAM = (grf.calc_LAM_even if fft200 else grf.calc_LAM)(s1=sig, s2=sig)
     v1, v2, v3 = drift_bumps(sis=sis)
     k_zone = zone_array(si=si)
 
@@ -271,7 +270,8 @@ def _simulate_b_kl_inner(key, ter, st, cr, crsd, av1, av2, av3,
 
 
 def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
-               sis, sig, si, nsim, chunk_size=4, use_kl=False):
+               sis, sig, si, nsim, chunk_size=4, use_kl=False, guarded_kl=False,
+               fft200=False):
     """
     Run `nsim` Model B trials with the given parameters.
 
@@ -282,6 +282,9 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
         use_kl : if True, use K-L low-rank GRF path (model_b/grf_kl.py) for
                  reduced memory footprint at large chunk sizes. Default False
                  preserves the original FFT path bit-for-bit.
+        guarded_kl : with use_kl=True, require 99.9% variance or fall back to FFT.
+            Query grf_kl.guarded_kl_diagnostics(sig) for selection diagnostics.
+        fft200 : opt-in full-spectrum 200-by-320 FFT; requires use_kl=False.
     Returns (rt, cat) each shape (nsim,). cat in {1..5}. RT in ms.
 
     Memory note: chunk_size=4 default for laptop CPU. H100 can use much larger.
@@ -290,6 +293,11 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
     the K-L basis is constructed via numpy in grf_kl.calc_kl_basis, which cannot
     run inside jax tracing. The compute-heavy inner cores are jitted.
     """
+    _validate_fft200(fft200, use_kl, guarded_kl, sig)
+    if guarded_kl and not use_kl:
+        raise ValueError("guarded_kl requires use_kl=True")
+    if guarded_kl:
+        use_kl = grf_kl.guarded_kl_diagnostics(sig, N, M)["generator"] == "kl"
     if use_kl:
         # pad_to_k_max=True keeps V_kl shape constant across sig values, so
         # _simulate_b_kl_inner JIT compiles ONCE and stays cached across the
@@ -298,6 +306,7 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
         # no JIT recompile per eval (~2-4 sec saved per new sig).
         V_kl, _K_kl, _ = grf_kl.calc_kl_basis(
             sig=float(sig), n=N, m=M, pad_to_k_max=True,
+            variance_threshold=grf_kl.GUARDED_VARIANCE_TARGET if guarded_kl else .99,
         )
         return _simulate_b_kl_inner(
             key, ter, st, cr, crsd, av1, av2, av3,
@@ -305,7 +314,7 @@ def simulate_b(key, ter, st, cr, crsd, av1, av2, av3,
         )
     return _simulate_b_fft(
         key, ter, st, cr, crsd, av1, av2, av3,
-        sis, sig, si, nsim, chunk_size,
+        sis, sig, si, nsim, chunk_size, fft200,
     )
 
 
@@ -357,16 +366,23 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
                                  sis, sig, si, nsim, chunk_size=64,
                                  use_kl=True, time_block_size=32,
                                  stop_early=True, compact=True,
-                                 kl_bucketed=False, cumulative_kl=False):
+                                 kl_bucketed=False, cumulative_kl=False, guarded_kl=False,
+                                 fft200=False):
     """Optional blocked Model B with unchanged FFT/K-L covariance/categories.
 
     stop_early=False is the paired full-horizon control. Keep time_block_size
     fixed in paired comparisons: another block size changes the noise layout.
+    guarded_kl requires use_kl=True and is isolated from other K-L extensions.
     """
     if nsim < 1 or chunk_size < 1:
         raise ValueError("nsim and chunk_size must be positive")
+    _validate_fft200(fft200, use_kl, guarded_kl, sig)
     if (kl_bucketed or cumulative_kl) and not use_kl:
         raise ValueError("K-L extensions require use_kl=True")
+    if guarded_kl and (not use_kl or kl_bucketed or cumulative_kl):
+        raise ValueError("guarded_kl requires use_kl=True and no other K-L extensions")
+    if guarded_kl:
+        use_kl = grf_kl.guarded_kl_diagnostics(sig, N, M)["generator"] == "kl"
     v1, v2, v3 = drift_bumps(sis=sis)
     drift = (jnp.asarray(av1, dtype=jnp.float32) * v1.astype(jnp.float32)
              + jnp.asarray(av2, dtype=jnp.float32) * v2.astype(jnp.float32)
@@ -375,9 +391,10 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
         basis, _k, _variance = grf_kl.calc_kl_basis(
             sig=float(sig), n=N, m=M, pad_to_k_max=True,
             mode_buckets=grf_kl.DEFAULT_MODE_BUCKETS if kl_bucketed else None,
+            variance_threshold=grf_kl.GUARDED_VARIANCE_TARGET if guarded_kl else .99,
         )
     else:
-        basis = grf.calc_LAM(s1=sig, s2=sig).astype(jnp.float32)
+        basis = (grf.calc_LAM_even if fft200 else grf.calc_LAM)(s1=sig, s2=sig).astype(jnp.float32)
     return _simulate_b_blocked_core(
         key, ter, st, cr, crsd, drift.reshape(-1), zone_array(si).reshape(-1),
         basis, nsim, chunk_size, time_block_size, stop_early, compact, use_kl,
@@ -388,11 +405,20 @@ def simulate_b_blocked_with_work(key, ter, st, cr, crsd, av1, av2, av3,
 def simulate_b_blocked(key, ter, st, cr, crsd, av1, av2, av3,
                        sis, sig, si, nsim, chunk_size=64, use_kl=True,
                        time_block_size=32, stop_early=True, compact=True,
-                       kl_bucketed=False, cumulative_kl=False):
+                       kl_bucketed=False, cumulative_kl=False, guarded_kl=False,
+                       fft200=False):
     """RT/category-only interface for optional time blocking."""
     rt, cat, _work = simulate_b_blocked_with_work(
         key, ter, st, cr, crsd, av1, av2, av3, sis, sig, si, nsim,
         chunk_size, use_kl, time_block_size, stop_early, compact,
-        kl_bucketed, cumulative_kl,
+        kl_bucketed, cumulative_kl, guarded_kl, fft200,
     )
     return rt, cat
+
+
+def _validate_fft200(fft200, use_kl, guarded_kl, sig):
+    if fft200:
+        if use_kl or guarded_kl:
+            raise ValueError("fft200 is an isolated FFT option; disable all KL policies")
+        if not .2 <= float(sig) <= 17.:
+            raise ValueError("fft200 requires sig in the audited [0.2, 17] range")

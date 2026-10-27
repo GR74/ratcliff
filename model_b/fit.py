@@ -28,7 +28,8 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
                   tol: float = 1e-7, chunk_size: int = 4, use_kl: bool = False,
                   on_update=None, trial_schedule=None, time_block_size=0,
                   stop_early=True, compact=True, on_stage=None,
-                  optimize_active_only=False, kl_bucketed=False, cumulative_kl=False):
+                  optimize_active_only=False, kl_bucketed=False, cumulative_kl=False,
+                  guarded_kl=False, fft200=False):
     """
     Scipy Nelder-Mead simplex fit for Model B.
 
@@ -48,6 +49,8 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
     optimize_active_only removes the inert sv coordinate from the search while
     preserving the public 13-parameter result/callbacks and its initial sv value.
     kl_bucketed/cumulative_kl are optional blocked K-L simulation extensions.
+    guarded_kl opts into 99.9% retained variance with FFT fallback (use_kl=True).
+    fft200 opts into the even full-spectrum FFT (use_kl=False).
     """
     template = np.asarray(x0, dtype=float).copy()
     if template.shape != (13,):
@@ -67,6 +70,8 @@ def fit_simplex_b(data, key, x0, nsim: int = 256, maxiter: int = 2000,
             p, data, key, nsim=stage_nsim, chunk_size=chunk_size, use_kl=use_kl,
             time_block_size=time_block_size, stop_early=stop_early, compact=compact,
             kl_bucketed=kl_bucketed, cumulative_kl=cumulative_kl,
+            guarded_kl=guarded_kl,
+            fft200=fft200,
         )
 
     def progress(number, loss, params):

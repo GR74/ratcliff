@@ -1,0 +1,11 @@
+{
+  "status": "interrupted",
+  "pid": 21278,
+  "completed_fits": 0,
+  "phase": "stopped",
+  "detail": {
+    "error": "KeyboardInterrupt()"
+  },
+  "elapsed_seconds": 161.7396546279997,
+  "updated_utc": "2026-10-26T23:42:48.704999+00:00"
+}

@@ -1,0 +1,9 @@
+{
+  "command": "JAX_PLATFORMS=cpu python -m pytest shared/tests/test_behavior_assessment.py shared/tests/test_fft200_comparison_metrics.py -q",
+  "passed": 20,
+  "seconds": 6.19,
+  "syntax_check": "python -m py_compile scripts/run_behavior_assessment.py passed",
+  "git_diff_check": "passed",
+  "plot_rendering": "Representative maps, probability panels, RT plots and precision history rendered successfully; map figure visually inspected.",
+  "gpu_validation": "All four observer parity checks passed before fresh behavioral sampling; see observer-parity.json."
+}

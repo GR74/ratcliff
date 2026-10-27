@@ -1,0 +1,102 @@
+[
+  {
+    "method": "repaired_kl",
+    "sig": 5.0,
+    "modes": 2000,
+    "retained_variance": 0.7528654963946284,
+    "basis_shape": [
+      16000,
+      4000
+    ]
+  },
+  {
+    "method": "bucketed_kl",
+    "sig": 5.0,
+    "modes": 2000,
+    "retained_variance": 0.7528654963946284,
+    "basis_shape": [
+      16000,
+      4000
+    ]
+  },
+  {
+    "method": "repaired_kl",
+    "sig": 9.693305795890302,
+    "modes": 1410,
+    "retained_variance": 0.9900332118545069,
+    "basis_shape": [
+      16000,
+      4000
+    ]
+  },
+  {
+    "method": "bucketed_kl",
+    "sig": 9.693305795890302,
+    "modes": 1410,
+    "retained_variance": 0.9900332118545069,
+    "basis_shape": [
+      16000,
+      3072
+    ]
+  },
+  {
+    "method": "repaired_kl",
+    "sig": 9.902332104497788,
+    "modes": 1350,
+    "retained_variance": 0.9900165588983735,
+    "basis_shape": [
+      16000,
+      4000
+    ]
+  },
+  {
+    "method": "bucketed_kl",
+    "sig": 9.902332104497788,
+    "modes": 1350,
+    "retained_variance": 0.9900165588983735,
+    "basis_shape": [
+      16000,
+      3072
+    ]
+  },
+  {
+    "method": "repaired_kl",
+    "sig": 10.0,
+    "modes": 1325,
+    "retained_variance": 0.9900387952538491,
+    "basis_shape": [
+      16000,
+      4000
+    ]
+  },
+  {
+    "method": "bucketed_kl",
+    "sig": 10.0,
+    "modes": 1325,
+    "retained_variance": 0.9900387952538491,
+    "basis_shape": [
+      16000,
+      3072
+    ]
+  },
+  {
+    "method": "repaired_kl",
+    "sig": 15.0,
+    "modes": 588,
+    "retained_variance": 0.9900260053687245,
+    "basis_shape": [
+      16000,
+      4000
+    ]
+  },
+  {
+    "method": "bucketed_kl",
+    "sig": 15.0,
+    "modes": 588,
+    "retained_variance": 0.9900260053687245,
+    "basis_shape": [
+      16000,
+      2048
+    ]
+  }
+]

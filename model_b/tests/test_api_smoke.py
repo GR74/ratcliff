@@ -20,7 +20,7 @@ def test_get_device_defaults_cpu():
     defaults = model_api._get_device_defaults(backend="cpu")
     assert defaults["use_kl"] is False
     assert defaults["nsim"] == 512
-    assert defaults["chunk_size"] == 4
+    assert defaults["chunk_size"] == 8
 
 
 def test_get_device_defaults_gpu():

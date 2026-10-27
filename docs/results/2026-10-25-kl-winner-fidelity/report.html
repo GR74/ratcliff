@@ -1,0 +1,53 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>FFT vs KL: Model B fidelity</title>
+<style>body{font:17px/1.55 system-ui,sans-serif;color:#172033;max-width:1180px;margin:45px auto;padding:0 24px}h1{font-size:36px;line-height:1.2}h2{margin-top:40px}img{width:100%;height:auto}.callout{background:#eff6ff;border-left:5px solid #0284c7;padding:20px}table{border-collapse:collapse;font-size:14px;width:100%}td,th{padding:9px;text-align:left;border-bottom:1px solid #ddd}small{color:#475569}code{font-size:14px}@media print{body{margin:15px}h2{break-after:avoid}img,table{break-inside:avoid}}</style>
+<h1>Does KL preserve the spatial diffusion model?</h1><p>Empirical FFT comparison for discussion with Dr. Ratcliff · 25 October 2026</p>
+<div class="callout"><strong>The current KL settings cannot be treated as universally equivalent to FFT.</strong>
+At sig=5 the 2,000-mode cap retains only 75.29% of embedded spectral variance.
+In the baseline-drift condition, mean RT changes by +21.23 ms and low-support wins by -9.77 percentage points.
+At sig=10, the corresponding changes are +1.10 ms and +0.78 points.
+These are measured differences, not a blanket validation or proof of psychological adequacy.</div>
+<p><strong>The concern is supported as a fidelity issue, but the observed direction differs from “extra spurious wins.”</strong>
+At sig=5, current KL <em>reduces</em> low-support wins from 23.05% to 13.28%.
+Restoring 7,399 modes to reach 99.9% variance retention reduces the baseline RT difference to
++0.20 ms and the low-support-win difference to +0.49 percentage points.
+This is evidence of convergence toward FFT, not proof of equivalence.</p>
+<h2>What was tested</h2><p>1,024 paired trials per setting; 3 correlation values (5, 10, 15),
+3 drift conditions (original strengths, one-quarter strengths, zero drift), and 4 noise methods.
+Every simulation uses the original 100 × 160 grid, 400-step horizon, drift shape, spatial demeaning,
+threshold variation and nondecision-time variation. No fitting is performed: all parameters are held fixed.</p>
+<p><strong>Primary endpoint:</strong> the fraction of all trials that cross the threshold and win at a location whose
+baseline drift is at most 10% of its peak. This region covers 65.1% of the grid.
+It is fixed across conditions; in the zero-drift control it means the same geographic region, since all locations then have zero drift.
+No-crossing trials are excluded from the win numerator and reported separately in the CSV.
+These are “low-support wins,” not automatically errors or spurious psychological responses.</p>
+<img src="low-support-wins.png" alt="Paired differences in low-support winning rates, with uncertainty">
+<p>Bars are conservative 95% paired intervals. The gray ±1 percentage-point band is an illustrative precision target,
+not a scientifically approved equivalence margin. Intervals overlapping zero do not establish equivalence.</p>
+<h2>Current production KL compared with full FFT</h2>
+<table><thead><tr><th>sig</th><th>Drift</th><th>Variance retained</th><th>FFT low-support wins</th><th>KL low-support wins</th><th>Difference, pp [95% CI]</th><th>Mean RT difference, ms [95% CI]</th></tr></thead><tbody><tr><td>5</td><td>baseline</td><td>75.29%</td><td>23.05%</td><td>13.28%</td><td>-9.77 [-14.40, -5.05]</td><td>+21.23 [+20.25, +22.22]</td></tr><tr><td>5</td><td>weak_drift</td><td>75.29%</td><td>57.81%</td><td>56.25%</td><td>-1.56 [-7.27, +4.16]</td><td>+28.95 [+27.74, +30.15]</td></tr><tr><td>5</td><td>zero_drift</td><td>75.29%</td><td>66.60%</td><td>68.55%</td><td>+1.95 [-3.52, +7.41]</td><td>+29.71 [+28.47, +30.98]</td></tr><tr><td>10</td><td>baseline</td><td>99.00%</td><td>28.52%</td><td>29.30%</td><td>+0.78 [-1.83, +3.39]</td><td>+1.10 [+0.61, +1.61]</td></tr><tr><td>10</td><td>weak_drift</td><td>99.00%</td><td>61.52%</td><td>61.43%</td><td>-0.10 [-3.23, +3.04]</td><td>+2.28 [+1.61, +2.94]</td></tr><tr><td>10</td><td>zero_drift</td><td>99.00%</td><td>69.73%</td><td>69.04%</td><td>-0.68 [-3.45, +2.09]</td><td>+2.59 [+1.98, +3.20]</td></tr><tr><td>15</td><td>baseline</td><td>99.00%</td><td>29.88%</td><td>29.39%</td><td>-0.49 [-3.15, +2.18]</td><td>+1.43 [+0.88, +1.97]</td></tr><tr><td>15</td><td>weak_drift</td><td>99.00%</td><td>57.42%</td><td>58.30%</td><td>+0.88 [-2.26, +4.01]</td><td>+1.50 [+0.83, +2.20]</td></tr><tr><td>15</td><td>zero_drift</td><td>99.00%</td><td>65.92%</td><td>66.80%</td><td>+0.88 [-2.11, +3.86]</td><td>+1.73 [+1.01, +2.49]</td></tr></tbody></table>
+<img src="noise-and-timing.png" alt="Variance retention, noise maxima and timing differences">
+<img src="winner-locations.png" alt="Drift surface and binned winner-location differences">
+<h2>How to interpret the experiments</h2><ol>
+<li><strong>Noise fidelity:</strong> spectral retention and spatial maxima expose changes that a mean-variance check alone misses.</li>
+<li><strong>Behavioral fidelity:</strong> low-support wins, response categories, censoring and RT measure consequences for the race.</li>
+<li><strong>Stress test:</strong> weak and zero drift isolate situations where noise plays a larger role.</li>
+<li><strong>Convergence:</strong> compare current KL with uncapped 99.9% retention; closer agreement as modes are restored supports truncation as the cause.</li></ol>
+<h2>Reproducibility and limits</h2><p>The study samples retained Fourier modes with an FFT to cheaply evaluate the same Gaussian law as the production KL matrix multiplication.
+This is a test of statistical truncation fidelity, not a GEMM speed benchmark. Production-basis versus masked-FFT fields agree within
+1.1e-05 maximum absolute error in the cross-checks at all three sig values.
+The diagnostic decision observer reproduces both production chunk implementations' RTs and categories on fixed-key checks.</p>
+<p>All methods share underlying spectral normal draws and threshold/nondecision uniforms within each trial.
+Only the real FFT output is used, independently at every step. This avoids temporal correlations if a cutoff splits a tied frequency pair.
+Different sig settings use different keys. Category-switch percentages in the CSV describe this coupling, not independent-observation error rates.</p>
+<p>Binary difference intervals use Bonferroni-combined 97.5% Clopper–Pearson intervals for the two discordance probabilities,
+giving at least 95% coverage per comparison, including zero discordances. Mean-RT intervals use 2,000 paired IID bootstrap samples.
+Intervals are not corrected across the experiment grid. Noise-tail estimates use one independent field per trial and are descriptive.
+The CSV includes 5%, 10% and 20% drift-cutoff sensitivity, RT quantiles, category shifts and no-crossing rates.
+Reported RTs retain the production convention for non-crossers (horizon plus nondecision time); inspect censoring alongside RT.</p>
+<p>This is a finite Monte Carlo screen on one parameter family, not validation across the full fitting domain, participant datasets,
+or rare events below its sampling precision. Fitting could compensate for simulator bias; parameter recovery and fits to empirical data require separate tests.
+Agree on acceptable response-probability and RT margins before a confirmatory run, then use independent seeds and enough trials to resolve those margins.</p>
+<p><strong>Practical recommendation:</strong> require an explicit achieved-variance check before accepting KL output; choose a sufficient mode cap or fall back to FFT.
+Do not claim that the nominal 99% setting alone preserves decisions. No production behavior was changed by this study.</p>
+<small>Hardware: cuda:0 NVIDIA GeForce RTX 4060 Laptop GPU; Python 3.12.3; JAX 0.10.2; NumPy 2.5.4. Seed 20261025, chunk 1.
+Runtime 4.0 minutes. Source hashes and full parameters: metadata.json. Trial data: trials.npz. Metrics: metrics.csv.</small></html>

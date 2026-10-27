@@ -1,0 +1,16 @@
+{
+  "platform": "WSL, Python 3.12.3, JAX_PLATFORMS=cpu",
+  "runs": [
+    {
+      "command": "python -m pytest model_b/tests/test_fft200.py model_b/tests/test_guarded_kl.py model_b/tests/test_blocked_simulate.py -q",
+      "passed": 40,
+      "seconds": 15.23
+    },
+    {
+      "command": "python -m pytest shared/tests/test_blocked.py model_b/tests/test_simulate_b_kl_flag.py::test_simulate_b_accepts_use_kl_flag -q",
+      "passed": 9,
+      "seconds": 17.45
+    }
+  ],
+  "git_diff_check": "passed"
+}

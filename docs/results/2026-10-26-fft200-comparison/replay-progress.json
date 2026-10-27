@@ -1,0 +1,51 @@
+{
+  "pairs": 24,
+  "control": "fft199",
+  "candidate": "fft200",
+  "ratio": 0.8003224587589036,
+  "interval": [
+    0.7960439391943767,
+    0.8017232391186497
+  ],
+  "control_seconds": 207.28017977248783,
+  "candidate_seconds": 165.89098312750502,
+  "fixed_sample_gate_status": "inconclusive",
+  "status": "stopped_early_by_user",
+  "planned_pairs": 30,
+  "stopping_note": "User requested stopping after reviewing the accumulating speed results. Intervals are descriptive, not a confirmatory fixed-sample or sequentially adjusted analysis.",
+  "partial_replay_excluded": {
+    "method": "fft199",
+    "repetition": 24,
+    "vector": 6
+  },
+  "controls": {
+    "repaired_kl": {
+      "pairs": 24,
+      "control": "repaired_kl",
+      "candidate": "fft200",
+      "ratio": 0.6323147455426722,
+      "interval": [
+        0.6265613911548721,
+        0.6355174351821058
+      ],
+      "control_seconds": 262.3550760074909,
+      "candidate_seconds": 165.89098312750502,
+      "fixed_sample_gate_status": "inconclusive",
+      "status": "descriptive_after_user_stop"
+    },
+    "bucketed_kl": {
+      "pairs": 24,
+      "control": "bucketed_kl",
+      "candidate": "fft200",
+      "ratio": 0.7658196511694821,
+      "interval": [
+        0.7542053006603915,
+        0.7700969801271681
+      ],
+      "control_seconds": 216.618864342503,
+      "candidate_seconds": 165.89098312750502,
+      "fixed_sample_gate_status": "inconclusive",
+      "status": "descriptive_after_user_stop"
+    }
+  }
+}
